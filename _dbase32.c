@@ -21,6 +21,7 @@ Authors:
     Jason Gerard DeRose <jderose@novacut.com>
 */
 
+#include <Python.h>
 
 #define START 51
 #define END 89
@@ -69,3 +70,74 @@ static const uint8_t reverse[39] = {
      31,  // 89 'Y'
 };
 
+
+static PyObject *
+dbase32_db32enc(PyObject *self, PyObject *args)
+{
+    Py_buffer buf;
+    size_t len, i, j;
+    const uint8_t *src;
+    uint8_t *dst;
+    uint16_t taxi = 0;
+    uint8_t bits = 0;
+    PyObject *rv;
+
+    if (!PyArg_ParseTuple(args, "y*:db32enc", &buf))
+        return NULL;
+
+    // Strictly validate, we only care about well-formed IDs:
+    src = buf.buf;
+    len = buf.len;
+    if (len < 5 || len > 60) {
+        PyErr_SetString(PyExc_ValueError, "need 5 <= len(data) <= 60");
+        PyBuffer_Release(&buf);
+        return NULL;
+    }
+    if (len % 5 != 0) {
+        PyErr_SetString(PyExc_ValueError, "need len(data) % 5 == 0");
+        PyBuffer_Release(&buf);
+        return NULL;
+    }
+
+    // Allocate destination bytes:
+    if ((rv=PyBytes_FromStringAndSize(NULL, len * 8 / 5)) == NULL) {
+        PyBuffer_Release(&buf);
+        return NULL;
+    }
+    dst = (uint8_t *)PyBytes_AS_STRING(rv);
+
+    // `bits` take the `taxi` from `src` to `dst`, experience change:
+    for (i=j=0; i<len; i++) {
+        taxi = (taxi << 8) | src[i];
+        bits += 8;
+        while (bits >= 5) {
+            bits -= 5;
+            dst[j] = forward[(taxi >> bits) & 0x1f];
+            j++;
+        }
+    }
+
+    PyBuffer_Release(&buf);
+    return rv;
+}
+
+
+/* module init */
+static struct PyMethodDef dbase32_functions[] = {
+    {"db32enc", dbase32_db32enc, METH_VARARGS, "db32enc(data)"},
+    {NULL, NULL, 0, NULL}
+};
+
+static struct PyModuleDef dbase32 = {
+    PyModuleDef_HEAD_INIT,
+    "_dbase32",
+    NULL,
+    -1,
+    dbase32_functions
+};
+
+PyMODINIT_FUNC
+PyInit__dbase32(void)
+{
+    return PyModule_Create(&dbase32);
+}

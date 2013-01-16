@@ -30,7 +30,7 @@ import sys
 if sys.version_info < (3, 2):
     sys.exit('dbase32 requires Python 3.2 or newer')
 
-from distutils.core import setup
+from distutils.core import setup, Extension
 from distutils.cmd import Command
 from unittest import TestLoader, TextTestRunner
 from doctest import DocTestSuite
@@ -71,6 +71,8 @@ class Test(Command):
             raise SystemExit(2)
 
 
+_dbase32 = Extension('_dbase32', sources=['_dbase32.c'])
+
 setup(
     name='dbase32',
     description='base32-encoding with a sorted-order alphabet',
@@ -79,6 +81,6 @@ setup(
     author='Jason Gerard DeRose',
     author_email='jderose@novacut.com',
     license='LGPLv3+',
-    py_modules=['dbase32'],
+    py_modules=['dbase32', 'test_dbase32'],
     cmdclass={'test': Test},
 )
