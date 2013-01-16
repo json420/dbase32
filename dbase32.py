@@ -78,7 +78,6 @@ reverse = (
 )
 
 
-
 def enc_iter(data, fmap):
     taxi = 0
     bits = 0
@@ -126,5 +125,4 @@ def dec(text, rmap=reverse, sne=(START, END)):
     if len(text) % 8 != 0:
         raise ValueError('len(text) % 8 != 0')
     return bytes(dec_iter(text, rmap, sne))
-
 

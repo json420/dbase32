@@ -201,6 +201,17 @@ class TestFunctions(TestCase):
             dbase32.dec('A' * 65)
         self.assertEqual(str(cm.exception), 'len(text) % 8 != 0')
 
+        # Test with invalid base32 characters:
+        with self.assertRaises(ValueError) as cm:
+            dbase32.dec('CDEFCDE2')
+        self.assertEqual(str(cm.exception), "invalid base32 letter: '2'")
+        with self.assertRaises(ValueError) as cm:
+            dbase32.dec('CDEFCDE=')
+        self.assertEqual(str(cm.exception), "invalid base32 letter: '='")
+        with self.assertRaises(ValueError) as cm:
+            dbase32.dec('CDEFCDEZ')
+        self.assertEqual(str(cm.exception), "invalid base32 letter: 'Z'")
+
         # Test a few handy static values:
         self.assertEqual(dbase32.dec('33333333'), b'\x00\x00\x00\x00\x00')
         self.assertEqual(dbase32.dec('YYYYYYYY'), b'\xff\xff\xff\xff\xff')
