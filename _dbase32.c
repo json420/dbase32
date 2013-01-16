@@ -24,6 +24,9 @@ Authors:
 #include <Python.h>
 #include <string.h>
 
+#define MAX_DATA 60
+#define MAX_TEXT 96
+
 #define START 51
 #define END 89
 
@@ -90,8 +93,8 @@ dbase32_db32enc(PyObject *self, PyObject *args)
     // Strictly validate, we only care about well-formed IDs:
     src = buf.buf;
     len = buf.len;
-    if (len < 5 || len > 60) {
-        PyErr_SetString(PyExc_ValueError, "need 5 <= len(data) <= 60");
+    if (len < 5 || len > MAX_DATA) {
+        PyErr_Format(PyExc_ValueError, "need 5 <= len(data) <= %u", MAX_DATA);
         PyBuffer_Release(&buf);
         return NULL;
     }
@@ -119,13 +122,12 @@ dbase32_db32enc(PyObject *self, PyObject *args)
         }
     }
 
+    PyBuffer_Release(&buf);
     if (bits != 0 || j != len * 8 / 5) {
-        PyBuffer_Release(&buf);
         PyErr_SetString(PyExc_RuntimeError, "something went very wrong");
         Py_DECREF(rv);
         return NULL;
     }
-    PyBuffer_Release(&buf);
     return rv;
 }
 
@@ -147,8 +149,8 @@ dbase32_db32dec(PyObject *self, PyObject *args)
 
     // Strictly validate, we only care about well-formed IDs:
     len = strlen(src);
-    if (len < 8 || len > 96) {
-        PyErr_SetString(PyExc_ValueError, "need 8 <= len(text) <= 96");
+    if (len < 8 || len > MAX_TEXT) {
+        PyErr_Format(PyExc_ValueError, "need 8 <= len(text) <= %u", MAX_TEXT);
         return NULL;
     }
     if (len % 8 != 0) {
