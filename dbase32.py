@@ -34,7 +34,7 @@ MIN_TEXT = MIN_DATA * 8 // 5
 MAX_TEXT = MAX_DATA * 8 // 5
 
 
-alphabet = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ'
+forward = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ'
 
 r_alphabet = (
       0,  # 50 '2'
@@ -114,7 +114,7 @@ def dec_iter(text, r_alpha):
     assert bits == 0
 
 
-def enc(data, alpha=alphabet):
+def enc(data, alpha=forward):
     assert isinstance(data, bytes)
     if not (MIN_DATA <= len(data) <= MAX_DATA):
         raise ValueError(
