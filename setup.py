@@ -82,5 +82,6 @@ setup(
     author_email='jderose@novacut.com',
     license='LGPLv3+',
     py_modules=['dbase32', 'test_dbase32'],
+    ext_modules=[_dbase32],
     cmdclass={'test': Test},
 )

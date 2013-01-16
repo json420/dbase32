@@ -126,3 +126,9 @@ def dec(text, rmap=reverse, sne=(START, END)):
         raise ValueError('len(text) % 8 != 0')
     return bytes(dec_iter(text, rmap, sne))
 
+
+try:
+    from _dbase32 import db32enc
+except ImportError:
+    pass
+
