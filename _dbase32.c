@@ -86,11 +86,10 @@ dbase32_db32enc(PyObject *self, PyObject *args)
     uint8_t bits = 0;
     PyObject *rv;
 
+    // Strictly validate, we only accept well-formed IDs:
     if (!PyArg_ParseTuple(args, "y*:db32enc", &buf)) {
         return NULL;
     }
-
-    // Strictly validate, we only care about well-formed IDs:
     src = buf.buf;
     len = buf.len;
     if (len < 5 || len > MAX_DATA) {
@@ -104,6 +103,7 @@ dbase32_db32enc(PyObject *self, PyObject *args)
         return NULL;
     }
 
+    // Let's do it:
     if ((rv=PyUnicode_New(len * 8 / 5, END)) == NULL ) {
         PyBuffer_Release(&buf);
         return NULL;
@@ -118,8 +118,9 @@ dbase32_db32enc(PyObject *self, PyObject *args)
             j++;
         }
     }
-
     PyBuffer_Release(&buf);
+
+    // Sanity check:
     if (bits != 0 || j != len * 8 / 5) {
         PyErr_SetString(PyExc_RuntimeError, "something went very wrong");
         Py_DECREF(rv);
@@ -140,11 +141,10 @@ dbase32_db32dec(PyObject *self, PyObject *args)
     uint8_t bits = 0;
     PyObject *rv;
 
+    // Strictly validate, we only accept well-formed IDs:
     if (!PyArg_ParseTuple(args, "s:db32dec", &src)) {
         return NULL;
     }
-
-    // Strictly validate, we only care about well-formed IDs:
     len = strlen(src);
     if (len < 8 || len > MAX_TEXT) {
         PyErr_Format(PyExc_ValueError, "need 8 <= len(text) <= %u", MAX_TEXT);
@@ -155,6 +155,7 @@ dbase32_db32dec(PyObject *self, PyObject *args)
         return NULL;
     }
 
+    // Let's do it:
     if ((rv=PyBytes_FromStringAndSize(NULL, len * 5 / 8)) == NULL) {
         return NULL;
     }
@@ -179,6 +180,7 @@ dbase32_db32dec(PyObject *self, PyObject *args)
         }
     }
 
+    // Sanity check:
     if (bits != 0 || j != len * 5 / 8) {
         PyErr_SetString(PyExc_RuntimeError, "something went very wrong");
         Py_DECREF(rv);
