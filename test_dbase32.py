@@ -312,13 +312,13 @@ class TestFunctions(TestCase):
         # Test with invalid base32 characters:
         with self.assertRaises(ValueError) as cm:
             _dbase32.db32dec('CDEFCDE2')
-        self.assertEqual(str(cm.exception), "invalid base32 letter")
+        self.assertEqual(str(cm.exception), "invalid base32 letter: 2")
         with self.assertRaises(ValueError) as cm:
             _dbase32.db32dec('CDEFCDE=')
-        self.assertEqual(str(cm.exception), "invalid base32 letter(2)")
+        self.assertEqual(str(cm.exception), "invalid base32 letter: =")
         with self.assertRaises(ValueError) as cm:
             _dbase32.db32dec('CDEFCDEZ')
-        self.assertEqual(str(cm.exception), "invalid base32 letter")
+        self.assertEqual(str(cm.exception), "invalid base32 letter: Z")
 
         # Test a few handy static values:
         self.assertEqual(_dbase32.db32dec('33333333'), b'\x00\x00\x00\x00\x00')

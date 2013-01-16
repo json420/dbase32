@@ -166,13 +166,13 @@ dbase32_db32dec(PyObject *self, PyObject *args)
     for (i=j=0; i<len; i++) {
         c = src[i];
         if (c < START || c > END) {
-            PyErr_SetString(PyExc_ValueError, "invalid base32 letter");
+            PyErr_Format(PyExc_ValueError, "invalid base32 letter: %c", c);
             Py_DECREF(rv);
             return NULL;
         }
         r = reverse[c - START];
         if (r > 31) {
-            PyErr_SetString(PyExc_ValueError, "invalid base32 letter(2)");
+            PyErr_Format(PyExc_ValueError, "invalid base32 letter: %c", c);
             Py_DECREF(rv);
             return NULL;
         }
