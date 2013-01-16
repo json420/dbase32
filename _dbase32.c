@@ -166,13 +166,11 @@ dbase32_db32dec(PyObject *self, PyObject *args)
 
     // `bits` take the `taxi` from `src` to `dst`, experience change:
     for (i=j=0; i<len; i++) {
+        r = 255;
         c = src[i];
-        if (c < START || c > END) {
-            PyErr_Format(PyExc_ValueError, "invalid base32 letter: %c", c);
-            Py_DECREF(rv);
-            return NULL;
+        if (c >= START && c <= END) {
+            r = reverse[c - START];
         }
-        r = reverse[c - START];
         if (r > 31) {
             PyErr_Format(PyExc_ValueError, "invalid base32 letter: %c", c);
             Py_DECREF(rv);
