@@ -27,6 +27,10 @@
 __version__ = '0.1.0'
 
 
+MIN_BYTES = 5  # 40 bits
+MAX_BYTES = 60  # 480 bits
+
+
 alphabet = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ'
 
 r_alphabet = (
@@ -75,3 +79,23 @@ r_alphabet = (
 
 start = 50
 stop = 91
+
+
+def enc_iter(data, alpha):
+    taxi = 0
+    bits = 0
+    for d in data:
+        taxi = (taxi << 8) | d
+        bits += 8
+        while bits >= 5:
+            bits -= 5
+            yield alpha[(taxi >> bits) & 31]
+    assert bits == 0
+
+
+def enc(data, alpha=alphabet):
+    if not (5 <= len(data) <= 60):
+        raise ValueError('need 5 <= len(data) <= 60')
+    if len(data) % 5 != 0:
+        raise ValueError('len(data) % 5 != 0')
+    return ''.join(enc_iter(data, alpha))

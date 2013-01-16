@@ -25,12 +25,16 @@ Unit tests for `dbase32` module.
 """
 
 from unittest import TestCase
+import os
+from base64 import b32encode
 
 import dbase32
 
 
 possible = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'
 assert ''.join(sorted(set(possible))) == possible
+
+base32_alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567'
 
 
 class TestConstants(TestCase):
@@ -64,9 +68,64 @@ class TestConstants(TestCase):
                 no += 1
         self.assertEqual(yes, 32)
         self.assertEqual(len(dbase32.r_alphabet) - no, 32)
+        self.assertEqual(len(dbase32.r_alphabet), 41)
 
     def test_start_stop(self):
         self.assertEqual(dbase32.start, ord(dbase32.alphabet[0]))
         self.assertEqual(dbase32.stop, ord(dbase32.alphabet[-1]) + 1)
         self.assertEqual(dbase32.stop - dbase32.start, len(dbase32.r_alphabet))
+
+
+class TestFunctions(TestCase):
+    def test_enc(self):
+        # Test when len(data) is too small:
+        with self.assertRaises(ValueError) as cm:
+            dbase32.enc(b'')
+        self.assertEqual(str(cm.exception), 'need 5 <= len(data) <= 60')
+        with self.assertRaises(ValueError) as cm:
+            dbase32.enc(b'four')
+        self.assertEqual(str(cm.exception), 'need 5 <= len(data) <= 60')
+
+        # Test when len(data) is too big:
+        with self.assertRaises(ValueError) as cm:
+            dbase32.enc(b'B' * 61)
+        self.assertEqual(str(cm.exception), 'need 5 <= len(data) <= 60')
+
+        # Test when len(data) % 5 != 0:
+        with self.assertRaises(ValueError) as cm:
+            dbase32.enc(b'B' * 41)
+        self.assertEqual(str(cm.exception), 'len(data) % 5 != 0')
+
+        # Test a few handy static values:
+        self.assertEqual(dbase32.enc(b'\x00\x00\x00\x00\x00'), '22222222')
+        self.assertEqual(dbase32.enc(b'\xff\xff\xff\xff\xff'), 'ZZZZZZZZ')
+        self.assertEqual(dbase32.enc(b'\x00' * 60), '2' * 96)
+        self.assertEqual(dbase32.enc(b'\xff' * 60), 'Z' * 96)
+
+        # Same, but this time using the standard base32 alphabet:
+        self.assertEqual(
+            dbase32.enc(b'\x00\x00\x00\x00\x00', base32_alphabet),
+            'AAAAAAAA'
+        )
+        self.assertEqual(
+            dbase32.enc(b'\xff\xff\xff\xff\xff', base32_alphabet),
+            '77777777'
+        )
+        self.assertEqual(
+            dbase32.enc(b'\x00' * 60, base32_alphabet),
+            'A' * 96
+        )
+        self.assertEqual(
+            dbase32.enc(b'\xff' * 60, base32_alphabet),
+            '7' * 96
+        )
+
+        # Compare against base64.b32encode() from stdlib:
+        for size in [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60]:
+            for i in range(1000):
+                data = os.urandom(size)
+                self.assertEqual(
+                    dbase32.enc(data, base32_alphabet),
+                    b32encode(data).decode('utf-8')
+                )
 
