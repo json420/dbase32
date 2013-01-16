@@ -36,7 +36,7 @@ MAX_TEXT = MAX_DATA * 8 // 5
 
 forward = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ'
 
-r_alphabet = (
+reverse = (
       0,  # 50 '2'
       1,  # 51 '3'
       2,  # 52 '4'
@@ -84,7 +84,7 @@ start = 50
 stop = 91
 
 
-def enc_iter(data, alpha):
+def enc_iter(data, fmap):
     taxi = 0
     bits = 0
     for d in data:
@@ -92,18 +92,18 @@ def enc_iter(data, alpha):
         bits += 8
         while bits >= 5:
             bits -= 5
-            yield alpha[(taxi >> bits) & 31]
+            yield fmap[(taxi >> bits) & 31]
     assert bits == 0
 
 
-def dec_iter(text, r_alpha):
+def dec_iter(text, rmap):
     taxi = 0
     bits = 0
     for t in text:
         i = ord(t)
         if not (start <= i < stop):
             raise ValueError('invalid base32 letter: {!r}'.format(t))
-        r = r_alpha[i - start]
+        r = rmap[i - start]
         if r > 31:
             raise ValueError('invalid base32 letter: {!r}'.format(t))
         taxi = (taxi << 5) | r
@@ -114,7 +114,7 @@ def dec_iter(text, r_alpha):
     assert bits == 0
 
 
-def enc(data, alpha=forward):
+def enc(data, fmap=forward):
     assert isinstance(data, bytes)
     if not (MIN_DATA <= len(data) <= MAX_DATA):
         raise ValueError(
@@ -122,10 +122,10 @@ def enc(data, alpha=forward):
         )
     if len(data) % 5 != 0:
         raise ValueError('len(data) % 5 != 0')
-    return ''.join(enc_iter(data, alpha))
+    return ''.join(enc_iter(data, fmap))
 
 
-def dec(text, r_alpha=r_alphabet):
+def dec(text, rmap=reverse):
     assert isinstance(text, str)
     if not (MIN_TEXT <= len(text) <= MAX_TEXT):
         raise ValueError(
@@ -133,6 +133,6 @@ def dec(text, r_alpha=r_alphabet):
         )
     if len(text) % 8 != 0:
         raise ValueError('len(text) % 8 != 0')
-    return bytes(dec_iter(text, r_alpha))
+    return bytes(dec_iter(text, rmap))
 
 

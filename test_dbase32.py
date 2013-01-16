@@ -119,13 +119,13 @@ class TestConstants(TestCase):
         )
         self.assertEqual(len(dbase32.forward), 32)
 
-    def test_r_alphabet(self):
-        self.assertEqual(dbase32.r_alphabet[0], 0)
-        self.assertEqual(dbase32.r_alphabet[-1], 31)
+    def test_reverse(self):
+        self.assertEqual(dbase32.reverse[0], 0)
+        self.assertEqual(dbase32.reverse[-1], 31)
         offset = ord(dbase32.forward[0])
         yes = 0
         no = 0
-        for (i, value) in enumerate(dbase32.r_alphabet):
+        for (i, value) in enumerate(dbase32.reverse):
             char = chr(i + offset)
             if char in dbase32.forward:
                 self.assertEqual(value, yes)
@@ -134,13 +134,13 @@ class TestConstants(TestCase):
                 self.assertEqual(value, 255)
                 no += 1
         self.assertEqual(yes, 32)
-        self.assertEqual(len(dbase32.r_alphabet) - no, 32)
-        self.assertEqual(len(dbase32.r_alphabet), 41)
+        self.assertEqual(len(dbase32.reverse) - no, 32)
+        self.assertEqual(len(dbase32.reverse), 41)
 
     def test_start_stop(self):
         self.assertEqual(dbase32.start, ord(dbase32.forward[0]))
         self.assertEqual(dbase32.stop, ord(dbase32.forward[-1]) + 1)
-        self.assertEqual(dbase32.stop - dbase32.start, len(dbase32.r_alphabet))
+        self.assertEqual(dbase32.stop - dbase32.start, len(dbase32.reverse))
 
 
 class TestFunctions(TestCase):
