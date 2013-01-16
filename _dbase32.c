@@ -22,6 +22,9 @@ Authors:
 */
 
 
+#define START 51
+#define END 89
+
 static const uint8_t forward[32] = "3456789ABCDEFGHIJKLMNOPQRSTUVWXY";
 
 static const uint8_t reverse[39] = {
