@@ -30,6 +30,12 @@ from base64 import b32encode, b32decode
 
 from dbase32 import enc, dec, db32enc, db32dec
 
+p_db32enc = enc
+p_db32dec = dec
+
+c_db32enc = db32enc
+c_db32dec = db32dec
+
 data = os.urandom(30)
 text_b = b32encode(data)
 text = enc(data)
@@ -48,9 +54,9 @@ print('Executions per second:')
 
 
 run('b32encode(data)')
-run('enc(data)')
-run('db32enc(data)')
+run('p_db32enc(data)')
+run('c_db32enc(data)')
 run('b32decode(text_b)')
-run('dec(text)')
-run('db32dec(text)')
+run('p_db32dec(text)')
+run('c_db32dec(text)')
 
