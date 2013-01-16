@@ -117,10 +117,11 @@ class TestConstants(TestCase):
         self.assertEqual(len(dbase32.reverse) - no, 32)
         self.assertEqual(len(dbase32.reverse), 41)
 
-    def test_start_stop(self):
-        self.assertEqual(dbase32.start, ord(dbase32.forward[0]))
-        self.assertEqual(dbase32.stop, ord(dbase32.forward[-1]) + 1)
-        self.assertEqual(dbase32.stop - dbase32.start, len(dbase32.reverse))
+    def test_start_end(self):
+        self.assertEqual(dbase32.START, ord(dbase32.forward[0]))
+        self.assertEqual(dbase32.END, ord(dbase32.forward[-1]))
+        stop = dbase32.END + 1
+        self.assertEqual(stop - dbase32.START, len(dbase32.reverse))
 
 
 class TestFunctions(TestCase):

@@ -34,6 +34,9 @@ MIN_TEXT = MIN_DATA * 8 // 5
 MAX_TEXT = MAX_DATA * 8 // 5
 
 
+START = 50
+END = 90
+
 forward = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ'
 
 reverse = (
@@ -80,9 +83,6 @@ reverse = (
      31,  # 90 'Z'
 )
 
-start = 50
-stop = 91
-
 
 def enc_iter(data, fmap):
     taxi = 0
@@ -96,12 +96,13 @@ def enc_iter(data, fmap):
     assert bits == 0
 
 
-def dec_iter(text, rmap):
+def dec_iter(text, rmap, sne):
+    (start, end) = sne
     taxi = 0
     bits = 0
     for t in text:
         i = ord(t)
-        if not (start <= i < stop):
+        if not (start <= i <= end):
             raise ValueError('invalid base32 letter: {!r}'.format(t))
         r = rmap[i - start]
         if r > 31:
@@ -125,7 +126,7 @@ def enc(data, fmap=forward):
     return ''.join(enc_iter(data, fmap))
 
 
-def dec(text, rmap=reverse):
+def dec(text, rmap=reverse, sne=(START, END)):
     assert isinstance(text, str)
     if not (MIN_TEXT <= len(text) <= MAX_TEXT):
         raise ValueError(
@@ -133,6 +134,6 @@ def dec(text, rmap=reverse):
         )
     if len(text) % 8 != 0:
         raise ValueError('len(text) % 8 != 0')
-    return bytes(dec_iter(text, rmap))
+    return bytes(dec_iter(text, rmap, sne))
 
 
