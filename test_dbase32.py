@@ -95,7 +95,7 @@ class TestConstants(TestCase):
         )
         self.assertEqual(
             set(dbase32.forward),
-            set(possible) - set('01IO')
+            set(possible) - set('012Z')
         )
         self.assertEqual(len(dbase32.forward), 32)
 
@@ -115,7 +115,7 @@ class TestConstants(TestCase):
                 no += 1
         self.assertEqual(yes, 32)
         self.assertEqual(len(dbase32.reverse) - no, 32)
-        self.assertEqual(len(dbase32.reverse), 41)
+        self.assertEqual(len(dbase32.reverse), 39)
 
     def test_start_end(self):
         self.assertEqual(dbase32.START, ord(dbase32.forward[0]))
@@ -145,10 +145,10 @@ class TestFunctions(TestCase):
         self.assertEqual(str(cm.exception), 'len(data) % 5 != 0')
 
         # Test a few handy static values:
-        self.assertEqual(dbase32.enc(b'\x00\x00\x00\x00\x00'), '22222222')
-        self.assertEqual(dbase32.enc(b'\xff\xff\xff\xff\xff'), 'ZZZZZZZZ')
-        self.assertEqual(dbase32.enc(b'\x00' * 60), '2' * 96)
-        self.assertEqual(dbase32.enc(b'\xff' * 60), 'Z' * 96)
+        self.assertEqual(dbase32.enc(b'\x00\x00\x00\x00\x00'), '33333333')
+        self.assertEqual(dbase32.enc(b'\xff\xff\xff\xff\xff'), 'YYYYYYYY')
+        self.assertEqual(dbase32.enc(b'\x00' * 60), '3' * 96)
+        self.assertEqual(dbase32.enc(b'\xff' * 60), 'Y' * 96)
 
         # Same, but this time using the standard base32 alphabet:
         self.assertEqual(
@@ -197,26 +197,26 @@ class TestFunctions(TestCase):
         self.assertEqual(str(cm.exception), 'len(text) % 8 != 0')
 
         # Test a few handy static values:
-        self.assertEqual(dbase32.dec('22222222'), b'\x00\x00\x00\x00\x00')
-        self.assertEqual(dbase32.dec('ZZZZZZZZ'), b'\xff\xff\xff\xff\xff')
-        self.assertEqual(dbase32.dec('2' * 96), b'\x00' * 60)
-        self.assertEqual(dbase32.dec('Z' * 96), b'\xff' * 60)
+        self.assertEqual(dbase32.dec('33333333'), b'\x00\x00\x00\x00\x00')
+        self.assertEqual(dbase32.dec('YYYYYYYY'), b'\xff\xff\xff\xff\xff')
+        self.assertEqual(dbase32.dec('3' * 96), b'\x00' * 60)
+        self.assertEqual(dbase32.dec('Y' * 96), b'\xff' * 60)
 
         # Same, but this time using the standard base32 alphabet:
         self.assertEqual(
-            dbase32.dec('AAAAAAAA', base32_reverse),
+            dbase32.dec('AAAAAAAA', base32_reverse, (50, 90)),
             b'\x00\x00\x00\x00\x00'
         )
         self.assertEqual(
-            dbase32.dec('77777777', base32_reverse),
+            dbase32.dec('77777777', base32_reverse, (50, 90)),
             b'\xff\xff\xff\xff\xff'
         )
         self.assertEqual(
-            dbase32.dec('A' * 96, base32_reverse),
+            dbase32.dec('A' * 96, base32_reverse, (50, 90)),
             b'\x00' * 60
         )
         self.assertEqual(
-            dbase32.dec('7' * 96, base32_reverse),
+            dbase32.dec('7' * 96, base32_reverse, (50, 90)),
             b'\xff' * 60
         )
 
@@ -226,7 +226,7 @@ class TestFunctions(TestCase):
                 text = ''.join(random.choice(base32_forward) for n in range(size))
                 assert len(text) == size
                 self.assertEqual(
-                    dbase32.dec(text, base32_reverse),
+                    dbase32.dec(text, base32_reverse, (50, 90)),
                     b32decode(text.encode('utf-8'))
                 )
 
