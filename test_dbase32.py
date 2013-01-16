@@ -27,3 +27,46 @@ Unit tests for `dbase32` module.
 from unittest import TestCase
 
 import dbase32
+
+
+possible = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+assert ''.join(sorted(set(possible))) == possible
+
+
+class TestConstants(TestCase):
+    def test_alphabet(self):
+        self.assertEqual(''.join(sorted(set(possible))), possible)
+        self.assertEqual(len(possible), 36)
+
+        self.assertEqual(
+            ''.join(sorted(set(dbase32.alphabet))),
+            dbase32.alphabet
+        )
+        self.assertEqual(
+            set(dbase32.alphabet),
+            set(possible) - set('01IO')
+        )
+        self.assertEqual(len(dbase32.alphabet), 32)
+
+    def test_r_alphabet(self):
+        self.assertEqual(dbase32.r_alphabet[0], 0)
+        self.assertEqual(dbase32.r_alphabet[-1], 31)
+        offset = ord(dbase32.alphabet[0])
+        yes = 0
+        no = 0
+        for (i, value) in enumerate(dbase32.r_alphabet):
+            char = chr(i + offset)
+            if char in dbase32.alphabet:
+                self.assertEqual(value, yes)
+                yes += 1
+            else:
+                self.assertEqual(value, 255)
+                no += 1
+        self.assertEqual(yes, 32)
+        self.assertEqual(len(dbase32.r_alphabet) - no, 32)
+
+    def test_start_stop(self):
+        self.assertEqual(dbase32.start, ord(dbase32.alphabet[0]))
+        self.assertEqual(dbase32.stop, ord(dbase32.alphabet[-1]) + 1)
+        self.assertEqual(dbase32.stop - dbase32.start, len(dbase32.r_alphabet))
+
