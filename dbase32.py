@@ -114,7 +114,7 @@ def enc(data, fmap=forward):
     if not (5 <= len(data) <= MAX_DATA):
         raise ValueError('need 5 <= len(data) <= {!r}'.format(MAX_DATA))
     if len(data) % 5 != 0:
-        raise ValueError('len(data) % 5 != 0')
+        raise ValueError('need len(data) % 5 == 0')
     return ''.join(enc_iter(data, fmap))
 
 
@@ -123,7 +123,7 @@ def dec(text, rmap=reverse, sne=(START, END)):
     if not (8 <= len(text) <= MAX_TEXT):
         raise ValueError('need 8 <= len(text) <= {!r}'.format(MAX_TEXT))
     if len(text) % 8 != 0:
-        raise ValueError('len(text) % 8 != 0')
+        raise ValueError('need len(text) % 8 == 0')
     return bytes(dec_iter(text, rmap, sne))
 
 

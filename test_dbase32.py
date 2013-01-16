@@ -30,6 +30,10 @@ from base64 import b32encode, b32decode
 from random import SystemRandom
 
 import dbase32
+try:
+    import _dbase32
+except ImportError:
+    _dbase32 = None
 
 
 random = SystemRandom()
@@ -147,7 +151,7 @@ class TestFunctions(TestCase):
         # Test when len(data) % 5 != 0:
         with self.assertRaises(ValueError) as cm:
             dbase32.enc(b'B' * 41)
-        self.assertEqual(str(cm.exception), 'len(data) % 5 != 0')
+        self.assertEqual(str(cm.exception), 'need len(data) % 5 == 0')
 
         # Test a few handy static values:
         self.assertEqual(dbase32.enc(b'\x00\x00\x00\x00\x00'), '33333333')
@@ -182,6 +186,43 @@ class TestFunctions(TestCase):
                     b32encode(data).decode('utf-8')
                 )
 
+    def test_db32enc(self):
+        if _dbase32 is None:
+            self.skipTest('cannot import `_dbase32` C extension')
+
+        # Test when len(data) is too small:
+        with self.assertRaises(ValueError) as cm:
+            _dbase32.db32enc(b'')
+        self.assertEqual(str(cm.exception), 'need 5 <= len(data) <= 60')
+        with self.assertRaises(ValueError) as cm:
+            _dbase32.db32enc(b'four')
+        self.assertEqual(str(cm.exception), 'need 5 <= len(data) <= 60')
+
+        # Test when len(data) is too big:
+        with self.assertRaises(ValueError) as cm:
+            _dbase32.db32enc(b'B' * 61)
+        self.assertEqual(str(cm.exception), 'need 5 <= len(data) <= 60')
+
+        # Test when len(data) % 5 != 0:
+        with self.assertRaises(ValueError) as cm:
+            _dbase32.db32enc(b'B' * 41)
+        self.assertEqual(str(cm.exception), 'need len(data) % 5 == 0')
+
+        # Test a few handy static values:
+        self.assertEqual(_dbase32.db32enc(b'\x00\x00\x00\x00\x00'), '33333333')
+        self.assertEqual(_dbase32.db32enc(b'\xff\xff\xff\xff\xff'), 'YYYYYYYY')
+        self.assertEqual(_dbase32.db32enc(b'\x00' * 60), '3' * 96)
+        self.assertEqual(_dbase32.db32enc(b'\xff' * 60), 'Y' * 96)
+
+        # Compare against the dbase32.enc() pure-Python version:
+        for size in [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60]:
+            for i in range(1000):
+                data = os.urandom(size)
+                self.assertEqual(
+                    _dbase32.db32enc(data),
+                    dbase32.enc(data)
+                )
+
     def test_dec(self):
         # Test when len(text) is too small:
         with self.assertRaises(ValueError) as cm:
@@ -199,7 +240,7 @@ class TestFunctions(TestCase):
         # Test when len(text) % 8 != 0:
         with self.assertRaises(ValueError) as cm:
             dbase32.dec('A' * 65)
-        self.assertEqual(str(cm.exception), 'len(text) % 8 != 0')
+        self.assertEqual(str(cm.exception), 'need len(text) % 8 == 0')
 
         # Test with invalid base32 characters:
         with self.assertRaises(ValueError) as cm:
