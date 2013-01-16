@@ -30,42 +30,27 @@ from base64 import b32encode, b32decode
 
 from dbase32 import enc, dec, db32enc, db32dec
 
-data15 = os.urandom(15)
-data30 = os.urandom(30)
-
-b32_15 = b32encode(data15)
-b32_30 = b32encode(data30)
-
-db32_15 = enc(data15)
-db32_30 = enc(data30)
+data = os.urandom(30)
+text_b = b32encode(data)
+text = enc(data)
 """
 
-N = 50 * 1000
+N = 100 * 1000
 
 def run(statement):
     t = timeit.Timer(statement, setup)
     elapsed = t.timeit(N)
     rate = int(N / elapsed)
-    print('{:>10,}: {}'.format(rate, statement))
+    print('{:>11,}: {}'.format(rate, statement))
 
 
 print('Executions per second:')
 
-run('b32encode(data15)')
-run('b32encode(data30)')
 
-run('enc(data15)')
-run('enc(data30)')
-
-run('db32enc(data15)')
-run('db32enc(data30)')
-
-run('b32decode(b32_15)')
-run('b32decode(b32_30)')
-
-run('dec(db32_15)')
-run('dec(db32_30)')
-
-run('db32dec(db32_15)')
-run('db32dec(db32_30)')
+run('b32encode(data)')
+run('enc(data)')
+run('db32enc(data)')
+run('b32decode(text_b)')
+run('dec(text)')
+run('db32dec(text)')
 
