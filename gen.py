@@ -45,6 +45,9 @@ def iter_c(forward, reverse):
 
 
 def iter_python(forward, reverse):
+    yield 'START = {!r}'.format(ord(forward[0]))
+    yield 'END = {!r}'.format(ord(forward[-1]))
+    yield ''
     yield 'forward = {!r}'.format(forward)
     yield ''
     yield 'reverse = ('
