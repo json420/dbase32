@@ -86,6 +86,17 @@ base32_reverse = (
 
 
 class TestConstants(TestCase):
+    def test_max(self):
+        self.assertEqual(dbase32.MAX_DATA % 5, 0)
+        self.assertEqual(dbase32.MAX_TEXT % 8, 0)
+        self.assertEqual(dbase32.MAX_DATA, dbase32.MAX_TEXT * 5 // 8)
+
+    def test_start_end(self):
+        self.assertEqual(dbase32.START, ord(dbase32.forward[0]))
+        self.assertEqual(dbase32.END, ord(dbase32.forward[-1]))
+        stop = dbase32.END + 1
+        self.assertEqual(stop - dbase32.START, len(dbase32.reverse))
+
     def test_forward(self):
         self.assertEqual(''.join(sorted(set(possible))), possible)
         self.assertEqual(len(possible), 36)
@@ -116,12 +127,6 @@ class TestConstants(TestCase):
         self.assertEqual(yes, 32)
         self.assertEqual(len(dbase32.reverse) - no, 32)
         self.assertEqual(len(dbase32.reverse), 39)
-
-    def test_start_end(self):
-        self.assertEqual(dbase32.START, ord(dbase32.forward[0]))
-        self.assertEqual(dbase32.END, ord(dbase32.forward[-1]))
-        stop = dbase32.END + 1
-        self.assertEqual(stop - dbase32.START, len(dbase32.reverse))
 
 
 class TestFunctions(TestCase):

@@ -27,12 +27,8 @@
 __version__ = '0.1.0'
 
 
-MIN_DATA = 5  # 40 bits
 MAX_DATA = 60  # 480 bits
-
-MIN_TEXT = MIN_DATA * 8 // 5
 MAX_TEXT = MAX_DATA * 8 // 5
-
 
 START = 51
 END = 89
@@ -116,10 +112,8 @@ def dec_iter(text, rmap, sne):
 
 def enc(data, fmap=forward):
     assert isinstance(data, bytes)
-    if not (MIN_DATA <= len(data) <= MAX_DATA):
-        raise ValueError(
-            'need {!r} <= len(data) <= {!r}'.format(MIN_DATA, MAX_DATA)
-        )
+    if not (5 <= len(data) <= MAX_DATA):
+        raise ValueError('need 5 <= len(data) <= {!r}'.format(MAX_DATA))
     if len(data) % 5 != 0:
         raise ValueError('len(data) % 5 != 0')
     return ''.join(enc_iter(data, fmap))
@@ -127,10 +121,8 @@ def enc(data, fmap=forward):
 
 def dec(text, rmap=reverse, sne=(START, END)):
     assert isinstance(text, str)
-    if not (MIN_TEXT <= len(text) <= MAX_TEXT):
-        raise ValueError(
-            'need {!r} <= len(text) <= {!r}'.format(MIN_TEXT, MAX_TEXT)
-        )
+    if not (8 <= len(text) <= MAX_TEXT):
+        raise ValueError('need 8 <= len(text) <= {!r}'.format(MAX_TEXT))
     if len(text) % 8 != 0:
         raise ValueError('len(text) % 8 != 0')
     return bytes(dec_iter(text, rmap, sne))
