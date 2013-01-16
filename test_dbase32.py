@@ -36,9 +36,11 @@ random = SystemRandom()
 possible = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'
 assert ''.join(sorted(set(possible))) == possible
 
-base32_alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567'
 
-base32_r_alphabet = (
+# Standard RFC-3548 base32 alphabet
+base32_forward = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567'
+
+base32_reverse = (
      26,  # 50 '2'
      27,  # 51 '3'
      28,  # 52 '4'
@@ -169,28 +171,28 @@ class TestFunctions(TestCase):
 
         # Same, but this time using the standard base32 alphabet:
         self.assertEqual(
-            dbase32.enc(b'\x00\x00\x00\x00\x00', base32_alphabet),
+            dbase32.enc(b'\x00\x00\x00\x00\x00', base32_forward),
             'AAAAAAAA'
         )
         self.assertEqual(
-            dbase32.enc(b'\xff\xff\xff\xff\xff', base32_alphabet),
+            dbase32.enc(b'\xff\xff\xff\xff\xff', base32_forward),
             '77777777'
         )
         self.assertEqual(
-            dbase32.enc(b'\x00' * 60, base32_alphabet),
+            dbase32.enc(b'\x00' * 60, base32_forward),
             'A' * 96
         )
         self.assertEqual(
-            dbase32.enc(b'\xff' * 60, base32_alphabet),
+            dbase32.enc(b'\xff' * 60, base32_forward),
             '7' * 96
         )
 
         # Compare against base64.b32encode() from stdlib:
         for size in [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60]:
-            for i in range(1000):
+            for i in range(100):
                 data = os.urandom(size)
                 self.assertEqual(
-                    dbase32.enc(data, base32_alphabet),
+                    dbase32.enc(data, base32_forward),
                     b32encode(data).decode('utf-8')
                 )
 
@@ -221,29 +223,29 @@ class TestFunctions(TestCase):
 
         # Same, but this time using the standard base32 alphabet:
         self.assertEqual(
-            dbase32.dec('AAAAAAAA', base32_r_alphabet),
+            dbase32.dec('AAAAAAAA', base32_reverse),
             b'\x00\x00\x00\x00\x00'
         )
         self.assertEqual(
-            dbase32.dec('77777777', base32_r_alphabet),
+            dbase32.dec('77777777', base32_reverse),
             b'\xff\xff\xff\xff\xff'
         )
         self.assertEqual(
-            dbase32.dec('A' * 96, base32_r_alphabet),
+            dbase32.dec('A' * 96, base32_reverse),
             b'\x00' * 60
         )
         self.assertEqual(
-            dbase32.dec('7' * 96, base32_r_alphabet),
+            dbase32.dec('7' * 96, base32_reverse),
             b'\xff' * 60
         )
 
         # Compare against base64.b32decode() from stdlib:
         for size in [8, 16, 24, 32, 40, 48, 56, 64, 72, 80, 88, 96]:
-            for i in range(1000):
-                text = ''.join(random.choice(base32_alphabet) for n in range(size))
+            for i in range(100):
+                text = ''.join(random.choice(base32_forward) for n in range(size))
                 assert len(text) == size
                 self.assertEqual(
-                    dbase32.dec(text, base32_r_alphabet),
+                    dbase32.dec(text, base32_reverse),
                     b32decode(text.encode('utf-8'))
                 )
 
