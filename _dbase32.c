@@ -83,8 +83,9 @@ dbase32_db32enc(PyObject *self, PyObject *args)
     uint8_t bits = 0;
     PyObject *rv;
 
-    if (!PyArg_ParseTuple(args, "y*:db32enc", &buf))
+    if (!PyArg_ParseTuple(args, "y*:db32enc", &buf)) {
         return NULL;
+    }
 
     // Strictly validate, we only care about well-formed IDs:
     src = buf.buf;
