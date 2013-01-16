@@ -118,6 +118,12 @@ dbase32_db32enc(PyObject *self, PyObject *args)
         }
     }
 
+    if (bits != 0 || j != len * 8 / 5) {
+        PyBuffer_Release(&buf);
+        PyErr_SetString(PyExc_RuntimeError, "something went very wrong");
+        Py_DECREF(rv);
+        return NULL;
+    }
     PyBuffer_Release(&buf);
     return rv;
 }
@@ -160,11 +166,13 @@ dbase32_db32dec(PyObject *self, PyObject *args)
         c = src[i];
         if (c < START || c > END) {
             PyErr_SetString(PyExc_ValueError, "invalid base32 letter");
+            Py_DECREF(rv);
             return NULL;
         }
         r = reverse[c - START];
         if (r > 31) {
             PyErr_SetString(PyExc_ValueError, "invalid base32 letter(2)");
+            Py_DECREF(rv);
             return NULL;
         }
         taxi = (taxi << 5) | r;
@@ -176,6 +184,11 @@ dbase32_db32dec(PyObject *self, PyObject *args)
         }
     }
 
+    if (bits != 0 || j != len * 5 / 8) {
+        PyErr_SetString(PyExc_RuntimeError, "something went very wrong");
+        Py_DECREF(rv);
+        return NULL;
+    }
     return rv;
 }
 
