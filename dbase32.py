@@ -27,8 +27,11 @@
 __version__ = '0.1.0'
 
 
-MIN_BYTES = 5  # 40 bits
-MAX_BYTES = 60  # 480 bits
+MIN_DATA = 5  # 40 bits
+MAX_DATA = 60  # 480 bits
+
+MIN_TEXT = MIN_DATA * 8 // 5
+MAX_TEXT = MAX_DATA * 8 // 5
 
 
 alphabet = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ'
@@ -93,9 +96,43 @@ def enc_iter(data, alpha):
     assert bits == 0
 
 
+def dec_iter(text, r_alpha):
+    taxi = 0
+    bits = 0
+    for t in text:
+        i = ord(t)
+        if not (start <= i < stop):
+            raise ValueError('invalid base32 letter: {!r}'.format(t))
+        r = r_alpha[i - start]
+        if r > 31:
+            raise ValueError('invalid base32 letter: {!r}'.format(t))
+        taxi = (taxi << 5) | r
+        bits += 5
+        while bits >= 8:
+            bits -= 8
+            yield (taxi >> bits) & 255
+    assert bits == 0
+
+
 def enc(data, alpha=alphabet):
-    if not (5 <= len(data) <= 60):
-        raise ValueError('need 5 <= len(data) <= 60')
+    assert isinstance(data, bytes)
+    if not (MIN_DATA <= len(data) <= MAX_DATA):
+        raise ValueError(
+            'need {!r} <= len(data) <= {!r}'.format(MIN_DATA, MAX_DATA)
+        )
     if len(data) % 5 != 0:
         raise ValueError('len(data) % 5 != 0')
     return ''.join(enc_iter(data, alpha))
+
+
+def dec(text, r_alpha=r_alphabet):
+    assert isinstance(text, str)
+    if not (MIN_TEXT <= len(text) <= MAX_TEXT):
+        raise ValueError(
+            'need {!r} <= len(text) <= {!r}'.format(MIN_TEXT, MAX_TEXT)
+        )
+    if len(text) % 8 != 0:
+        raise ValueError('len(text) % 8 != 0')
+    return bytes(dec_iter(text, r_alpha))
+
+

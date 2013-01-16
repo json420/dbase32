@@ -26,15 +26,80 @@ Unit tests for `dbase32` module.
 
 from unittest import TestCase
 import os
-from base64 import b32encode
+from base64 import b32encode, b32decode
+from random import SystemRandom
 
 import dbase32
 
 
+random = SystemRandom()
 possible = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'
 assert ''.join(sorted(set(possible))) == possible
 
 base32_alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567'
+
+base32_r_alphabet = (
+     26,  # 50 '2'
+     27,  # 51 '3'
+     28,  # 52 '4'
+     29,  # 53 '5'
+     30,  # 54 '6'
+     31,  # 55 '7'
+    255,  # 56 '8'
+    255,  # 57 '9'
+    255,  # 58 ':'
+    255,  # 59 ';'
+    255,  # 60 '<'
+    255,  # 61 '='
+    255,  # 62 '>'
+    255,  # 63 '?'
+    255,  # 64 '@'
+      0,  # 65 'A'
+      1,  # 66 'B'
+      2,  # 67 'C'
+      3,  # 68 'D'
+      4,  # 69 'E'
+      5,  # 70 'F'
+      6,  # 71 'G'
+      7,  # 72 'H'
+      8,  # 73 'I'
+      9,  # 74 'J'
+     10 ,  # 75 'K'
+     11,  # 76 'L'
+     12,  # 77 'M'
+     13,  # 78 'N'
+     14,  # 79 'O'
+     15,  # 80 'P'
+     16,  # 81 'Q'
+     17,  # 82 'R'
+     18,  # 83 'S'
+     19,  # 84 'T'
+     20,  # 85 'U'
+     21,  # 86 'V'
+     22,  # 87 'W'
+     23,  # 88 'X'
+     24,  # 89 'Y'
+     25,  # 90 'Z'
+)
+
+
+
+def build_reverse_iter(forward):
+    start = ord(forward[0])
+    stop = ord(forward[-1]) + 1
+    for i in range(start, stop):
+        c = chr(i)
+        index = forward.find(c)
+        assert index < 32
+        if index < 0:
+            index = 255
+        yield index
+
+
+def build_reverse(forward):
+    assert ''.join(sorted(set(forward))) == forward
+    assert set(forward).issubset(possible)
+    return tuple(build_reverse_iter(forward))
 
 
 class TestConstants(TestCase):
@@ -127,5 +192,58 @@ class TestFunctions(TestCase):
                 self.assertEqual(
                     dbase32.enc(data, base32_alphabet),
                     b32encode(data).decode('utf-8')
+                )
+
+    def test_dec(self):
+        # Test when len(text) is too small:
+        with self.assertRaises(ValueError) as cm:
+            dbase32.dec('')
+        self.assertEqual(str(cm.exception), 'need 8 <= len(text) <= 96')
+        with self.assertRaises(ValueError) as cm:
+            dbase32.dec('-seven-')
+        self.assertEqual(str(cm.exception), 'need 8 <= len(text) <= 96')
+
+        # Test when len(text) is too big:
+        with self.assertRaises(ValueError) as cm:
+            dbase32.dec('A' * 97)
+        self.assertEqual(str(cm.exception), 'need 8 <= len(text) <= 96')
+
+        # Test when len(text) % 8 != 0:
+        with self.assertRaises(ValueError) as cm:
+            dbase32.dec('A' * 65)
+        self.assertEqual(str(cm.exception), 'len(text) % 8 != 0')
+
+        # Test a few handy static values:
+        self.assertEqual(dbase32.dec('22222222'), b'\x00\x00\x00\x00\x00')
+        self.assertEqual(dbase32.dec('ZZZZZZZZ'), b'\xff\xff\xff\xff\xff')
+        self.assertEqual(dbase32.dec('2' * 96), b'\x00' * 60)
+        self.assertEqual(dbase32.dec('Z' * 96), b'\xff' * 60)
+
+        # Same, but this time using the standard base32 alphabet:
+        self.assertEqual(
+            dbase32.dec('AAAAAAAA', base32_r_alphabet),
+            b'\x00\x00\x00\x00\x00'
+        )
+        self.assertEqual(
+            dbase32.dec('77777777', base32_r_alphabet),
+            b'\xff\xff\xff\xff\xff'
+        )
+        self.assertEqual(
+            dbase32.dec('A' * 96, base32_r_alphabet),
+            b'\x00' * 60
+        )
+        self.assertEqual(
+            dbase32.dec('7' * 96, base32_r_alphabet),
+            b'\xff' * 60
+        )
+
+        # Compare against base64.b32decode() from stdlib:
+        for size in [8, 16, 24, 32, 40, 48, 56, 64, 72, 80, 88, 96]:
+            for i in range(1000):
+                text = ''.join(random.choice(base32_alphabet) for n in range(size))
+                assert len(text) == size
+                self.assertEqual(
+                    dbase32.dec(text, base32_r_alphabet),
+                    b32decode(text.encode('utf-8'))
                 )
 
