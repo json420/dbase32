@@ -104,14 +104,11 @@ dbase32_db32enc(PyObject *self, PyObject *args)
         return NULL;
     }
 
-    // Allocate destination bytes:
     if ((rv=PyUnicode_New(len * 8 / 5, END)) == NULL ) {
         PyBuffer_Release(&buf);
         return NULL;
     }
     dst = (uint8_t *)PyUnicode_1BYTE_DATA(rv);
-
-    // `bits` take the `taxi` from `src` to `dst`, experience change:
     for (i=j=0; i<len; i++) {
         taxi = (taxi << 8) | src[i];
         bits += 8;
@@ -158,13 +155,10 @@ dbase32_db32dec(PyObject *self, PyObject *args)
         return NULL;
     }
 
-    // Allocate destination bytes:
     if ((rv=PyBytes_FromStringAndSize(NULL, len * 5 / 8)) == NULL) {
         return NULL;
     }
     dst = (uint8_t *)PyBytes_AS_STRING(rv);
-
-    // `bits` take the `taxi` from `src` to `dst`, experience change:
     for (i=j=0; i<len; i++) {
         r = 255;
         c = src[i];
