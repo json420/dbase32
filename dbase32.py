@@ -128,7 +128,7 @@ def dec(text, rmap=reverse, sne=(START, END)):
 
 
 try:
-    from _dbase32 import db32enc
+    from _dbase32 import db32enc, db32dec
 except ImportError:
     pass
 

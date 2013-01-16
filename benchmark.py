@@ -28,7 +28,7 @@ setup = """
 import os
 from base64 import b32encode, b32decode
 
-from dbase32 import enc, dec, db32enc
+from dbase32 import enc, dec, db32enc, db32dec
 
 data15 = os.urandom(15)
 data30 = os.urandom(30)
@@ -65,4 +65,7 @@ run('b32decode(b32_30)')
 
 run('dec(db32_15)')
 run('dec(db32_30)')
+
+run('db32dec(db32_15)')
+run('db32dec(db32_30)')
 

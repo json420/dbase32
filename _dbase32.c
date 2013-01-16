@@ -22,6 +22,7 @@ Authors:
 */
 
 #include <Python.h>
+#include <string.h>
 
 #define START 51
 #define END 89
@@ -122,9 +123,67 @@ dbase32_db32enc(PyObject *self, PyObject *args)
 }
 
 
+static PyObject *
+dbase32_db32dec(PyObject *self, PyObject *args)
+{
+    size_t len, i, j;
+    const uint8_t *src;
+    uint8_t c, r;
+    uint8_t *dst;
+    uint16_t taxi = 0;
+    uint8_t bits = 0;
+    PyObject *rv;
+
+    if (!PyArg_ParseTuple(args, "s:db32dec", &src)) {
+        return NULL;
+    }
+
+    // Strictly validate, we only care about well-formed IDs:
+    len = strlen(src);
+    if (len < 8 || len > 96) {
+        PyErr_SetString(PyExc_ValueError, "need 8 <= len(text) <= 96");
+        return NULL;
+    }
+    if (len % 8 != 0) {
+        PyErr_SetString(PyExc_ValueError, "need len(text) % 8 == 0");
+        return NULL;
+    }
+
+    // Allocate destination bytes:
+    if ((rv=PyBytes_FromStringAndSize(NULL, len * 5 / 8)) == NULL) {
+        return NULL;
+    }
+    dst = (uint8_t *)PyBytes_AS_STRING(rv);
+
+    // `bits` take the `taxi` from `src` to `dst`, experience change:
+    for (i=j=0; i<len; i++) {
+        c = src[i];
+        if (c < START || c > END) {
+            PyErr_SetString(PyExc_ValueError, "invalid base32 letter");
+            return NULL;
+        }
+        r = reverse[c - START];
+        if (r > 31) {
+            PyErr_SetString(PyExc_ValueError, "invalid base32 letter(2)");
+            return NULL;
+        }
+        taxi = (taxi << 5) | r;
+        bits += 5;
+        while (bits >= 8) {
+            bits -= 8;
+            dst[j] = (taxi >> bits) & 0xff;
+            j++;
+        }
+    }
+
+    return rv;
+}
+
+
 /* module init */
 static struct PyMethodDef dbase32_functions[] = {
     {"db32enc", dbase32_db32enc, METH_VARARGS, "db32enc(data)"},
+    {"db32dec", dbase32_db32dec, METH_VARARGS, "db32dec(text)"},
     {NULL, NULL, 0, NULL}
 };
 
