@@ -85,30 +85,10 @@ base32_reverse = (
 )
 
 
-
-def build_reverse_iter(forward):
-    start = ord(forward[0])
-    stop = ord(forward[-1]) + 1
-    for i in range(start, stop):
-        c = chr(i)
-        index = forward.find(c)
-        assert index < 32
-        if index < 0:
-            index = 255
-        yield index
-
-
-def build_reverse(forward):
-    assert ''.join(sorted(set(forward))) == forward
-    assert set(forward).issubset(possible)
-    return tuple(build_reverse_iter(forward))
-
-
 class TestConstants(TestCase):
     def test_forward(self):
         self.assertEqual(''.join(sorted(set(possible))), possible)
         self.assertEqual(len(possible), 36)
-
         self.assertEqual(
             ''.join(sorted(set(dbase32.forward))),
             dbase32.forward
