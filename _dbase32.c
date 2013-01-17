@@ -27,7 +27,7 @@ Authors:
 #define MAX_DATA 60
 #define MAX_TEXT 96
 
-#define MAX_BINLEN 60
+#define MAX_BIN_LEN 60
 #define MAX_TXT_LEN 96
 
 #define START 51
@@ -76,6 +76,91 @@ static const uint8_t reverse[39] = {
      30,  // 88 'X'
      31,  // 89 'Y'
 };
+
+
+static uint8_t
+base32_encode(const size_t bin_len, const uint8_t *bin_buf,
+              const size_t txt_len, uint8_t *txt_buf)
+{
+    /*
+    Return value is the status:
+        status == 0 means success
+        status == 1 means invalid bin_len
+        status == 2 means wrong txt_len
+        status == 3 means internal error
+    */
+    size_t i, j;
+    uint16_t taxi = 0;
+    uint8_t bits = 0;
+
+    if (bin_len < 5 || bin_len > MAX_BIN_LEN || bin_len % 5 != 0) {
+        return 1;
+    }
+    if (txt_len != bin_len * 8 / 5) {
+        return 2;
+    }
+    for (i = j = 0; i < bin_len; i++) {
+        taxi = (taxi << 8) | bin_buf[i];
+        bits += 8;
+        while (bits >= 5) {
+            bits -= 5;
+            txt_buf[j] = forward[(taxi >> bits) & 0x1f];
+            j++;
+        }
+    }
+    if (bits != 0 || j != txt_len || i != bin_len) {
+        return 3;
+    }
+    return 0;
+}
+
+
+static int
+base32_decode(const size_t txt_len, const uint8_t *txt_buf,
+              const size_t bin_len, uint8_t *bin_buf)
+{
+    /*
+    Return value is the status:
+        status >=  0 means invalid base32 letter (char is returned)
+        status == -1 means success
+        status == -2 means invalid txt_len
+        status == -3 means wrong bin_len
+        status <= -4 means internal error
+    */
+    size_t i, j;
+    uint8_t c, r;
+    uint16_t taxi = 0;
+    uint8_t bits = 0;
+
+    if (txt_len < 8 || txt_len > MAX_TXT_LEN || txt_len % 8 != 0) {
+        return -2;  // invalid txt_len
+    }
+    if (bin_len != txt_len * 5 / 8) {
+        return -3;  // wrong bin_len 
+    }
+    for (i = j = 0; i < txt_len; i++) {
+        c = txt_buf[i];
+        if (c < START || c > END) {
+            return c;  // invalid base32 letter
+        }
+        r = reverse[c - START];
+        if (r > 31) {
+            return c;  // invalid base32 letter (internal in reverse table)
+        }
+        taxi = (taxi << 5) | r;
+        bits += 5;
+        while (bits >= 8) {
+            bits -= 8;
+            bin_buf[j] = (taxi >> bits) & 0xff;
+            j++;
+        }
+    }
+    if (bits != 0 || j != bin_len || i != txt_len) {
+        return -4;  // internal error
+    }
+    return -1;  // success
+}
+
 
 
 static PyObject *
@@ -130,53 +215,6 @@ dbase32_db32enc(PyObject *self, PyObject *args)
         return NULL;
     }
     return rv;
-}
-
-
-static int
-base32_decode(const size_t txt_len, const uint8_t *txt_buf,
-              const size_t bin_len, uint8_t *bin_buf)
-{
-    /*
-    Return value is the status:
-        status >=  0 means invalid base32 letter (char is returned)
-        status == -1 means success
-        status == -2 means invalid txt_len
-        status == -3 means wrong bin_len
-        status <= -4 means internal error
-    */
-    size_t i, j;
-    uint8_t c, r;
-    uint16_t taxi = 0;
-    uint8_t bits = 0;
-
-    if (txt_len < 8 || txt_len > MAX_TXT_LEN || txt_len % 8 != 0) {
-        return -2;  // invalid txt_len
-    }
-    if (bin_len != txt_len * 5 / 8) {
-        return -3;  // wrong bin_len 
-    }
-    for (i = j = 0; i < txt_len; i++) {
-        c = txt_buf[i];
-        if (c < START || c > END) {
-            return c;  // invalid base32 letter
-        }
-        r = reverse[c - START];
-        if (r > 31) {
-            return c;  // invalid base32 letter (internal in reverse table)
-        }
-        taxi = (taxi << 5) | r;
-        bits += 5;
-        while (bits >= 8) {
-            bits -= 8;
-            bin_buf[j] = (taxi >> bits) & 0xff;
-            j++;
-        }
-    }
-    if (bits != 0 || j != bin_len || i != txt_len) {
-        return -4;  // internal error
-    }
-    return -1;  // success
 }
 
 
