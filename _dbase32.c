@@ -28,8 +28,6 @@ Authors:
 #define MAX_TXT_LEN 96
 
 /*
-    Start here.
-
     encode_x() can encode to an arbitrary base32 alphabet by giving it an
     appropriate forward-table.
 
