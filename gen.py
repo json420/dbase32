@@ -18,13 +18,13 @@ def build_forward(remove):
 def build_reverse_iter(forward):
     start = ord(forward[0])
     stop = ord(forward[-1]) + 1
-    for d in range(start, stop):
+    for (i, d) in enumerate(range(start, stop)):
         c = chr(d)
         r = forward.find(c)
         assert r < 32
         if r < 0:
             r = 255
-        yield(r, d, c)
+        yield (r, d, c, i)
 
 
 def build_reverse(forward):
@@ -44,8 +44,8 @@ def iter_c(t):
     yield 'static const uint8_t {}_REVERSE[{}] = {{'.format(
         name, len(t.reverse)
     )
-    for (r, d, c) in t.reverse:
-        yield '    {:>3},  // {} {!r}'.format(r, d, c)
+    for (r, d, c, i) in t.reverse:
+        yield '    {:>3},  // {} {!r} [{:>2}]'.format(r, d, c, i)
     yield '};'
 
 
@@ -56,8 +56,8 @@ def iter_python(t):
     yield '{}_END = {!r}'.format(name, ord(t.forward[-1]))
     yield '{}_FORWARD = {!r}'.format(name, t.forward)
     yield '{}_REVERSE = ('.format(name)
-    for (r, d, c) in t.reverse:
-        yield '    {:>3},  # {} {!r}'.format(r, d, c)
+    for (r, d, c, i) in t.reverse:
+        yield '    {:>3},  # {} {!r} [{:>2}]'.format(r, d, c, i)
     yield ')'
 
 
