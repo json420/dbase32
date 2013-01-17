@@ -97,10 +97,10 @@ def dec_iter(text, rmap, sne):
     for t in text:
         i = ord(t)
         if not (start <= i <= end):
-            raise ValueError('invalid base32 letter: {!r}'.format(t))
+            raise ValueError('invalid base32 letter: {}'.format(t))
         r = rmap[i - start]
         if r > 31:
-            raise ValueError('invalid base32 letter: {!r}'.format(t))
+            raise ValueError('invalid base32 letter: {}'.format(t))
         taxi = (taxi << 5) | r
         bits += 5
         while bits >= 8:
@@ -121,10 +121,24 @@ def enc(data, fmap=forward):
 def dec(text, rmap=reverse, sne=(START, END)):
     assert isinstance(text, str)
     if not (8 <= len(text) <= MAX_TEXT):
-        raise ValueError('need 8 <= len(text) <= {!r}'.format(MAX_TEXT))
+        raise ValueError(
+            'len(text) is {}, need 8 <= len(text) <= {}'.format(
+                len(text), MAX_TEXT
+            )
+        )
     if len(text) % 8 != 0:
-        raise ValueError('need len(text) % 8 == 0')
+        raise ValueError(
+            'len(text) is {}, need len(text) % 8 == 0'.format(len(text))
+        )
     return bytes(dec_iter(text, rmap, sne))
+
+
+def db32enc_p(data):
+    return encode_x(data, DB32_FORWARD)
+
+
+def db32dec_p(text):
+    return decode_x(data, DB32_REVERSE, DB32_START, DB32_END)
 
 
 try:

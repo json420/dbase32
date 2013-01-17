@@ -235,41 +235,59 @@ class TestFunctions(TestCase):
                     dbase32.enc(data)
                 )
 
-    def test_dec(self):
+    def check_db32dec_common(self, db32dec):
+        """
+        Decoder tests both the Python and the C implementations must pass.
+        """    
         # Test when len(text) is too small:
         with self.assertRaises(ValueError) as cm:
-            dbase32.dec('')
-        self.assertEqual(str(cm.exception), 'need 8 <= len(text) <= 96')
+            db32dec('')
+        self.assertEqual(
+            str(cm.exception),
+            'len(text) is 0, need 8 <= len(text) <= 96'
+        )
         with self.assertRaises(ValueError) as cm:
-            dbase32.dec('-seven-')
-        self.assertEqual(str(cm.exception), 'need 8 <= len(text) <= 96')
+            db32dec('-seven-')
+        self.assertEqual(
+            str(cm.exception),
+            'len(text) is 7, need 8 <= len(text) <= 96'
+        )
 
         # Test when len(text) is too big:
         with self.assertRaises(ValueError) as cm:
-            dbase32.dec('A' * 97)
-        self.assertEqual(str(cm.exception), 'need 8 <= len(text) <= 96')
+            db32dec('A' * 97)
+        self.assertEqual(
+            str(cm.exception),
+            'len(text) is 97, need 8 <= len(text) <= 96'
+        )
 
         # Test when len(text) % 8 != 0:
         with self.assertRaises(ValueError) as cm:
-            dbase32.dec('A' * 65)
-        self.assertEqual(str(cm.exception), 'need len(text) % 8 == 0')
+            db32dec('A' * 65)
+        self.assertEqual(
+            str(cm.exception),
+            'len(text) is 65, need len(text) % 8 == 0'
+        )
 
         # Test with invalid base32 characters:
         with self.assertRaises(ValueError) as cm:
-            dbase32.dec('CDEFCDE2')
-        self.assertEqual(str(cm.exception), "invalid base32 letter: '2'")
+            db32dec('CDEFCDE2')
+        self.assertEqual(str(cm.exception), "invalid base32 letter: 2")
         with self.assertRaises(ValueError) as cm:
-            dbase32.dec('CDEFCDE=')
-        self.assertEqual(str(cm.exception), "invalid base32 letter: '='")
+            db32dec('CDEFCDE=')
+        self.assertEqual(str(cm.exception), "invalid base32 letter: =")
         with self.assertRaises(ValueError) as cm:
-            dbase32.dec('CDEFCDEZ')
-        self.assertEqual(str(cm.exception), "invalid base32 letter: 'Z'")
+            db32dec('CDEFCDEZ')
+        self.assertEqual(str(cm.exception), "invalid base32 letter: Z")
 
         # Test a few handy static values:
-        self.assertEqual(dbase32.dec('33333333'), b'\x00\x00\x00\x00\x00')
-        self.assertEqual(dbase32.dec('YYYYYYYY'), b'\xff\xff\xff\xff\xff')
-        self.assertEqual(dbase32.dec('3' * 96), b'\x00' * 60)
-        self.assertEqual(dbase32.dec('Y' * 96), b'\xff' * 60)
+        self.assertEqual(db32dec('33333333'), b'\x00\x00\x00\x00\x00')
+        self.assertEqual(db32dec('YYYYYYYY'), b'\xff\xff\xff\xff\xff')
+        self.assertEqual(db32dec('3' * 96), b'\x00' * 60)
+        self.assertEqual(db32dec('Y' * 96), b'\xff' * 60)
+
+    def test_dec(self):
+        self.check_db32dec_common(dbase32.dec)
 
         # Same, but this time using the standard base32 alphabet:
         self.assertEqual(
@@ -303,52 +321,7 @@ class TestFunctions(TestCase):
         if _dbase32 is None:
             self.skipTest('cannot import `_dbase32` C extension')
 
-        # Test when len(text) is too small:
-        with self.assertRaises(ValueError) as cm:
-            _dbase32.db32dec('')
-        self.assertEqual(
-            str(cm.exception),
-            'len(text) is 0, need 8 <= len(text) <= 96'
-        )
-        with self.assertRaises(ValueError) as cm:
-            _dbase32.db32dec('-seven-')
-        self.assertEqual(
-            str(cm.exception),
-            'len(text) is 7, need 8 <= len(text) <= 96'
-        )
-
-        # Test when len(text) is too big:
-        with self.assertRaises(ValueError) as cm:
-            _dbase32.db32dec('A' * 97)
-        self.assertEqual(
-            str(cm.exception),
-            'len(text) is 97, need 8 <= len(text) <= 96'
-        )
-
-        # Test when len(text) % 8 != 0:
-        with self.assertRaises(ValueError) as cm:
-            _dbase32.db32dec('A' * 65)
-        self.assertEqual(
-            str(cm.exception),
-            'len(text) is 65, need len(text) % 8 == 0'
-        )
-
-        # Test with invalid base32 characters:
-        with self.assertRaises(ValueError) as cm:
-            _dbase32.db32dec('CDEFCDE2')
-        self.assertEqual(str(cm.exception), "invalid base32 letter: 2")
-        with self.assertRaises(ValueError) as cm:
-            _dbase32.db32dec('CDEFCDE=')
-        self.assertEqual(str(cm.exception), "invalid base32 letter: =")
-        with self.assertRaises(ValueError) as cm:
-            _dbase32.db32dec('CDEFCDEZ')
-        self.assertEqual(str(cm.exception), "invalid base32 letter: Z")
-
-        # Test a few handy static values:
-        self.assertEqual(_dbase32.db32dec('33333333'), b'\x00\x00\x00\x00\x00')
-        self.assertEqual(_dbase32.db32dec('YYYYYYYY'), b'\xff\xff\xff\xff\xff')
-        self.assertEqual(_dbase32.db32dec('3' * 96), b'\x00' * 60)
-        self.assertEqual(_dbase32.db32dec('Y' * 96), b'\xff' * 60)
+        self.check_db32dec_common(_dbase32.db32dec)
 
         # Compare against the dbase32.dec() pure-Python version:
         for size in [8, 16, 24, 32, 40, 48, 56, 64, 72, 80, 88, 96]:
