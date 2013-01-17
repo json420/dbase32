@@ -374,9 +374,7 @@ dbase32_db32dec(PyObject *self, PyObject *args)
     );
     if (status != -1) {
         if (status >= 0) {
-            PyErr_Format(PyExc_ValueError,
-                "invalid base32 letter: %c", status
-            );
+            PyErr_Format(PyExc_ValueError, "invalid base32 letter: %c", status);
         }
         else {
             PyErr_SetString(PyExc_RuntimeError, "something went very wrong");
