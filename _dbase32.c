@@ -24,18 +24,19 @@ Authors:
 #include <Python.h>
 #include <string.h>
 
-#define MAX_DATA 60
-#define MAX_TEXT 96
-
 #define MAX_BIN_LEN 60
 #define MAX_TXT_LEN 96
 
-#define START 51
-#define END 89
 
-static const uint8_t forward[32] = "3456789ABCDEFGHIJKLMNOPQRSTUVWXY";
+// *************************************************
+// DB32: non-standard 3-9+A-Y letters (sorted order)
 
-static const uint8_t reverse[39] = {
+#define DB32_START 51
+#define DB32_END 89
+
+static const uint8_t db32_forward[32] = "3456789ABCDEFGHIJKLMNOPQRSTUVWXY";
+
+static const uint8_t db32_reverse[39] = {
       0,  // 51 '3'
       1,  // 52 '4'
       2,  // 53 '5'
@@ -80,7 +81,8 @@ static const uint8_t reverse[39] = {
 
 static uint8_t
 base32_encode(const size_t bin_len, const uint8_t *bin_buf,
-              const size_t txt_len, uint8_t *txt_buf)
+              const size_t txt_len, uint8_t *txt_buf,
+              const uint8_t *forward_table)
 {
     /*
     Return value is the status:
@@ -104,7 +106,7 @@ base32_encode(const size_t bin_len, const uint8_t *bin_buf,
         bits += 8;
         while (bits >= 5) {
             bits -= 5;
-            txt_buf[j] = forward[(taxi >> bits) & 0x1f];
+            txt_buf[j] = forward_table[(taxi >> bits) & 0x1f];
             j++;
         }
     }
@@ -117,7 +119,9 @@ base32_encode(const size_t bin_len, const uint8_t *bin_buf,
 
 static int
 base32_decode(const size_t txt_len, const uint8_t *txt_buf,
-              const size_t bin_len, uint8_t *bin_buf)
+              const size_t bin_len, uint8_t *bin_buf,
+              const uint8_t *reverse_table,
+              const char start, const char end)
 {
     /*
     Return value is the status:
@@ -140,10 +144,10 @@ base32_decode(const size_t txt_len, const uint8_t *txt_buf,
     }
     for (i = j = 0; i < txt_len; i++) {
         c = txt_buf[i];
-        if (c < START || c > END) {
+        if (c < start || c > end) {
             return c;  // invalid base32 letter
         }
-        r = reverse[c - START];
+        r = reverse_table[c - start];
         if (r > 31) {
             return c;  // invalid base32 letter (internal in reverse table)
         }
@@ -193,14 +197,17 @@ dbase32_db32enc(PyObject *self, PyObject *args)
 
     // Allocate destination buffer:
     txt_len = bin_len * 8 / 5;
-    if ((pyrv=PyUnicode_New(txt_len, END)) == NULL ) {
+    if ((pyrv=PyUnicode_New(txt_len, DB32_END)) == NULL ) {
         PyBuffer_Release(&pybuf);
         return NULL;
     }
     txt_buf = (uint8_t *)PyUnicode_1BYTE_DATA(pyrv);
 
     // base32_encode() returns 0 on success:
-    status = base32_encode(bin_len, bin_buf, txt_len, txt_buf);
+    status = base32_encode(
+        bin_len, bin_buf, txt_len, txt_buf,
+        db32_forward
+    );
     PyBuffer_Release(&pybuf);
     if (status != 0) {
         PyErr_SetString(PyExc_RuntimeError, "something went very wrong");
@@ -244,7 +251,10 @@ dbase32_db32dec(PyObject *self, PyObject *args)
     bin_buf = (uint8_t *)PyBytes_AS_STRING(rv);
 
     // base32_decode() returns -1 on success:
-    status = base32_decode(txt_len, txt_buf, bin_len, bin_buf);
+    status = base32_decode(
+        txt_len, txt_buf, bin_len, bin_buf,
+        db32_reverse, DB32_START, DB32_END
+    );
     if (status != -1) {
         if (status >= 0) {
             PyErr_Format(PyExc_ValueError,
