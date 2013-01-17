@@ -28,7 +28,7 @@ Authors:
 #define MAX_TEXT 96
 
 #define MAX_BINLEN 60
-#define MAX_B32LEN 96
+#define MAX_TXT_LEN 96
 
 #define START 51
 #define END 89
@@ -134,15 +134,15 @@ dbase32_db32enc(PyObject *self, PyObject *args)
 
 
 static int
-base32_decode(const size_t b32len, const uint8_t *b32buf,
-              const size_t binlen, uint8_t *binbuf)
+base32_decode(const size_t txt_len, const uint8_t *txt_buf,
+              const size_t bin_len, uint8_t *bin_buf)
 {
     /*
     Return value is the status:
         status >=  0 means invalid base32 letter (char is returned)
         status == -1 means success
-        status == -2 means invalid b32len
-        status == -3 means wrong binlen
+        status == -2 means invalid txt_len
+        status == -3 means wrong bin_len
         status <= -4 means internal error
     */
     size_t i, j;
@@ -150,14 +150,14 @@ base32_decode(const size_t b32len, const uint8_t *b32buf,
     uint16_t taxi = 0;
     uint8_t bits = 0;
 
-    if (b32len < 8 || b32len > MAX_B32LEN || b32len % 8 != 0) {
-        return -2;  // invalid b32len
+    if (txt_len < 8 || txt_len > MAX_TXT_LEN || txt_len % 8 != 0) {
+        return -2;  // invalid txt_len
     }
-    if (binlen != b32len * 5 / 8) {
-        return -3;  // wrong binlen 
+    if (bin_len != txt_len * 5 / 8) {
+        return -3;  // wrong bin_len 
     }
-    for (i = j = 0; i < b32len; i++) {
-        c = b32buf[i];
+    for (i = j = 0; i < txt_len; i++) {
+        c = txt_buf[i];
         if (c < START || c > END) {
             return c;  // invalid base32 letter
         }
@@ -169,11 +169,11 @@ base32_decode(const size_t b32len, const uint8_t *b32buf,
         bits += 5;
         while (bits >= 8) {
             bits -= 8;
-            binbuf[j] = (taxi >> bits) & 0xff;
+            bin_buf[j] = (taxi >> bits) & 0xff;
             j++;
         }
     }
-    if (bits != 0 || j != binlen || i != b32len) {
+    if (bits != 0 || j != bin_len || i != txt_len) {
         return -4;  // internal error
     }
     return -1;  // success
@@ -194,9 +194,9 @@ dbase32_db32dec(PyObject *self, PyObject *args)
         return NULL;
     }
     b32len = strlen(b32buf);
-    if (b32len < 8 || b32len > MAX_B32LEN) {
+    if (b32len < 8 || b32len > MAX_TXT_LEN) {
         PyErr_Format(PyExc_ValueError,
-            "need 8 <= len(text) <= %u", MAX_B32LEN
+            "need 8 <= len(text) <= %u", MAX_TXT_LEN
         );
         return NULL;
     }
