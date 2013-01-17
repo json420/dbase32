@@ -26,6 +26,7 @@ def build_reverse_iter(forward):
             r = 255
         yield(r, d, c)
 
+
 def build_reverse(forward):
     assert ''.join(sorted(set(forward))) == forward
     assert set(forward).issubset(possible)
@@ -49,16 +50,12 @@ def iter_c(t):
 
 
 def iter_python(t):
-    comment = '# {}: {}'.format(t.name.upper(), t.desc)
-    yield '#' * len(comment)
-    yield comment
-    yield ''
-    yield '{}_START = {!r}'.format(t.name.upper(), ord(t.forward[0]))
-    yield '{}_END = {!r}'.format(t.name.upper(), ord(t.forward[-1]))
-    yield ''
-    yield '{}_forward = {!r}'.format(t.name, t.forward)
-    yield ''
-    yield '{}_reverse = ('.format(t.name)
+    name = t.name.upper()
+    yield '# {}: {}'.format(name, t.desc)
+    yield '{}_START = {!r}'.format(name, ord(t.forward[0]))
+    yield '{}_END = {!r}'.format(name, ord(t.forward[-1]))
+    yield '{}_FORWARD = {!r}'.format(name, t.forward)
+    yield '{}_REVERSE = ('.format(name)
     for (r, d, c) in t.reverse:
         yield '    {:>3},  # {} {!r}'.format(r, d, c)
     yield ')'
@@ -72,7 +69,6 @@ def build_encoding(name, remove, desc):
 
 def print_python(*encodings):
     for enc in encodings:
-        print('')
         for line in iter_python(enc):
             print(line)
         print('')
@@ -96,5 +92,5 @@ sb32 = build_encoding('sb32', '0189',
 
 
 print_c(db32, sb32)
-#print_python(db32, sb32)
+print_python(db32, sb32)
 

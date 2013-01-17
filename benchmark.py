@@ -36,7 +36,7 @@ p_db32dec = dec
 c_db32enc = db32enc
 c_db32dec = db32dec
 
-data = os.urandom(30)
+data = os.urandom(35)
 text_b = b32encode(data)
 text = enc(data)
 """
