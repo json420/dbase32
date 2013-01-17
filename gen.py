@@ -1,3 +1,6 @@
+from collections import namedtuple
+
+Encoding = namedtuple('Encoding', 'name removed forward reverse desc')
 
 possible = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'
 assert ''.join(sorted(set(possible))) == possible
@@ -23,49 +26,79 @@ def build_reverse_iter(forward):
             r = 255
         yield(r, d, c)
 
-
 def build_reverse(forward):
     assert ''.join(sorted(set(forward))) == forward
     assert set(forward).issubset(possible)
     return tuple(build_reverse_iter(forward))
 
 
-def iter_c(forward, reverse):
-    yield '#define START {!r}'.format(ord(forward[0]))
-    yield '#define END {!r}'.format(ord(forward[-1]))
+def iter_c(t):
+    comment = '{}: {}'.format(t.name.upper(), t.desc)
+    yield '// ' + ('*' * len(comment))
+    yield '// ' + comment
     yield ''
-    yield 'static const uint8_t forward[{}] = "{}";'.format(
-        len(forward), forward
+    yield '#define {}_START {!r}'.format(t.name.upper(), ord(t.forward[0]))
+    yield '#define {}_END {!r}'.format(t.name.upper(), ord(t.forward[-1]))
+    yield ''
+    yield 'static const uint8_t {}_forward[{}] = "{}";'.format(
+        t.name, len(t.forward), t.forward
     )
     yield ''
-    yield 'static const uint8_t reverse[{}] = {{'.format(len(reverse))
-    for (r, d, c) in reverse:
+    yield 'static const uint8_t {}_reverse[{}] = {{'.format(
+        t.name, len(t.reverse)
+    )
+    for (r, d, c) in t.reverse:
         yield '    {:>3},  // {} {!r}'.format(r, d, c)
     yield '};'
 
 
-def iter_python(forward, reverse):
-    yield 'START = {!r}'.format(ord(forward[0]))
-    yield 'END = {!r}'.format(ord(forward[-1]))
+def iter_python(t):
+    comment = '# {}: {}'.format(t.name.upper(), t.desc)
+    yield '#' * len(comment)
+    yield comment
     yield ''
-    yield 'forward = {!r}'.format(forward)
+    yield '{}_START = {!r}'.format(t.name.upper(), ord(t.forward[0]))
+    yield '{}_END = {!r}'.format(t.name.upper(), ord(t.forward[-1]))
     yield ''
-    yield 'reverse = ('
-    for (r, d, c) in reverse:
+    yield '{}_forward = {!r}'.format(t.name, t.forward)
+    yield ''
+    yield '{}_reverse = ('.format(t.name)
+    for (r, d, c) in t.reverse:
         yield '    {:>3},  # {} {!r}'.format(r, d, c)
     yield ')'
-    
 
 
-forward = build_forward('012Z')
-reverse = build_reverse(forward)
+def build_encoding(name, remove, desc):
+    forward = build_forward(remove)
+    reverse = build_reverse(forward) 
+    return Encoding(name, remove, forward, reverse, desc)
 
-print('')
-for line in iter_c(forward, reverse):
-    print(line)
 
-print('')
-for line in iter_python(forward, reverse):
-    print(line)
+def print_python(*encodings):
+    for enc in encodings:
+        print('')
+        for line in iter_python(enc):
+            print(line)
+        print('')
 
+ 
+def print_c(*encodings):
+    for enc in encodings:
+        print('')
+        for line in iter_c(enc):
+            print(line)
+        print('')
+
+
+db32 = build_encoding('db32', '012Z',
+    'non-standard 3-9, A-Y letters (sorted order)'
+)
+
+sb32 = build_encoding('sb32', '0189',
+    'standard RFC-3548 letters, but in sorted order'
+)
+
+
+print_c(db32, sb32)
+print_python(db32, sb32)
 
