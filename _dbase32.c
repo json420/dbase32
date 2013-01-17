@@ -228,7 +228,13 @@ decode_x(const size_t txt_len, const uint8_t *txt_buf,
 }
 
 
-// Experimental decoder that doesn't use a reverse table
+/* Experimental decoder that doesn't use a reverse table
+
+     3   9     A   Y
+    51  57    65  89
+    ======    ======
+      51        58
+*/
 static int
 decode_db32(const size_t txt_len, const uint8_t *txt_buf,
          const size_t bin_len, uint8_t *bin_buf)
