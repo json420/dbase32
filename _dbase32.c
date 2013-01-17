@@ -283,11 +283,11 @@ dbase32_db32enc(PyObject *self, PyObject *args)
 static PyObject *
 dbase32_db32dec(PyObject *self, PyObject *args)
 {
+    PyObject *pyrv;
     const uint8_t *txt_buf;
     uint8_t *bin_buf;
     size_t txt_len, bin_len;
     int status;
-    PyObject *rv;
 
     // Strictly validate, we only accept well-formed IDs:
     if (!PyArg_ParseTuple(args, "s:db32dec", &txt_buf)) {
@@ -307,10 +307,10 @@ dbase32_db32dec(PyObject *self, PyObject *args)
 
     // Allocate destination buffer:
     bin_len = txt_len * 5 / 8;
-    if ((rv=PyBytes_FromStringAndSize(NULL, bin_len)) == NULL) {
+    if ((pyrv=PyBytes_FromStringAndSize(NULL, bin_len)) == NULL) {
         return NULL;
     }
-    bin_buf = (uint8_t *)PyBytes_AS_STRING(rv);
+    bin_buf = (uint8_t *)PyBytes_AS_STRING(pyrv);
 
     // decode_x() returns -1 on success:
     status = decode_x(
@@ -326,10 +326,10 @@ dbase32_db32dec(PyObject *self, PyObject *args)
         else {
             PyErr_SetString(PyExc_RuntimeError, "something went very wrong");
         }
-        Py_DECREF(rv);
+        Py_DECREF(pyrv);
         return NULL;
     }
-    return rv;
+    return pyrv;
 }
 
 
