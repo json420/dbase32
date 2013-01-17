@@ -27,6 +27,9 @@ Authors:
 #define MAX_DATA 60
 #define MAX_TEXT 96
 
+#define MAX_BINLEN 60
+#define MAX_B32LEN 96
+
 #define START 51
 #define END 89
 
@@ -130,59 +133,96 @@ dbase32_db32enc(PyObject *self, PyObject *args)
 }
 
 
-static PyObject *
-dbase32_db32dec(PyObject *self, PyObject *args)
+static int
+base32_decode(const size_t b32len, const uint8_t *b32buf,
+              const size_t binlen, uint8_t *binbuf)
 {
-    size_t len, i, j;
-    const uint8_t *src;
+    /*
+    Return values:
+        ret >=  0 means invalid base32 letter (character int is returned)
+        ret == -1 means success
+        ret == -2 means invalid b32len
+        ret == -3 means wrong binlen
+        ret <= -4 means internal error
+    */
+    size_t i, j;
     uint8_t c, r;
-    uint8_t *dst;
     uint16_t taxi = 0;
     uint8_t bits = 0;
-    PyObject *rv;
 
-    // Strictly validate, we only accept well-formed IDs:
-    if (!PyArg_ParseTuple(args, "s:db32dec", &src)) {
-        return NULL;
+    if (b32len < 8 || b32len > MAX_B32LEN || b32len % 8 != 0) {
+        return -2;  // invalid b32len
     }
-    len = strlen(src);
-    if (len < 8 || len > MAX_TEXT) {
-        PyErr_Format(PyExc_ValueError, "need 8 <= len(text) <= %u", MAX_TEXT);
-        return NULL;
+    if (binlen != b32len * 5 / 8) {
+        return -3;  // wrong binlen 
     }
-    if (len % 8 != 0) {
-        PyErr_SetString(PyExc_ValueError, "need len(text) % 8 == 0");
-        return NULL;
-    }
-
-    // Let's do it:
-    if ((rv=PyBytes_FromStringAndSize(NULL, len * 5 / 8)) == NULL) {
-        return NULL;
-    }
-    dst = (uint8_t *)PyBytes_AS_STRING(rv);
-    for (i=j=0; i<len; i++) {
-        r = 255;
-        c = src[i];
-        if (c >= START && c <= END) {
-            r = reverse[c - START];
+    for (i = j = 0; i < b32len; i++) {
+        c = b32buf[i];
+        if (c < START || c > END) {
+            return c;  // invalid base32 letter
         }
+        r = reverse[c - START];
         if (r > 31) {
-            PyErr_Format(PyExc_ValueError, "invalid base32 letter: %c", c);
-            Py_DECREF(rv);
-            return NULL;
+            return c;  // invalid base32 letter (internal in reverse table)
         }
         taxi = (taxi << 5) | r;
         bits += 5;
         while (bits >= 8) {
             bits -= 8;
-            dst[j] = (taxi >> bits) & 0xff;
+            binbuf[j] = (taxi >> bits) & 0xff;
             j++;
         }
     }
+    if (bits != 0 || j != binlen || i != b32len) {
+        return -4;  // internal error
+    }
+    return -1;  // success
+}
 
-    // Sanity check:
-    if (bits != 0 || j != len * 5 / 8) {
-        PyErr_SetString(PyExc_RuntimeError, "something went very wrong");
+
+static PyObject *
+dbase32_db32dec(PyObject *self, PyObject *args)
+{
+    const uint8_t *b32buf;
+    uint8_t *binbuf;
+    size_t b32len, binlen;
+    int retcode;
+    PyObject *rv;
+
+    // Strictly validate, we only accept well-formed IDs:
+    if (!PyArg_ParseTuple(args, "s:db32dec", &b32buf)) {
+        return NULL;
+    }
+    b32len = strlen(b32buf);
+    if (b32len < 8 || b32len > MAX_B32LEN) {
+        PyErr_Format(PyExc_ValueError,
+            "need 8 <= len(text) <= %u", MAX_B32LEN
+        );
+        return NULL;
+    }
+    if (b32len % 8 != 0) {
+        PyErr_SetString(PyExc_ValueError, "need len(text) % 8 == 0");
+        return NULL;
+    }
+
+    // Allocate destination buffer:
+    binlen = b32len * 5 / 8;
+    if ((rv=PyBytes_FromStringAndSize(NULL, binlen)) == NULL) {
+        return NULL;
+    }
+    binbuf = (uint8_t *)PyBytes_AS_STRING(rv);
+
+    // base32_decode() returns -1 on success:
+    retcode = base32_decode(b32len, b32buf, binlen, binbuf);
+    if (retcode != -1) {
+        if (retcode >= 0) {
+            PyErr_Format(PyExc_ValueError,
+                "invalid base32 letter: %c", retcode
+            );
+        }
+        else {
+            PyErr_SetString(PyExc_RuntimeError, "something went very wrong");
+        }
         Py_DECREF(rv);
         return NULL;
     }
