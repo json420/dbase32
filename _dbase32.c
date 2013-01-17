@@ -188,7 +188,7 @@ Return value is the status:
     status == -1 means success
     status == -2 means invalid txt_len
     status == -3 means wrong bin_len
-    status <= -4 means internal error
+    status == -4 means internal error
 */
 static int
 decode_x(const size_t txt_len, const uint8_t *txt_buf,
