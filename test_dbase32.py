@@ -193,20 +193,32 @@ class TestFunctions(TestCase):
         # Test when len(data) is too small:
         with self.assertRaises(ValueError) as cm:
             _dbase32.db32enc(b'')
-        self.assertEqual(str(cm.exception), 'need 5 <= len(data) <= 60')
+        self.assertEqual(
+            str(cm.exception),
+            'len(data) is 0, need 5 <= len(data) <= 60'
+        )
         with self.assertRaises(ValueError) as cm:
             _dbase32.db32enc(b'four')
-        self.assertEqual(str(cm.exception), 'need 5 <= len(data) <= 60')
+        self.assertEqual(
+            str(cm.exception),
+            'len(data) is 4, need 5 <= len(data) <= 60'
+        )
 
         # Test when len(data) is too big:
         with self.assertRaises(ValueError) as cm:
             _dbase32.db32enc(b'B' * 61)
-        self.assertEqual(str(cm.exception), 'need 5 <= len(data) <= 60')
+        self.assertEqual(
+            str(cm.exception),
+            'len(data) is 61, need 5 <= len(data) <= 60'
+        )
 
         # Test when len(data) % 5 != 0:
         with self.assertRaises(ValueError) as cm:
             _dbase32.db32enc(b'B' * 41)
-        self.assertEqual(str(cm.exception), 'need len(data) % 5 == 0')
+        self.assertEqual(
+            str(cm.exception),
+            'len(data) is 41, need len(data) % 5 == 0'
+        )
 
         # Test a few handy static values:
         self.assertEqual(_dbase32.db32enc(b'\x00\x00\x00\x00\x00'), '33333333')
@@ -294,20 +306,32 @@ class TestFunctions(TestCase):
         # Test when len(text) is too small:
         with self.assertRaises(ValueError) as cm:
             _dbase32.db32dec('')
-        self.assertEqual(str(cm.exception), 'need 8 <= len(text) <= 96')
+        self.assertEqual(
+            str(cm.exception),
+            'len(text) is 0, need 8 <= len(text) <= 96'
+        )
         with self.assertRaises(ValueError) as cm:
             _dbase32.db32dec('-seven-')
-        self.assertEqual(str(cm.exception), 'need 8 <= len(text) <= 96')
+        self.assertEqual(
+            str(cm.exception),
+            'len(text) is 7, need 8 <= len(text) <= 96'
+        )
 
         # Test when len(text) is too big:
         with self.assertRaises(ValueError) as cm:
             _dbase32.db32dec('A' * 97)
-        self.assertEqual(str(cm.exception), 'need 8 <= len(text) <= 96')
+        self.assertEqual(
+            str(cm.exception),
+            'len(text) is 97, need 8 <= len(text) <= 96'
+        )
 
         # Test when len(text) % 8 != 0:
         with self.assertRaises(ValueError) as cm:
             _dbase32.db32dec('A' * 65)
-        self.assertEqual(str(cm.exception), 'need len(text) % 8 == 0')
+        self.assertEqual(
+            str(cm.exception),
+            'len(text) is 65, need len(text) % 8 == 0'
+        )
 
         # Test with invalid base32 characters:
         with self.assertRaises(ValueError) as cm:

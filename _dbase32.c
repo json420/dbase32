@@ -299,13 +299,15 @@ dbase32_db32enc(PyObject *self, PyObject *args)
     bin_len = pybuf.len;
     if (bin_len < 5 || bin_len > MAX_BIN_LEN) {
         PyErr_Format(PyExc_ValueError,
-            "need 5 <= len(data) <= %u", MAX_BIN_LEN
+            "len(data) is %u, need 5 <= len(data) <= %u", bin_len, MAX_BIN_LEN
         );
         PyBuffer_Release(&pybuf);
         return NULL;
     }
     if (bin_len % 5 != 0) {
-        PyErr_SetString(PyExc_ValueError, "need len(data) % 5 == 0");
+        PyErr_Format(PyExc_ValueError,
+            "len(data) is %u, need len(data) % 5 == 0", bin_len
+        );
         PyBuffer_Release(&pybuf);
         return NULL;
     }
@@ -349,12 +351,14 @@ dbase32_db32dec(PyObject *self, PyObject *args)
     txt_len = strlen(txt_buf);
     if (txt_len < 8 || txt_len > MAX_TXT_LEN) {
         PyErr_Format(PyExc_ValueError,
-            "need 8 <= len(text) <= %u", MAX_TXT_LEN
+            "len(text) is %u, need 8 <= len(text) <= %u", txt_len, MAX_TXT_LEN
         );
         return NULL;
     }
     if (txt_len % 8 != 0) {
-        PyErr_SetString(PyExc_ValueError, "need len(text) % 8 == 0");
+        PyErr_Format(PyExc_ValueError,
+            "len(text) is %u, need len(text) % 8 == 0", txt_len
+        );
         return NULL;
     }
 
