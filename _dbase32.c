@@ -183,37 +183,37 @@ base32_decode(const size_t txt_len, const uint8_t *txt_buf,
 static PyObject *
 dbase32_db32dec(PyObject *self, PyObject *args)
 {
-    const uint8_t *b32buf;
-    uint8_t *binbuf;
-    size_t b32len, binlen;
+    const uint8_t *txt_buf;
+    uint8_t *bin_buf;
+    size_t txt_len, bin_len;
     int status;
     PyObject *rv;
 
     // Strictly validate, we only accept well-formed IDs:
-    if (!PyArg_ParseTuple(args, "s:db32dec", &b32buf)) {
+    if (!PyArg_ParseTuple(args, "s:db32dec", &txt_buf)) {
         return NULL;
     }
-    b32len = strlen(b32buf);
-    if (b32len < 8 || b32len > MAX_TXT_LEN) {
+    txt_len = strlen(txt_buf);
+    if (txt_len < 8 || txt_len > MAX_TXT_LEN) {
         PyErr_Format(PyExc_ValueError,
             "need 8 <= len(text) <= %u", MAX_TXT_LEN
         );
         return NULL;
     }
-    if (b32len % 8 != 0) {
+    if (txt_len % 8 != 0) {
         PyErr_SetString(PyExc_ValueError, "need len(text) % 8 == 0");
         return NULL;
     }
 
     // Allocate destination buffer:
-    binlen = b32len * 5 / 8;
-    if ((rv=PyBytes_FromStringAndSize(NULL, binlen)) == NULL) {
+    bin_len = txt_len * 5 / 8;
+    if ((rv=PyBytes_FromStringAndSize(NULL, bin_len)) == NULL) {
         return NULL;
     }
-    binbuf = (uint8_t *)PyBytes_AS_STRING(rv);
+    bin_buf = (uint8_t *)PyBytes_AS_STRING(rv);
 
     // base32_decode() returns -1 on success:
-    status = base32_decode(b32len, b32buf, binlen, binbuf);
+    status = base32_decode(txt_len, txt_buf, bin_len, bin_buf);
     if (status != -1) {
         if (status >= 0) {
             PyErr_Format(PyExc_ValueError,
