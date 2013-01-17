@@ -26,9 +26,10 @@
 
 __version__ = '0.1.0'
 
+__all__ = ('db32enc', 'db32dec')
 
 MAX_BIN_LEN = 60  # 480 bits
-MAX_TXT_LEN = MAX_BIN_LEN * 8 // 5
+MAX_TXT_LEN = 96
 
 # DB32: Dmedia-Base32: non-standard 3-9, A-Y letters (sorted)
 # [removes 0, 1, 2, Z]
@@ -148,6 +149,9 @@ def db32dec_p(text):
 
 try:
     from _dbase32 import db32enc_c, db32dec_c
+    db32enc = db32enc_c
+    db32dec = db32dec_c
 except ImportError:
-    pass
+    db32enc = db32enc_p
+    db32dec = db32dec_p
 

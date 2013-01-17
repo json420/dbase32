@@ -31,8 +31,8 @@ from random import SystemRandom
 
 import dbase32
 
-assert not hasattr(dbase32, 'db32enc')
-assert not hasattr(dbase32, 'db32dec')
+assert hasattr(dbase32, 'db32enc')
+assert hasattr(dbase32, 'db32dec')
 
 
 random = SystemRandom()
