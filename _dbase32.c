@@ -138,12 +138,12 @@ base32_decode(const size_t b32len, const uint8_t *b32buf,
               const size_t binlen, uint8_t *binbuf)
 {
     /*
-    Return values:
-        ret >=  0 means invalid base32 letter (character int is returned)
-        ret == -1 means success
-        ret == -2 means invalid b32len
-        ret == -3 means wrong binlen
-        ret <= -4 means internal error
+    Return value is the status:
+        status >=  0 means invalid base32 letter (char is returned)
+        status == -1 means success
+        status == -2 means invalid b32len
+        status == -3 means wrong binlen
+        status <= -4 means internal error
     */
     size_t i, j;
     uint8_t c, r;
