@@ -334,3 +334,19 @@ class TestFunctions(TestCase):
                     dbase32.db32dec_p(text)
                 )
 
+    def test_roundtrip_c(self):
+        """
+        Test encode/decode round-trip with C implementation.
+        """
+        if not hasattr(dbase32, 'db32enc_c'):
+            self.skipTest('cannot import `_dbase32` C extension')
+
+        # The C implementation is wicked fast, so let's test a *lot* of values:
+        for size in [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60]:
+            for i in range(10000):
+                data = os.urandom(size)
+                self.assertEqual(
+                    dbase32.db32dec_c(dbase32.db32enc_c(data)),
+                    data
+                )
+

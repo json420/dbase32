@@ -140,10 +140,28 @@ def decode_x(text, x_reverse, x_start, x_end):
 
 
 def db32enc_p(data):
+    """
+    Encode *data* into a D-Base32 string.
+
+    For exmple:
+
+    >>> db32enc_p(b'binary foo')
+    'FCNPVRELI7J9FUUI'
+
+    """
     return encode_x(data, DB32_FORWARD)
 
 
 def db32dec_p(text):
+    """
+    Decode D-Base32 encoded *text*.
+
+    For exmple:
+
+    >>> db32dec_p('FCNPVRELI7J9FUUI')
+    b'binary foo'
+
+    """
     return decode_x(text, DB32_REVERSE, DB32_START, DB32_END)
 
 
