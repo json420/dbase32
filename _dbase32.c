@@ -46,8 +46,8 @@ Authors:
 */
 
 // DB32: non-standard 3-9, A-Y letters (sorted order)
-#define DB32_START 51
-#define DB32_END 89
+static const uint8_t DB32_START = 51;
+static const uint8_t DB32_END = 89;
 static const uint8_t DB32_FORWARD[32] = "3456789ABCDEFGHIJKLMNOPQRSTUVWXY";
 static const uint8_t DB32_REVERSE[39] = {
       0,  // 51 '3' [ 0]
@@ -91,9 +91,10 @@ static const uint8_t DB32_REVERSE[39] = {
      31,  // 89 'Y' [38]
 };
 
+
 // SB32: standard RFC-3548 letters, but in sorted order
-#define SB32_START 50
-#define SB32_END 90
+static const uint8_t SB32_START = 50;
+static const uint8_t SB32_END = 90;
 static const uint8_t SB32_FORWARD[32] = "234567ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 static const uint8_t SB32_REVERSE[41] = {
       0,  // 50 '2' [ 0]

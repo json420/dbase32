@@ -36,8 +36,8 @@ def build_reverse(forward):
 def iter_c(t):
     name = t.name.upper()
     yield '// {}: {}'.format(name, t.desc)
-    yield '#define {}_START {!r}'.format(t.name.upper(), ord(t.forward[0]))
-    yield '#define {}_END {!r}'.format(t.name.upper(), ord(t.forward[-1]))
+    yield 'static const uint8_t {}_START = {!r};'.format(t.name.upper(), ord(t.forward[0]))
+    yield 'static const uint8_t {}_END = {!r};'.format(t.name.upper(), ord(t.forward[-1]))
     yield 'static const uint8_t {}_FORWARD[{}] = "{}";'.format(
         name, len(t.forward), t.forward
     )
