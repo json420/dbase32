@@ -1,0 +1,32 @@
+Source: dbase32
+Section: python
+Priority: optional
+Maintainer: Jason Gerard DeRose <jderose@novacut.com>
+Build-Depends: debhelper (>= 9),
+    python3-all-dev (>= 3.2.3),
+    python3-sphinx (>= 1.1),
+Standards-Version: 3.9.3
+X-Python3-Version: >= 3.3
+Homepage: https://launchpad.net/dbase32
+
+Package: python3-dbase32
+Architecture: any
+Depends: ${python3:Depends}, ${shlibs:Depends}, ${misc:Depends}
+Description: a database-friendly base32-encoding
+ D-Base32 encoding is base32-variant designed for document oriented databases
+ and applications, specifically for encoding document IDs.
+ .
+ D-Base32 uses an alphabet whose letters are in ASCII/UTF-8 sorted order.  This
+ means that unlink RFC-3548 base32 encoding, the sort-order of the encoded data
+ will match the sort-order of the binary data.
+ .
+ For space and performance reasons, some databases might build their indexes
+ based on the compact binary IDs.  For simplicity and compatibility, other
+ databases might build their indexes based on the base32-encoded IDS.
+ .
+ Standard base32-encoding is very problematic in the above scenarios because
+ when different systems need to communicate about ranges of document IDs such
+ that (start <= doc._id <= end), the meaning of this will be different
+ depending on whether a system has its index build from the binary or the
+ encoded IDs.
+
