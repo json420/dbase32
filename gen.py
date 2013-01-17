@@ -102,7 +102,14 @@ b32 = build_encoding('b32', '0189',
     forward='ABCDEFGHIJKLMNOPQRSTUVWXYZ234567'
 )
 
+izob32 = build_encoding('izob32', 'EMOC',
+    'Base32-by-IZO', 'The great bearded one speaketh'
+)
+
+hb32 = build_encoding('hb32', 'DMAN',
+    'Hippie-Base32', 'max unique-snowflake units away from RFC-3548'
+)
+
 
 print_c(db32, sb32)
-print_python(db32, sb32, b32)
-
+print_python(db32, sb32, b32, izob32, hb32)
