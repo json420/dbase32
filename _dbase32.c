@@ -145,7 +145,7 @@ static const uint8_t SB32_REVERSE[41] = {
 Return value is the status:
     status == 0 means success
     status == 1 means invalid bin_len
-    status == 2 means wrong txt_len
+    status == 2 means invalid txt_len
     status == 3 means internal error
 */
 static uint8_t
@@ -185,13 +185,13 @@ Return value is the status:
     status >=  0 means invalid base32 letter (char is returned)
     status == -1 means success
     status == -2 means invalid txt_len
-    status == -3 means wrong bin_len
+    status == -3 means invalid bin_len
     status == -4 means internal error
 */
 static int
 decode_x(const size_t txt_len, const uint8_t *txt_buf,
          const size_t bin_len, uint8_t *bin_buf,
-         const uint8_t *x_reverse, const char x_start, const char x_end)
+         const uint8_t *x_reverse, const uint8_t x_start, const uint8_t x_end)
 {
     size_t i, j;
     uint8_t c, r;
@@ -211,7 +211,7 @@ decode_x(const size_t txt_len, const uint8_t *txt_buf,
         }
         r = x_reverse[c - x_start];
         if (r > 31) {
-            return c;  // invalid base32 letter (internal in reverse table)
+            return c;  // invalid base32 letter (a 255 in reverse table)
         }
         taxi = (taxi << 5) | r;
         bits += 5;
@@ -237,7 +237,7 @@ decode_x(const size_t txt_len, const uint8_t *txt_buf,
 */
 static int
 decode_db32(const size_t txt_len, const uint8_t *txt_buf,
-         const size_t bin_len, uint8_t *bin_buf)
+            const size_t bin_len, uint8_t *bin_buf)
 {
     size_t i, j;
     uint8_t c, r;
@@ -283,7 +283,7 @@ static PyObject *
 dbase32_db32enc(PyObject *self, PyObject *args)
 {
     Py_buffer pybuf;
-    PyObject *pyrv;
+    PyObject *pyret;
     const uint8_t *bin_buf;
     uint8_t *txt_buf;
     size_t bin_len, txt_len;
@@ -312,31 +312,28 @@ dbase32_db32enc(PyObject *self, PyObject *args)
 
     // Allocate destination buffer:
     txt_len = bin_len * 8 / 5;
-    if ((pyrv=PyUnicode_New(txt_len, DB32_END)) == NULL ) {
+    if ((pyret=PyUnicode_New(txt_len, DB32_END)) == NULL ) {
         PyBuffer_Release(&pybuf);
         return NULL;
     }
-    txt_buf = (uint8_t *)PyUnicode_1BYTE_DATA(pyrv);
+    txt_buf = (uint8_t *)PyUnicode_1BYTE_DATA(pyret);
 
     // encode_x() returns 0 on success:
-    status = encode_x(
-        bin_len, bin_buf, txt_len, txt_buf,
-        DB32_FORWARD
-    );
+    status = encode_x(bin_len, bin_buf, txt_len, txt_buf, DB32_FORWARD);
     PyBuffer_Release(&pybuf);
     if (status != 0) {
         PyErr_SetString(PyExc_RuntimeError, "something went very wrong");
-        Py_DECREF(pyrv);
+        Py_DECREF(pyret);
         return NULL;
     }
-    return pyrv;
+    return pyret;
 }
 
 
 static PyObject *
 dbase32_db32dec(PyObject *self, PyObject *args)
 {
-    PyObject *pyrv;
+    PyObject *pyret;
     const uint8_t *txt_buf;
     uint8_t *bin_buf;
     size_t txt_len, bin_len;
@@ -362,10 +359,10 @@ dbase32_db32dec(PyObject *self, PyObject *args)
 
     // Allocate destination buffer:
     bin_len = txt_len * 5 / 8;
-    if ((pyrv=PyBytes_FromStringAndSize(NULL, bin_len)) == NULL) {
+    if ((pyret=PyBytes_FromStringAndSize(NULL, bin_len)) == NULL) {
         return NULL;
     }
-    bin_buf = (uint8_t *)PyBytes_AS_STRING(pyrv);
+    bin_buf = (uint8_t *)PyBytes_AS_STRING(pyret);
 
     // decode_x() returns -1 on success:
     status = decode_x(
@@ -379,10 +376,10 @@ dbase32_db32dec(PyObject *self, PyObject *args)
         else {
             PyErr_SetString(PyExc_RuntimeError, "something went very wrong");
         }
-        Py_DECREF(pyrv);
+        Py_DECREF(pyret);
         return NULL;
     }
-    return pyrv;
+    return pyret;
 }
 
 
