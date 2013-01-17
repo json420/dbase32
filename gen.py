@@ -84,7 +84,7 @@ def print_c(*encodings):
 
 
 db32 = build_encoding('db32', '012Z',
-    'Dmedia-Base32', 'non-standard 3-9, A-Y letters'
+    'Dmedia-Base32', 'non-standard 3-9, A-Y letters (sorted)'
 )
 
 sb32 = build_encoding('sb32', '0189',

@@ -45,7 +45,7 @@ Authors:
     created by hand!
 */
 
-// DB32: Dmedia-Base32: non-standard 3-9, A-Y letters
+// DB32: Dmedia-Base32: non-standard 3-9, A-Y letters (sorted)
 // [removes 0, 1, 2, Z]
 static const uint8_t DB32_START = 51;
 static const uint8_t DB32_END = 89;
@@ -365,8 +365,11 @@ dbase32_db32dec(PyObject *self, PyObject *args)
     }
     bin_buf = (uint8_t *)PyBytes_AS_STRING(pyrv);
 
-    // decode_db32() returns -1 on success:
-    status = decode_db32(txt_len, txt_buf, bin_len, bin_buf);
+    // decode_x() returns -1 on success:
+    status = decode_x(
+        txt_len, txt_buf, bin_len, bin_buf,
+        DB32_REVERSE, DB32_START, DB32_END
+    );
     if (status != -1) {
         if (status >= 0) {
             PyErr_Format(PyExc_ValueError,
