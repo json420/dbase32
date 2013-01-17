@@ -134,30 +134,48 @@ class TestConstants(TestCase):
 
 
 class TestFunctions(TestCase):
-    def test_enc(self):
+    def check_db32enc_common(self, db32enc):
+        """
+        Encoder tests both the Python and the C implementations must pass.
+        """ 
         # Test when len(data) is too small:
         with self.assertRaises(ValueError) as cm:
-            dbase32.enc(b'')
-        self.assertEqual(str(cm.exception), 'need 5 <= len(data) <= 60')
+            db32enc(b'')
+        self.assertEqual(
+            str(cm.exception),
+            'len(data) is 0, need 5 <= len(data) <= 60'
+        )
         with self.assertRaises(ValueError) as cm:
-            dbase32.enc(b'four')
-        self.assertEqual(str(cm.exception), 'need 5 <= len(data) <= 60')
+            db32enc(b'four')
+        self.assertEqual(
+            str(cm.exception),
+            'len(data) is 4, need 5 <= len(data) <= 60'
+        )
 
         # Test when len(data) is too big:
         with self.assertRaises(ValueError) as cm:
-            dbase32.enc(b'B' * 61)
-        self.assertEqual(str(cm.exception), 'need 5 <= len(data) <= 60')
+            db32enc(b'B' * 61)
+        self.assertEqual(
+            str(cm.exception),
+            'len(data) is 61, need 5 <= len(data) <= 60'
+        )
 
         # Test when len(data) % 5 != 0:
         with self.assertRaises(ValueError) as cm:
-            dbase32.enc(b'B' * 41)
-        self.assertEqual(str(cm.exception), 'need len(data) % 5 == 0')
+            db32enc(b'B' * 41)
+        self.assertEqual(
+            str(cm.exception),
+            'len(data) is 41, need len(data) % 5 == 0'
+        )
 
         # Test a few handy static values:
-        self.assertEqual(dbase32.enc(b'\x00\x00\x00\x00\x00'), '33333333')
-        self.assertEqual(dbase32.enc(b'\xff\xff\xff\xff\xff'), 'YYYYYYYY')
-        self.assertEqual(dbase32.enc(b'\x00' * 60), '3' * 96)
-        self.assertEqual(dbase32.enc(b'\xff' * 60), 'Y' * 96)
+        self.assertEqual(db32enc(b'\x00\x00\x00\x00\x00'), '33333333')
+        self.assertEqual(db32enc(b'\xff\xff\xff\xff\xff'), 'YYYYYYYY')
+        self.assertEqual(db32enc(b'\x00' * 60), '3' * 96)
+        self.assertEqual(db32enc(b'\xff' * 60), 'Y' * 96)
+
+    def test_enc(self):
+        self.check_db32enc_common(dbase32.enc)
 
         # Same, but this time using the standard base32 alphabet:
         self.assertEqual(
@@ -190,41 +208,7 @@ class TestFunctions(TestCase):
         if _dbase32 is None:
             self.skipTest('cannot import `_dbase32` C extension')
 
-        # Test when len(data) is too small:
-        with self.assertRaises(ValueError) as cm:
-            _dbase32.db32enc(b'')
-        self.assertEqual(
-            str(cm.exception),
-            'len(data) is 0, need 5 <= len(data) <= 60'
-        )
-        with self.assertRaises(ValueError) as cm:
-            _dbase32.db32enc(b'four')
-        self.assertEqual(
-            str(cm.exception),
-            'len(data) is 4, need 5 <= len(data) <= 60'
-        )
-
-        # Test when len(data) is too big:
-        with self.assertRaises(ValueError) as cm:
-            _dbase32.db32enc(b'B' * 61)
-        self.assertEqual(
-            str(cm.exception),
-            'len(data) is 61, need 5 <= len(data) <= 60'
-        )
-
-        # Test when len(data) % 5 != 0:
-        with self.assertRaises(ValueError) as cm:
-            _dbase32.db32enc(b'B' * 41)
-        self.assertEqual(
-            str(cm.exception),
-            'len(data) is 41, need len(data) % 5 == 0'
-        )
-
-        # Test a few handy static values:
-        self.assertEqual(_dbase32.db32enc(b'\x00\x00\x00\x00\x00'), '33333333')
-        self.assertEqual(_dbase32.db32enc(b'\xff\xff\xff\xff\xff'), 'YYYYYYYY')
-        self.assertEqual(_dbase32.db32enc(b'\x00' * 60), '3' * 96)
-        self.assertEqual(_dbase32.db32enc(b'\xff' * 60), 'Y' * 96)
+        self.check_db32enc_common(_dbase32.db32enc)
 
         # Compare against the dbase32.enc() pure-Python version:
         for size in [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60]:

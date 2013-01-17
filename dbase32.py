@@ -112,9 +112,15 @@ def dec_iter(text, rmap, sne):
 def enc(data, fmap=forward):
     assert isinstance(data, bytes)
     if not (5 <= len(data) <= MAX_DATA):
-        raise ValueError('need 5 <= len(data) <= {!r}'.format(MAX_DATA))
+        raise ValueError(
+            'len(data) is {}, need 5 <= len(data) <= {}'.format(
+                len(data), MAX_DATA
+            )
+        )
     if len(data) % 5 != 0:
-        raise ValueError('need len(data) % 5 == 0')
+        raise ValueError(
+            'len(data) is {}, need len(data) % 5 == 0'.format(len(data))
+        )
     return ''.join(enc_iter(data, fmap))
 
 
