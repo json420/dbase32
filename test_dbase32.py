@@ -40,52 +40,62 @@ possible = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'
 assert ''.join(sorted(set(possible))) == possible
 
 
-# Standard RFC-3548 base32 alphabet
-base32_forward = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567'
-
-base32_reverse = (
-     26,  # 50 '2'
-     27,  # 51 '3'
-     28,  # 52 '4'
-     29,  # 53 '5'
-     30,  # 54 '6'
-     31,  # 55 '7'
-    255,  # 56 '8'
-    255,  # 57 '9'
-    255,  # 58 ':'
-    255,  # 59 ';'
-    255,  # 60 '<'
-    255,  # 61 '='
-    255,  # 62 '>'
-    255,  # 63 '?'
-    255,  # 64 '@'
-      0,  # 65 'A'
-      1,  # 66 'B'
-      2,  # 67 'C'
-      3,  # 68 'D'
-      4,  # 69 'E'
-      5,  # 70 'F'
-      6,  # 71 'G'
-      7,  # 72 'H'
-      8,  # 73 'I'
-      9,  # 74 'J'
-     10 ,  # 75 'K'
-     11,  # 76 'L'
-     12,  # 77 'M'
-     13,  # 78 'N'
-     14,  # 79 'O'
-     15,  # 80 'P'
-     16,  # 81 'Q'
-     17,  # 82 'R'
-     18,  # 83 'S'
-     19,  # 84 'T'
-     20,  # 85 'U'
-     21,  # 86 'V'
-     22,  # 87 'W'
-     23,  # 88 'X'
-     24,  # 89 'Y'
-     25,  # 90 'Z'
+# B32: RFC-3548 Base32: binary sort order will not match encoded, oh noes!
+# [removes 0, 1, 8, 9]
+B32_START = 50
+B32_END = 90
+B32_FORWARD = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567'
+B32_REVERSE = (
+     26,  # 50 '2' [ 0]
+     27,  # 51 '3' [ 1]
+     28,  # 52 '4' [ 2]
+     29,  # 53 '5' [ 3]
+     30,  # 54 '6' [ 4]
+     31,  # 55 '7' [ 5]
+    255,  # 56 '8' [ 6]
+    255,  # 57 '9' [ 7]
+    255,  # 58 ':' [ 8]
+    255,  # 59 ';' [ 9]
+    255,  # 60 '<' [10]
+    255,  # 61 '=' [11]
+    255,  # 62 '>' [12]
+    255,  # 63 '?' [13]
+    255,  # 64 '@' [14]
+      0,  # 65 'A' [15]
+      1,  # 66 'B' [16]
+      2,  # 67 'C' [17]
+      3,  # 68 'D' [18]
+      4,  # 69 'E' [19]
+      5,  # 70 'F' [20]
+      6,  # 71 'G' [21]
+      7,  # 72 'H' [22]
+      8,  # 73 'I' [23]
+      9,  # 74 'J' [24]
+     10,  # 75 'K' [25]
+     11,  # 76 'L' [26]
+     12,  # 77 'M' [27]
+     13,  # 78 'N' [28]
+     14,  # 79 'O' [29]
+     15,  # 80 'P' [30]
+     16,  # 81 'Q' [31]
+     17,  # 82 'R' [32]
+     18,  # 83 'S' [33]
+     19,  # 84 'T' [34]
+     20,  # 85 'U' [35]
+     21,  # 86 'V' [36]
+     22,  # 87 'W' [37]
+     23,  # 88 'X' [38]
+     24,  # 89 'Y' [39]
+     25,  # 90 'Z' [40]
 )
+
+
+def b32enc_p(data):
+    return dbase32.encode_x(data, B32_FORWARD)
+
+
+def b32dec_p(text):
+    return dbase32.decode_x(text, B32_REVERSE, B32_START, B32_END)
 
 
 class TestConstants(TestCase):
@@ -139,61 +149,47 @@ class TestConstants(TestCase):
 
 class TestFunctions(TestCase):
     def test_encode_x(self):
-        # Same, but this time using the standard base32 alphabet:
-        self.assertEqual(
-            dbase32.encode_x(b'\x00\x00\x00\x00\x00', base32_forward),
-            'AAAAAAAA'
-        )
-        self.assertEqual(
-            dbase32.encode_x(b'\xff\xff\xff\xff\xff', base32_forward),
-            '77777777'
-        )
-        self.assertEqual(
-            dbase32.encode_x(b'\x00' * 60, base32_forward),
-            'A' * 96
-        )
-        self.assertEqual(
-            dbase32.encode_x(b'\xff' * 60, base32_forward),
-            '7' * 96
-        )
+        """
+        Test encode_x() with the standard RFC-3548 base32 tables.
+
+        See b32enc_p() defined above.
+        """
+        # A few static value sanity checks:
+        self.assertEqual(b32enc_p(b'\x00\x00\x00\x00\x00'), 'AAAAAAAA')
+        self.assertEqual(b32enc_p(b'\xff\xff\xff\xff\xff'), '77777777')
+        self.assertEqual(b32enc_p(b'\x00' * 60), 'A' * 96)
+        self.assertEqual(b32enc_p(b'\xff' * 60), '7' * 96)
 
         # Compare against base64.b32encode() from stdlib:
         for size in [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60]:
             for i in range(100):
                 data = os.urandom(size)
                 self.assertEqual(
-                    dbase32.encode_x(data, base32_forward),
+                    b32enc_p(data),
                     b32encode(data).decode('utf-8')
                 )
 
     def test_decode_x(self):
+        """
+        Test decode_x() with the standard RFC-3548 base32 tables.
+
+        See b32dec_p() defined above.
+        """
+        # A few static value sanity checks:
+        self.assertEqual(b32dec_p('AAAAAAAA'), b'\x00\x00\x00\x00\x00')
+        self.assertEqual(b32dec_p('77777777'), b'\xff\xff\xff\xff\xff')
+        self.assertEqual(b32dec_p('A' * 96), b'\x00' * 60)
+        self.assertEqual(b32dec_p('7' * 96), b'\xff' * 60)
+
         # Compare against base64.b32decode() from stdlib:
         for size in [8, 16, 24, 32, 40, 48, 56, 64, 72, 80, 88, 96]:
             for i in range(100):
-                text = ''.join(random.choice(base32_forward) for n in range(size))
+                text = ''.join(random.choice(B32_FORWARD) for n in range(size))
                 assert len(text) == size
                 self.assertEqual(
-                    dbase32.decode_x(text, base32_reverse, 50, 90),
+                    b32dec_p(text),
                     b32decode(text.encode('utf-8'))
                 )
-        
-        # Same, but this time using the standard base32 alphabet:
-        self.assertEqual(
-            dbase32.decode_x('AAAAAAAA', base32_reverse, 50, 90),
-            b'\x00\x00\x00\x00\x00'
-        )
-        self.assertEqual(
-            dbase32.decode_x('77777777', base32_reverse, 50, 90),
-            b'\xff\xff\xff\xff\xff'
-        )
-        self.assertEqual(
-            dbase32.decode_x('A' * 96, base32_reverse, 50, 90),
-            b'\x00' * 60
-        )
-        self.assertEqual(
-            dbase32.decode_x('7' * 96, base32_reverse, 50, 90),
-            b'\xff' * 60
-        )
 
     def check_db32enc_common(self, db32enc):
         """

@@ -67,6 +67,8 @@ def build_encoding(name, remove, title, desc, forward=None):
     if forward is None:
         forward = build_forward(remove)
     assert set(possible) - set(remove) == set(forward)
+    assert len(set(remove)) == 4
+    assert set(remove).issubset(possible)
     start = ord(min(forward))
     end = ord(max(forward))
     reverse = build_reverse(forward)
@@ -96,7 +98,7 @@ sb32 = build_encoding('sb32', '0189',
 )
 
 b32 = build_encoding('b32', '0189',
-    'RFC-3548 Base32', 'binary sort order will not match encoded',
+    'RFC-3548 Base32', 'binary sort order will not match encoded, oh noes!',
     forward='ABCDEFGHIJKLMNOPQRSTUVWXYZ234567'
 )
 
