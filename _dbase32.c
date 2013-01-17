@@ -45,7 +45,8 @@ Authors:
     created by hand!
 */
 
-// DB32: non-standard 3-9, A-Y letters (sorted order)
+// DB32: Dmedia-Base32: non-standard 3-9, A-Y letters
+// [removes 0, 1, 2, Z]
 static const uint8_t DB32_START = 51;
 static const uint8_t DB32_END = 89;
 static const uint8_t DB32_FORWARD[32] = "3456789ABCDEFGHIJKLMNOPQRSTUVWXY";
@@ -91,8 +92,8 @@ static const uint8_t DB32_REVERSE[39] = {
      31,  // 89 'Y' [38]
 };
 
-
-// SB32: standard RFC-3548 letters, but in sorted order
+// SB32: Sorted-Base32: standard RFC-3548 letters, but in sorted order
+// [removes 0, 1, 8, 9]
 static const uint8_t SB32_START = 50;
 static const uint8_t SB32_END = 90;
 static const uint8_t SB32_FORWARD[32] = "234567ABCDEFGHIJKLMNOPQRSTUVWXYZ";

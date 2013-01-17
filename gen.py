@@ -1,6 +1,6 @@
 from collections import namedtuple
 
-Encoding = namedtuple('Encoding', 'name removed forward reverse desc')
+Encoding = namedtuple('Encoding', 'name removed forward reverse title desc')
 
 possible = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'
 assert ''.join(sorted(set(possible))) == possible
@@ -35,7 +35,8 @@ def build_reverse(forward):
 
 def iter_c(t):
     name = t.name.upper()
-    yield '// {}: {}'.format(name, t.desc)
+    yield '// {}: {}: {}'.format(name, t.title, t.desc)
+    yield '// [removes {}]'.format(', '.join(l for l in t.removed))
     yield 'static const uint8_t {}_START = {!r};'.format(t.name.upper(), ord(t.forward[0]))
     yield 'static const uint8_t {}_END = {!r};'.format(t.name.upper(), ord(t.forward[-1]))
     yield 'static const uint8_t {}_FORWARD[{}] = "{}";'.format(
@@ -51,7 +52,8 @@ def iter_c(t):
 
 def iter_python(t):
     name = t.name.upper()
-    yield '# {}: {}'.format(name, t.desc)
+    yield '# {}: {}: {}'.format(name, t.title, t.desc)
+    yield '# [removes {}]'.format(', '.join(l for l in t.removed))
     yield '{}_START = {!r}'.format(name, ord(t.forward[0]))
     yield '{}_END = {!r}'.format(name, ord(t.forward[-1]))
     yield '{}_FORWARD = {!r}'.format(name, t.forward)
@@ -61,10 +63,10 @@ def iter_python(t):
     yield ')'
 
 
-def build_encoding(name, remove, desc):
+def build_encoding(name, remove, title, desc):
     forward = build_forward(remove)
     reverse = build_reverse(forward) 
-    return Encoding(name, remove, forward, reverse, desc)
+    return Encoding(name, remove, forward, reverse, title, desc)
 
 
 def print_python(*encodings):
@@ -76,18 +78,17 @@ def print_python(*encodings):
  
 def print_c(*encodings):
     for enc in encodings:
-        print('')
         for line in iter_c(enc):
             print(line)
         print('')
 
 
 db32 = build_encoding('db32', '012Z',
-    'non-standard 3-9, A-Y letters (sorted order)'
+    'Dmedia-Base32', 'non-standard 3-9, A-Y letters'
 )
 
 sb32 = build_encoding('sb32', '0189',
-    'standard RFC-3548 letters, but in sorted order'
+    'Sorted-Base32', 'standard RFC-3548 letters, but in sorted order'
 )
 
 
