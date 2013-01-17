@@ -228,6 +228,51 @@ decode_x(const size_t txt_len, const uint8_t *txt_buf,
 }
 
 
+// Experimental decoder that doesn't use a reverse table
+static int
+decode_db32(const size_t txt_len, const uint8_t *txt_buf,
+         const size_t bin_len, uint8_t *bin_buf)
+{
+    size_t i, j;
+    uint8_t c, r;
+    uint16_t taxi = 0;
+    uint8_t bits = 0;
+
+    if (txt_len < 8 || txt_len > MAX_TXT_LEN || txt_len % 8 != 0) {
+        return -2;
+    }
+    if (bin_len != txt_len * 5 / 8) {
+        return -3;
+    }
+    for (i = j = 0; i < txt_len; i++) {
+        c = txt_buf[i];
+        if (c > 89) {
+            return c;
+        }
+        if (c >= 65) {
+            r = c - 58;
+        }
+        else if (c >= 51 && c <= 57) {
+            r = c - 51;
+        }
+        else {
+            return c;
+        }
+        taxi = (taxi << 5) | r;
+        bits += 5;
+        while (bits >= 8) {
+            bits -= 8;
+            bin_buf[j] = (taxi >> bits) & 0xff;
+            j++;
+        }
+    }
+    if (bits != 0 || j != bin_len || i != txt_len) {
+        return -4;
+    }
+    return -1;
+}
+
+
 static PyObject *
 dbase32_db32enc(PyObject *self, PyObject *args)
 {
@@ -312,11 +357,8 @@ dbase32_db32dec(PyObject *self, PyObject *args)
     }
     bin_buf = (uint8_t *)PyBytes_AS_STRING(pyrv);
 
-    // decode_x() returns -1 on success:
-    status = decode_x(
-        txt_len, txt_buf, bin_len, bin_buf,
-        DB32_REVERSE, DB32_START, DB32_END
-    );
+    // decode_db32() returns -1 on success:
+    status = decode_db32(txt_len, txt_buf, bin_len, bin_buf);
     if (status != -1) {
         if (status >= 0) {
             PyErr_Format(PyExc_ValueError,
