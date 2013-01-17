@@ -186,7 +186,7 @@ dbase32_db32dec(PyObject *self, PyObject *args)
     const uint8_t *b32buf;
     uint8_t *binbuf;
     size_t b32len, binlen;
-    int retcode;
+    int status;
     PyObject *rv;
 
     // Strictly validate, we only accept well-formed IDs:
@@ -213,11 +213,11 @@ dbase32_db32dec(PyObject *self, PyObject *args)
     binbuf = (uint8_t *)PyBytes_AS_STRING(rv);
 
     // base32_decode() returns -1 on success:
-    retcode = base32_decode(b32len, b32buf, binlen, binbuf);
-    if (retcode != -1) {
-        if (retcode >= 0) {
+    status = base32_decode(b32len, b32buf, binlen, binbuf);
+    if (status != -1) {
+        if (status >= 0) {
             PyErr_Format(PyExc_ValueError,
-                "invalid base32 letter: %c", retcode
+                "invalid base32 letter: %c", status
             );
         }
         else {
