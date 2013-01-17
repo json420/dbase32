@@ -27,16 +27,29 @@ Authors:
 #define MAX_BIN_LEN 60
 #define MAX_TXT_LEN 96
 
+/*
+    Start here.
 
-// *************************************************
-// DB32: non-standard 3-9+A-Y letters (sorted order)
+    encode_x() can encode to an arbitrary base32 alphabet by giving it an
+    appropriate forward-table.
 
+    decode_x() can decode the same when given the corresponding reverse-table,
+    plus the corresponding start and end character values.
+
+    Neither function attempts to validate the tables in anyway, both functions
+    assume the tables are well-formed.  The tables are not expected to be
+    directly provided via user input, or even external API.  The tables are
+    static, pre-calculated values.
+
+    The gen.py script is used to create these tables... they should *not* be
+    created by hand!
+*/
+
+// DB32: non-standard 3-9, A-Y letters (sorted order)
 #define DB32_START 51
 #define DB32_END 89
-
-static const uint8_t db32_forward[32] = "3456789ABCDEFGHIJKLMNOPQRSTUVWXY";
-
-static const uint8_t db32_reverse[39] = {
+static const uint8_t DB32_FORWARD[32] = "3456789ABCDEFGHIJKLMNOPQRSTUVWXY";
+static const uint8_t DB32_REVERSE[39] = {
       0,  // 51 '3'
       1,  // 52 '4'
       2,  // 53 '5'
@@ -76,6 +89,54 @@ static const uint8_t db32_reverse[39] = {
      29,  // 87 'W'
      30,  // 88 'X'
      31,  // 89 'Y'
+};
+
+// SB32: standard RFC-3548 letters, but in sorted order
+#define SB32_START 50
+#define SB32_END 90
+static const uint8_t SB32_FORWARD[32] = "234567ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+static const uint8_t SB32_REVERSE[41] = {
+      0,  // 50 '2'
+      1,  // 51 '3'
+      2,  // 52 '4'
+      3,  // 53 '5'
+      4,  // 54 '6'
+      5,  // 55 '7'
+    255,  // 56 '8'
+    255,  // 57 '9'
+    255,  // 58 ':'
+    255,  // 59 ';'
+    255,  // 60 '<'
+    255,  // 61 '='
+    255,  // 62 '>'
+    255,  // 63 '?'
+    255,  // 64 '@'
+      6,  // 65 'A'
+      7,  // 66 'B'
+      8,  // 67 'C'
+      9,  // 68 'D'
+     10,  // 69 'E'
+     11,  // 70 'F'
+     12,  // 71 'G'
+     13,  // 72 'H'
+     14,  // 73 'I'
+     15,  // 74 'J'
+     16,  // 75 'K'
+     17,  // 76 'L'
+     18,  // 77 'M'
+     19,  // 78 'N'
+     20,  // 79 'O'
+     21,  // 80 'P'
+     22,  // 81 'Q'
+     23,  // 82 'R'
+     24,  // 83 'S'
+     25,  // 84 'T'
+     26,  // 85 'U'
+     27,  // 86 'V'
+     28,  // 87 'W'
+     29,  // 88 'X'
+     30,  // 89 'Y'
+     31,  // 90 'Z'
 };
 
 
@@ -207,7 +268,7 @@ dbase32_db32enc(PyObject *self, PyObject *args)
     // encode_x() returns 0 on success:
     status = encode_x(
         bin_len, bin_buf, txt_len, txt_buf,
-        db32_forward
+        DB32_FORWARD
     );
     PyBuffer_Release(&pybuf);
     if (status != 0) {
@@ -254,7 +315,7 @@ dbase32_db32dec(PyObject *self, PyObject *args)
     // decode_x() returns -1 on success:
     status = decode_x(
         txt_len, txt_buf, bin_len, bin_buf,
-        db32_reverse, DB32_START, DB32_END
+        DB32_REVERSE, DB32_START, DB32_END
     );
     if (status != -1) {
         if (status >= 0) {

@@ -33,19 +33,15 @@ def build_reverse(forward):
 
 
 def iter_c(t):
-    comment = '{}: {}'.format(t.name.upper(), t.desc)
-    yield '// ' + ('*' * len(comment))
-    yield '// ' + comment
-    yield ''
+    name = t.name.upper()
+    yield '// {}: {}'.format(name, t.desc)
     yield '#define {}_START {!r}'.format(t.name.upper(), ord(t.forward[0]))
     yield '#define {}_END {!r}'.format(t.name.upper(), ord(t.forward[-1]))
-    yield ''
-    yield 'static const uint8_t {}_forward[{}] = "{}";'.format(
-        t.name, len(t.forward), t.forward
+    yield 'static const uint8_t {}_FORWARD[{}] = "{}";'.format(
+        name, len(t.forward), t.forward
     )
-    yield ''
-    yield 'static const uint8_t {}_reverse[{}] = {{'.format(
-        t.name, len(t.reverse)
+    yield 'static const uint8_t {}_REVERSE[{}] = {{'.format(
+        name, len(t.reverse)
     )
     for (r, d, c) in t.reverse:
         yield '    {:>3},  // {} {!r}'.format(r, d, c)
@@ -100,5 +96,5 @@ sb32 = build_encoding('sb32', '0189',
 
 
 print_c(db32, sb32)
-print_python(db32, sb32)
+#print_python(db32, sb32)
 
