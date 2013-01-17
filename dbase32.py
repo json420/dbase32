@@ -27,55 +27,8 @@
 __version__ = '0.1.0'
 
 
-MAX_DATA = 60  # 480 bits
-MAX_TEXT = MAX_DATA * 8 // 5
-
-START = 51
-END = 89
-
-forward = '3456789ABCDEFGHIJKLMNOPQRSTUVWXY'
-
-reverse = (
-      0,  # 51 '3'
-      1,  # 52 '4'
-      2,  # 53 '5'
-      3,  # 54 '6'
-      4,  # 55 '7'
-      5,  # 56 '8'
-      6,  # 57 '9'
-    255,  # 58 ':'
-    255,  # 59 ';'
-    255,  # 60 '<'
-    255,  # 61 '='
-    255,  # 62 '>'
-    255,  # 63 '?'
-    255,  # 64 '@'
-      7,  # 65 'A'
-      8,  # 66 'B'
-      9,  # 67 'C'
-     10,  # 68 'D'
-     11,  # 69 'E'
-     12,  # 70 'F'
-     13,  # 71 'G'
-     14,  # 72 'H'
-     15,  # 73 'I'
-     16,  # 74 'J'
-     17,  # 75 'K'
-     18,  # 76 'L'
-     19,  # 77 'M'
-     20,  # 78 'N'
-     21,  # 79 'O'
-     22,  # 80 'P'
-     23,  # 81 'Q'
-     24,  # 82 'R'
-     25,  # 83 'S'
-     26,  # 84 'T'
-     27,  # 85 'U'
-     28,  # 86 'V'
-     29,  # 87 'W'
-     30,  # 88 'X'
-     31,  # 89 'Y'
-)
+MAX_BIN_LEN = 60  # 480 bits
+MAX_TXT_LEN = MAX_BIN_LEN * 8 // 5
 
 # DB32: Dmedia-Base32: non-standard 3-9, A-Y letters (sorted)
 # [removes 0, 1, 2, Z]
@@ -139,10 +92,10 @@ def _encode_x_iter(data, x_forward):
 
 def encode_x(data, x_forward):
     assert isinstance(data, bytes)
-    if not (5 <= len(data) <= MAX_DATA):
+    if not (5 <= len(data) <= MAX_BIN_LEN):
         raise ValueError(
             'len(data) is {}, need 5 <= len(data) <= {}'.format(
-                len(data), MAX_DATA
+                len(data), MAX_BIN_LEN
             )
         )
     if len(data) % 5 != 0:
@@ -172,10 +125,10 @@ def _decode_x_iter(text, x_reverse, x_start, x_end):
 
 def decode_x(text, x_reverse, x_start, x_end):
     assert isinstance(text, str)
-    if not (8 <= len(text) <= MAX_TEXT):
+    if not (8 <= len(text) <= MAX_TXT_LEN):
         raise ValueError(
             'len(text) is {}, need 8 <= len(text) <= {}'.format(
-                len(text), MAX_TEXT
+                len(text), MAX_TXT_LEN
             )
         )
     if len(text) % 8 != 0:

@@ -91,46 +91,55 @@ base32_reverse = (
 
 class TestConstants(TestCase):
     def test_max(self):
-        self.assertEqual(dbase32.MAX_DATA % 5, 0)
-        self.assertEqual(dbase32.MAX_TEXT % 8, 0)
-        self.assertEqual(dbase32.MAX_DATA, dbase32.MAX_TEXT * 5 // 8)
+        self.assertEqual(dbase32.MAX_BIN_LEN % 5, 0)
+        self.assertEqual(dbase32.MAX_TXT_LEN % 8, 0)
+        self.assertEqual(dbase32.MAX_BIN_LEN, dbase32.MAX_TXT_LEN * 5 // 8)
 
     def test_start_end(self):
-        self.assertEqual(dbase32.START, ord(dbase32.forward[0]))
-        self.assertEqual(dbase32.END, ord(dbase32.forward[-1]))
-        stop = dbase32.END + 1
-        self.assertEqual(stop - dbase32.START, len(dbase32.reverse))
+        self.assertEqual(
+            dbase32.DB32_START,
+            ord(dbase32.DB32_FORWARD[0])
+        )
+        self.assertEqual(
+            dbase32.DB32_END,
+            ord(dbase32.DB32_FORWARD[-1])
+        )
+        stop = dbase32.DB32_END + 1
+        self.assertEqual(
+            stop - dbase32.DB32_START,
+            len(dbase32.DB32_REVERSE)
+        )
 
     def test_forward(self):
         self.assertEqual(''.join(sorted(set(possible))), possible)
         self.assertEqual(len(possible), 36)
         self.assertEqual(
-            ''.join(sorted(set(dbase32.forward))),
-            dbase32.forward
+            ''.join(sorted(set(dbase32.DB32_FORWARD))),
+            dbase32.DB32_FORWARD
         )
         self.assertEqual(
-            set(dbase32.forward),
+            set(dbase32.DB32_FORWARD),
             set(possible) - set('012Z')
         )
-        self.assertEqual(len(dbase32.forward), 32)
+        self.assertEqual(len(dbase32.DB32_FORWARD), 32)
 
     def test_reverse(self):
-        self.assertEqual(dbase32.reverse[0], 0)
-        self.assertEqual(dbase32.reverse[-1], 31)
-        offset = ord(dbase32.forward[0])
+        self.assertEqual(dbase32.DB32_REVERSE[0], 0)
+        self.assertEqual(dbase32.DB32_REVERSE[-1], 31)
+        offset = ord(dbase32.DB32_FORWARD[0])
         yes = 0
         no = 0
-        for (i, value) in enumerate(dbase32.reverse):
+        for (i, value) in enumerate(dbase32.DB32_REVERSE):
             char = chr(i + offset)
-            if char in dbase32.forward:
+            if char in dbase32.DB32_FORWARD:
                 self.assertEqual(value, yes)
                 yes += 1
             else:
                 self.assertEqual(value, 255)
                 no += 1
         self.assertEqual(yes, 32)
-        self.assertEqual(len(dbase32.reverse) - no, 32)
-        self.assertEqual(len(dbase32.reverse), 39)
+        self.assertEqual(len(dbase32.DB32_REVERSE) - no, 32)
+        self.assertEqual(len(dbase32.DB32_REVERSE), 39)
 
 
 class TestFunctions(TestCase):
@@ -324,7 +333,10 @@ class TestFunctions(TestCase):
         # Compare against the dbase32.db32dec_p pure-Python version:
         for size in [8, 16, 24, 32, 40, 48, 56, 64, 72, 80, 88, 96]:
             for i in range(100):
-                text = ''.join(random.choice(dbase32.forward) for n in range(size))
+                text = ''.join(
+                    random.choice(dbase32.DB32_FORWARD)
+                    for n in range(size)
+                )
                 assert len(text) == size
                 self.assertEqual(
                     _dbase32.db32dec(text),
