@@ -79,18 +79,19 @@ static const uint8_t db32_reverse[39] = {
 };
 
 
+/* encode_x(): encode using alphabet defined by x_forward
+
+Return value is the status:
+    status == 0 means success
+    status == 1 means invalid bin_len
+    status == 2 means wrong txt_len
+    status == 3 means internal error
+*/
 static uint8_t
-base32_encode(const size_t bin_len, const uint8_t *bin_buf,
-              const size_t txt_len, uint8_t *txt_buf,
-              const uint8_t *forward_table)
+encode_x(const size_t bin_len, const uint8_t *bin_buf,
+         const size_t txt_len, uint8_t *txt_buf,
+         const uint8_t *x_forward)
 {
-    /*
-    Return value is the status:
-        status == 0 means success
-        status == 1 means invalid bin_len
-        status == 2 means wrong txt_len
-        status == 3 means internal error
-    */
     size_t i, j;
     uint16_t taxi = 0;
     uint8_t bits = 0;
@@ -106,7 +107,7 @@ base32_encode(const size_t bin_len, const uint8_t *bin_buf,
         bits += 8;
         while (bits >= 5) {
             bits -= 5;
-            txt_buf[j] = forward_table[(taxi >> bits) & 0x1f];
+            txt_buf[j] = x_forward[(taxi >> bits) & 0x1f];
             j++;
         }
     }
@@ -117,20 +118,20 @@ base32_encode(const size_t bin_len, const uint8_t *bin_buf,
 }
 
 
+/* decode_x(): decode using alphabet defined by x_reverse, x_start, x_end
+
+Return value is the status:
+    status >=  0 means invalid base32 letter (char is returned)
+    status == -1 means success
+    status == -2 means invalid txt_len
+    status == -3 means wrong bin_len
+    status <= -4 means internal error
+*/
 static int
-base32_decode(const size_t txt_len, const uint8_t *txt_buf,
-              const size_t bin_len, uint8_t *bin_buf,
-              const uint8_t *reverse_table,
-              const char start, const char end)
+decode_x(const size_t txt_len, const uint8_t *txt_buf,
+         const size_t bin_len, uint8_t *bin_buf,
+         const uint8_t *x_reverse, const char x_start, const char x_end)
 {
-    /*
-    Return value is the status:
-        status >=  0 means invalid base32 letter (char is returned)
-        status == -1 means success
-        status == -2 means invalid txt_len
-        status == -3 means wrong bin_len
-        status <= -4 means internal error
-    */
     size_t i, j;
     uint8_t c, r;
     uint16_t taxi = 0;
@@ -144,10 +145,10 @@ base32_decode(const size_t txt_len, const uint8_t *txt_buf,
     }
     for (i = j = 0; i < txt_len; i++) {
         c = txt_buf[i];
-        if (c < start || c > end) {
+        if (c < x_start || c > x_end) {
             return c;  // invalid base32 letter
         }
-        r = reverse_table[c - start];
+        r = x_reverse[c - x_start];
         if (r > 31) {
             return c;  // invalid base32 letter (internal in reverse table)
         }
@@ -203,8 +204,8 @@ dbase32_db32enc(PyObject *self, PyObject *args)
     }
     txt_buf = (uint8_t *)PyUnicode_1BYTE_DATA(pyrv);
 
-    // base32_encode() returns 0 on success:
-    status = base32_encode(
+    // encode_x() returns 0 on success:
+    status = encode_x(
         bin_len, bin_buf, txt_len, txt_buf,
         db32_forward
     );
@@ -250,8 +251,8 @@ dbase32_db32dec(PyObject *self, PyObject *args)
     }
     bin_buf = (uint8_t *)PyBytes_AS_STRING(rv);
 
-    // base32_decode() returns -1 on success:
-    status = base32_decode(
+    // decode_x() returns -1 on success:
+    status = decode_x(
         txt_len, txt_buf, bin_len, bin_buf,
         db32_reverse, DB32_START, DB32_END
     );
