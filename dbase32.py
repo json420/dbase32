@@ -147,7 +147,7 @@ def db32dec_p(text):
 
 
 try:
-    from _dbase32 import db32enc, db32dec
+    from _dbase32 import db32enc_c, db32dec_c
 except ImportError:
     pass
 

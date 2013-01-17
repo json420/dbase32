@@ -392,8 +392,8 @@ dbase32_db32dec(PyObject *self, PyObject *args)
 
 /* module init */
 static struct PyMethodDef dbase32_functions[] = {
-    {"db32enc", dbase32_db32enc, METH_VARARGS, "db32enc(data)"},
-    {"db32dec", dbase32_db32dec, METH_VARARGS, "db32dec(text)"},
+    {"db32enc_c", dbase32_db32enc, METH_VARARGS, "db32enc(data)"},
+    {"db32dec_c", dbase32_db32dec, METH_VARARGS, "db32dec(text)"},
     {NULL, NULL, 0, NULL}
 };
 

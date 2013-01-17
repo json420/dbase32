@@ -30,10 +30,9 @@ from base64 import b32encode, b32decode
 from random import SystemRandom
 
 import dbase32
-try:
-    import _dbase32
-except ImportError:
-    _dbase32 = None
+
+assert not hasattr(dbase32, 'db32enc')
+assert not hasattr(dbase32, 'db32dec')
 
 
 random = SystemRandom()
@@ -250,17 +249,17 @@ class TestFunctions(TestCase):
         """
         Test the C implementation of db32enc().
         """
-        if _dbase32 is None:
+        if not hasattr(dbase32, 'db32enc_c'):
             self.skipTest('cannot import `_dbase32` C extension')
 
-        self.check_db32enc_common(_dbase32.db32enc)
+        self.check_db32enc_common(dbase32.db32enc_c)
 
         # Compare against the Python version db32enc_p
         for size in [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60]:
             for i in range(1000):
                 data = os.urandom(size)
                 self.assertEqual(
-                    _dbase32.db32enc(data),
+                    dbase32.db32enc_c(data),
                     dbase32.db32enc_p(data)
                 )
 
@@ -325,10 +324,10 @@ class TestFunctions(TestCase):
         """
         Test the C implementation of db32enc().
         """
-        if _dbase32 is None:
+        if not hasattr(dbase32, 'db32dec_c'):
             self.skipTest('cannot import `_dbase32` C extension')
 
-        self.check_db32dec_common(_dbase32.db32dec)
+        self.check_db32dec_common(dbase32.db32dec_c)
 
         # Compare against the dbase32.db32dec_p pure-Python version:
         for size in [8, 16, 24, 32, 40, 48, 56, 64, 72, 80, 88, 96]:
@@ -339,7 +338,7 @@ class TestFunctions(TestCase):
                 )
                 assert len(text) == size
                 self.assertEqual(
-                    _dbase32.db32dec(text),
+                    dbase32.db32dec_c(text),
                     dbase32.db32dec_p(text)
                 )
 

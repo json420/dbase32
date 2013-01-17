@@ -28,17 +28,11 @@ setup = """
 import os
 from base64 import b32encode, b32decode
 
-from dbase32 import enc, dec, db32enc, db32dec
-
-p_db32enc = enc
-p_db32dec = dec
-
-c_db32enc = db32enc
-c_db32dec = db32dec
+from dbase32 import db32enc_p, db32enc_c, db32dec_p, db32dec_c
 
 data = os.urandom(35)
 text_b = b32encode(data)
-text = enc(data)
+text = db32enc_p(data)
 """
 
 N = 100 * 1000
@@ -52,11 +46,10 @@ def run(statement):
 
 print('Executions per second:')
 
-
 run('b32encode(data)')
-run('p_db32enc(data)')
-run('c_db32enc(data)')
+run('db32enc_p(data)')
+run('db32enc_c(data)')
 run('b32decode(text_b)')
-run('p_db32dec(text)')
-run('c_db32dec(text)')
+run('db32dec_p(text)')
+run('db32dec_c(text)')
 
