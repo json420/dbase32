@@ -95,14 +95,10 @@ class TestConstants(TestCase):
         self.assertEqual(dbase32.MAX_BIN_LEN, dbase32.MAX_TXT_LEN * 5 // 8)
 
     def test_start_end(self):
-        self.assertEqual(
-            dbase32.DB32_START,
-            ord(dbase32.DB32_FORWARD[0])
-        )
-        self.assertEqual(
-            dbase32.DB32_END,
-            ord(dbase32.DB32_FORWARD[-1])
-        )
+        self.assertEqual(dbase32.DB32_START, ord(dbase32.DB32_FORWARD[0]))
+        self.assertEqual(dbase32.DB32_START, ord(min(dbase32.DB32_FORWARD)))
+        self.assertEqual(dbase32.DB32_END, ord(dbase32.DB32_FORWARD[-1]))
+        self.assertEqual(dbase32.DB32_END, ord(max(dbase32.DB32_FORWARD)))
         stop = dbase32.DB32_END + 1
         self.assertEqual(
             stop - dbase32.DB32_START,
