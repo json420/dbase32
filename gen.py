@@ -89,18 +89,19 @@ def print_c(*encodings):
         print('')
 
 
-db32 = build_encoding('db32', '012Z',
-    'Dmedia-Base32', 'non-standard 3-9, A-Y letters (sorted)'
+b32 = build_encoding('b32', '0189',
+    'RFC-3548 Base32', 'different binary vs encoded sort order (deal breaker)',
+    forward='ABCDEFGHIJKLMNOPQRSTUVWXYZ234567'
 )
 
 sb32 = build_encoding('sb32', '0189',
     'Sorted-Base32', 'standard RFC-3548 letters, but in sorted order'
 )
 
-b32 = build_encoding('b32', '0189',
-    'RFC-3548 Base32', 'binary sort order will not match encoded, oh noes!',
-    forward='ABCDEFGHIJKLMNOPQRSTUVWXYZ234567'
+db32 = build_encoding('db32', '012Z',
+    'Dmedia-Base32', 'non-standard 3-9, A-Y letters (sorted)'
 )
+
 
 izob32 = build_encoding('izob32', 'EMOC',
     'Base32-by-IZO', 'The great bearded one speaketh'
@@ -110,6 +111,9 @@ hb32 = build_encoding('hb32', 'DMAN',
     'Hippie-Base32', 'max unique-snowflake units away from RFC-3548'
 )
 
+encodings = (b32, sb32, db32)
+for enc in encodings:
+    print_c(enc)
+for enc in encodings:
+    print_python(enc)
 
-print_c(db32, sb32)
-print_python(db32, sb32, b32, izob32, hb32)
