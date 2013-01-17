@@ -133,10 +133,10 @@ base32_decode(const size_t txt_len, const uint8_t *txt_buf,
     uint8_t bits = 0;
 
     if (txt_len < 8 || txt_len > MAX_TXT_LEN || txt_len % 8 != 0) {
-        return -2;  // invalid txt_len
+        return -2;
     }
     if (bin_len != txt_len * 5 / 8) {
-        return -3;  // wrong bin_len 
+        return -3;
     }
     for (i = j = 0; i < txt_len; i++) {
         c = txt_buf[i];
@@ -156,65 +156,58 @@ base32_decode(const size_t txt_len, const uint8_t *txt_buf,
         }
     }
     if (bits != 0 || j != bin_len || i != txt_len) {
-        return -4;  // internal error
+        return -4;
     }
-    return -1;  // success
+    return -1;
 }
-
 
 
 static PyObject *
 dbase32_db32enc(PyObject *self, PyObject *args)
 {
-    Py_buffer buf;
-    size_t len, i, j;
-    const uint8_t *src;
-    uint8_t *dst;
-    uint16_t taxi = 0;
-    uint8_t bits = 0;
-    PyObject *rv;
+    Py_buffer pybuf;
+    PyObject *pyrv;
+    const uint8_t *bin_buf;
+    uint8_t *txt_buf;
+    size_t bin_len, txt_len;
+    uint8_t status;
 
     // Strictly validate, we only accept well-formed IDs:
-    if (!PyArg_ParseTuple(args, "y*:db32enc", &buf)) {
+    if (!PyArg_ParseTuple(args, "y*:db32enc", &pybuf)) {
         return NULL;
     }
-    src = buf.buf;
-    len = buf.len;
-    if (len < 5 || len > MAX_DATA) {
-        PyErr_Format(PyExc_ValueError, "need 5 <= len(data) <= %u", MAX_DATA);
-        PyBuffer_Release(&buf);
+    bin_buf = pybuf.buf;
+    bin_len = pybuf.len;
+    if (bin_len < 5 || bin_len > MAX_BIN_LEN) {
+        PyErr_Format(PyExc_ValueError,
+            "need 5 <= len(data) <= %u", MAX_BIN_LEN
+        );
+        PyBuffer_Release(&pybuf);
         return NULL;
     }
-    if (len % 5 != 0) {
+    if (bin_len % 5 != 0) {
         PyErr_SetString(PyExc_ValueError, "need len(data) % 5 == 0");
-        PyBuffer_Release(&buf);
+        PyBuffer_Release(&pybuf);
         return NULL;
     }
 
-    // Let's do it:
-    if ((rv=PyUnicode_New(len * 8 / 5, END)) == NULL ) {
-        PyBuffer_Release(&buf);
+    // Allocate destination buffer:
+    txt_len = bin_len * 8 / 5;
+    if ((pyrv=PyUnicode_New(txt_len, END)) == NULL ) {
+        PyBuffer_Release(&pybuf);
         return NULL;
     }
-    dst = (uint8_t *)PyUnicode_1BYTE_DATA(rv);
-    for (i=j=0; i<len; i++) {
-        taxi = (taxi << 8) | src[i];
-        bits += 8;
-        while (bits >= 5) {
-            bits -= 5;
-            dst[j] = forward[(taxi >> bits) & 0x1f];
-            j++;
-        }
-    }
-    PyBuffer_Release(&buf);
+    txt_buf = (uint8_t *)PyUnicode_1BYTE_DATA(pyrv);
 
-    // Sanity check:
-    if (bits != 0 || j != len * 8 / 5) {
+    // base32_encode() returns 0 on success:
+    status = base32_encode(bin_len, bin_buf, txt_len, txt_buf);
+    PyBuffer_Release(&pybuf);
+    if (status != 0) {
         PyErr_SetString(PyExc_RuntimeError, "something went very wrong");
-        Py_DECREF(rv);
+        Py_DECREF(pyrv);
         return NULL;
     }
-    return rv;
+    return pyrv;
 }
 
 
