@@ -134,6 +134,63 @@ class TestConstants(TestCase):
 
 
 class TestFunctions(TestCase):
+    def test_encode_x(self):
+        # Same, but this time using the standard base32 alphabet:
+        self.assertEqual(
+            dbase32.encode_x(b'\x00\x00\x00\x00\x00', base32_forward),
+            'AAAAAAAA'
+        )
+        self.assertEqual(
+            dbase32.encode_x(b'\xff\xff\xff\xff\xff', base32_forward),
+            '77777777'
+        )
+        self.assertEqual(
+            dbase32.encode_x(b'\x00' * 60, base32_forward),
+            'A' * 96
+        )
+        self.assertEqual(
+            dbase32.encode_x(b'\xff' * 60, base32_forward),
+            '7' * 96
+        )
+
+        # Compare against base64.b32encode() from stdlib:
+        for size in [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60]:
+            for i in range(100):
+                data = os.urandom(size)
+                self.assertEqual(
+                    dbase32.encode_x(data, base32_forward),
+                    b32encode(data).decode('utf-8')
+                )
+
+    def test_decode_x(self):
+        # Compare against base64.b32decode() from stdlib:
+        for size in [8, 16, 24, 32, 40, 48, 56, 64, 72, 80, 88, 96]:
+            for i in range(100):
+                text = ''.join(random.choice(base32_forward) for n in range(size))
+                assert len(text) == size
+                self.assertEqual(
+                    dbase32.decode_x(text, base32_reverse, 50, 90),
+                    b32decode(text.encode('utf-8'))
+                )
+        
+        # Same, but this time using the standard base32 alphabet:
+        self.assertEqual(
+            dbase32.decode_x('AAAAAAAA', base32_reverse, 50, 90),
+            b'\x00\x00\x00\x00\x00'
+        )
+        self.assertEqual(
+            dbase32.decode_x('77777777', base32_reverse, 50, 90),
+            b'\xff\xff\xff\xff\xff'
+        )
+        self.assertEqual(
+            dbase32.decode_x('A' * 96, base32_reverse, 50, 90),
+            b'\x00' * 60
+        )
+        self.assertEqual(
+            dbase32.decode_x('7' * 96, base32_reverse, 50, 90),
+            b'\xff' * 60
+        )
+
     def check_db32enc_common(self, db32enc):
         """
         Encoder tests both the Python and the C implementations must pass.
@@ -174,49 +231,28 @@ class TestFunctions(TestCase):
         self.assertEqual(db32enc(b'\x00' * 60), '3' * 96)
         self.assertEqual(db32enc(b'\xff' * 60), 'Y' * 96)
 
-    def test_enc(self):
-        self.check_db32enc_common(dbase32.enc)
+    def test_dbenc32_p(self):
+        """
+        Test the pure-Python implementation of db32enc().
+        """
+        self.check_db32enc_common(dbase32.db32enc_p)
 
-        # Same, but this time using the standard base32 alphabet:
-        self.assertEqual(
-            dbase32.enc(b'\x00\x00\x00\x00\x00', base32_forward),
-            'AAAAAAAA'
-        )
-        self.assertEqual(
-            dbase32.enc(b'\xff\xff\xff\xff\xff', base32_forward),
-            '77777777'
-        )
-        self.assertEqual(
-            dbase32.enc(b'\x00' * 60, base32_forward),
-            'A' * 96
-        )
-        self.assertEqual(
-            dbase32.enc(b'\xff' * 60, base32_forward),
-            '7' * 96
-        )
-
-        # Compare against base64.b32encode() from stdlib:
-        for size in [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60]:
-            for i in range(100):
-                data = os.urandom(size)
-                self.assertEqual(
-                    dbase32.enc(data, base32_forward),
-                    b32encode(data).decode('utf-8')
-                )
-
-    def test_db32enc(self):
+    def test_db32enc_c(self):
+        """
+        Test the C implementation of db32enc().
+        """
         if _dbase32 is None:
             self.skipTest('cannot import `_dbase32` C extension')
 
         self.check_db32enc_common(_dbase32.db32enc)
 
-        # Compare against the dbase32.enc() pure-Python version:
+        # Compare against the Python version db32enc_p
         for size in [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60]:
             for i in range(1000):
                 data = os.urandom(size)
                 self.assertEqual(
                     _dbase32.db32enc(data),
-                    dbase32.enc(data)
+                    dbase32.db32enc_p(data)
                 )
 
     def check_db32dec_common(self, db32dec):
@@ -270,50 +306,28 @@ class TestFunctions(TestCase):
         self.assertEqual(db32dec('3' * 96), b'\x00' * 60)
         self.assertEqual(db32dec('Y' * 96), b'\xff' * 60)
 
-    def test_dec(self):
-        self.check_db32dec_common(dbase32.dec)
+    def test_db32dec_p(self):
+        """
+        Test the pure-Python implementation of db32enc().
+        """
+        self.check_db32dec_common(dbase32.db32dec_p)
 
-        # Same, but this time using the standard base32 alphabet:
-        self.assertEqual(
-            dbase32.dec('AAAAAAAA', base32_reverse, (50, 90)),
-            b'\x00\x00\x00\x00\x00'
-        )
-        self.assertEqual(
-            dbase32.dec('77777777', base32_reverse, (50, 90)),
-            b'\xff\xff\xff\xff\xff'
-        )
-        self.assertEqual(
-            dbase32.dec('A' * 96, base32_reverse, (50, 90)),
-            b'\x00' * 60
-        )
-        self.assertEqual(
-            dbase32.dec('7' * 96, base32_reverse, (50, 90)),
-            b'\xff' * 60
-        )
-
-        # Compare against base64.b32decode() from stdlib:
-        for size in [8, 16, 24, 32, 40, 48, 56, 64, 72, 80, 88, 96]:
-            for i in range(100):
-                text = ''.join(random.choice(base32_forward) for n in range(size))
-                assert len(text) == size
-                self.assertEqual(
-                    dbase32.dec(text, base32_reverse, (50, 90)),
-                    b32decode(text.encode('utf-8'))
-                )
-
-    def test_db32dec(self):
+    def test_db32dec_c(self):
+        """
+        Test the C implementation of db32enc().
+        """
         if _dbase32 is None:
             self.skipTest('cannot import `_dbase32` C extension')
 
         self.check_db32dec_common(_dbase32.db32dec)
 
-        # Compare against the dbase32.dec() pure-Python version:
+        # Compare against the dbase32.db32dec_p pure-Python version:
         for size in [8, 16, 24, 32, 40, 48, 56, 64, 72, 80, 88, 96]:
             for i in range(100):
                 text = ''.join(random.choice(dbase32.forward) for n in range(size))
                 assert len(text) == size
                 self.assertEqual(
                     _dbase32.db32dec(text),
-                    dbase32.dec(text)
+                    dbase32.db32dec_p(text)
                 )
 
