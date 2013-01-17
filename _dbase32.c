@@ -170,7 +170,7 @@ encode_x(const size_t bin_len, const uint8_t *bin_buf,
         bits += 8;
         while (bits >= 5) {
             bits -= 5;
-            txt_buf[j] = x_forward[(taxi >> bits) & 0x1f];
+            txt_buf[j] = x_forward[(taxi >> bits) & 31];
             j++;
         }
     }
@@ -219,7 +219,7 @@ decode_x(const size_t txt_len, const uint8_t *txt_buf,
         bits += 5;
         while (bits >= 8) {
             bits -= 8;
-            bin_buf[j] = (taxi >> bits) & 0xff;
+            bin_buf[j] = (taxi >> bits) & 255;
             j++;
         }
     }
