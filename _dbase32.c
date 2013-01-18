@@ -178,8 +178,8 @@ encode_x(const size_t bin_len, const uint8_t *bin_buf,
         txt_buf[3] = x_forward[(taxi >> 20) & 31];
         txt_buf[4] = x_forward[(taxi >> 15) & 31];
         txt_buf[5] = x_forward[(taxi >> 10) & 31];
-        txt_buf[6] = x_forward[(taxi >> 5) & 31];
-        txt_buf[7] = x_forward[taxi & 31];
+        txt_buf[6] = x_forward[(taxi >>  5) & 31];
+        txt_buf[7] = x_forward[ taxi & 31 ];
 
         // move the pointers
         bin_buf += 5;
