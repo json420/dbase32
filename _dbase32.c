@@ -169,7 +169,7 @@ decode_x(const size_t txt_len, const uint8_t *txt_buf,
          const uint8_t *x_reverse)
 {
     size_t i, block, count;
-    uint8_t r, highbits;
+    uint8_t r;
     uint64_t taxi = 0;
 
     if (txt_len < 8 || txt_len > MAX_TXT_LEN || txt_len % 8 != 0) {
@@ -183,43 +183,12 @@ decode_x(const size_t txt_len, const uint8_t *txt_buf,
     for (block=0; block < count; block++) {
 
         // pack 40 bits into the taxi (5 bits at a time):
-        highbits = 0;
-
-        r = x_reverse[txt_buf[0]];
-        highbits |= r;
-        taxi = (taxi << 5) | r;
-        r = x_reverse[txt_buf[1]];
-        highbits |= r;
-        taxi = (taxi << 5) | r;
-        r = x_reverse[txt_buf[2]];
-        highbits |= r;
-        taxi = (taxi << 5) | r;
-        r = x_reverse[txt_buf[3]];
-        highbits |= r;
-        taxi = (taxi << 5) | r;
-        r = x_reverse[txt_buf[4]];
-        highbits |= r;
-        taxi = (taxi << 5) | r;
-        r = x_reverse[txt_buf[5]];
-        highbits |= r;
-        taxi = (taxi << 5) | r;
-        r = x_reverse[txt_buf[6]];
-        highbits |= r;
-        taxi = (taxi << 5) | r;
-        r = x_reverse[txt_buf[7]];
-        highbits |= r;
-        taxi = (taxi << 5) | r;
-
-        // We're optimistic about errors and only check once, after each 40-bit
-        // block is done:
-        if (highbits & 224) {
-            for (i=0; i < 8; i++) {
-                r = x_reverse[txt_buf[i]];
-                if (r > 31) {
-                    return txt_buf[i];
-                }
+        for (i=0; i < 8; i++) {
+            r = x_reverse[txt_buf[i]];
+            taxi = (taxi << 5) | r;
+            if (r > 31) {
+                return txt_buf[i];  // invalid base32 letter (a 255 in reverse table)
             }
-            return -4;  // huh?
         }
 
         // unpack 40 bits from the taxi (8 bits at a time):
