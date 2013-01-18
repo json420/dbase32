@@ -153,9 +153,8 @@ encode_x(const size_t bin_len, const uint8_t *bin_buf,
          const size_t txt_len,       uint8_t *txt_buf,
          const uint8_t *x_forward)
 {
-    size_t i, j;
-    uint16_t taxi = 0;
-    uint8_t bits = 0;
+    uint8_t block, count;
+    uint64_t taxi = 0;
 
     if (bin_len < 5 || bin_len > MAX_BIN_LEN || bin_len % 5 != 0) {
         return 1;
@@ -163,17 +162,28 @@ encode_x(const size_t bin_len, const uint8_t *bin_buf,
     if (txt_len != bin_len * 8 / 5) {
         return 2;
     }
-    for (i=j=0; i < bin_len; i++) {
-        taxi = (taxi << 8) | bin_buf[i];
-        bits += 8;
-        while (bits >= 5) {
-            bits -= 5;
-            txt_buf[j] = x_forward[(taxi >> bits) & 31];
-            j++;
-        }
-    }
-    if (bits != 0 || j != txt_len || i != bin_len) {
-        return 3;
+    count = bin_len / 5;
+    for (block=0; block < count; block++) {
+        // pack 40 bits onto taxi
+        taxi = (taxi << 8) | bin_buf[0];
+        taxi = (taxi << 8) | bin_buf[1];
+        taxi = (taxi << 8) | bin_buf[2];
+        taxi = (taxi << 8) | bin_buf[3];
+        taxi = (taxi << 8) | bin_buf[4];
+
+        // unpack 40 bits onto taxi
+        txt_buf[0] = x_forward[(taxi >> 35) & 31];
+        txt_buf[1] = x_forward[(taxi >> 30) & 31];
+        txt_buf[2] = x_forward[(taxi >> 25) & 31];
+        txt_buf[3] = x_forward[(taxi >> 20) & 31];
+        txt_buf[4] = x_forward[(taxi >> 15) & 31];
+        txt_buf[5] = x_forward[(taxi >> 10) & 31];
+        txt_buf[6] = x_forward[(taxi >> 5) & 31];
+        txt_buf[7] = x_forward[taxi & 31];
+
+        // move the pointers
+        bin_buf += 5;
+        txt_buf += 8;
     }
     return 0;
 }
