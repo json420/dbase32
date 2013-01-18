@@ -149,4 +149,11 @@ The topmost offers the max possible symbol difference from RFC-3548 (d=4), the
 2nd has (d=3), and the bottom three all have (d=2).  So any of them would
 work, as we only need d=1.
 
-It may seem like splitting hairs, but I'm a big believer 
+It may seem like splitting hairs, but I think even small improvements in how
+quickly one can understand a technology will a big impact on its adoption
+success.  We certainly don't want something that is *more* complex than
+RFC-3548.
+
+We have some solid engineering problems were solving, issues that might effect
+anyone using base32-encoded IDs, especially in document oriented databases,
+distributed file systems, and so on.
