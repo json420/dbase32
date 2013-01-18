@@ -269,6 +269,12 @@ def sb32enc(data):
 def sb32dec(text):
     return decode_x(text, SB32_REVERSE, SB32_START, SB32_END)
 
+def b32enc(data):
+    return encode_x(data, B32_FORWARD)
+
+def b32dec(text):
+    return decode_x(text, B32_REVERSE, B32_START, B32_END)
+
 
 try:
     from _dbase32 import db32enc_c, db32dec_c
