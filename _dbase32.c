@@ -31,8 +31,7 @@ Authors:
     encode_x() can encode to an arbitrary base32 alphabet by giving it an
     appropriate forward-table.
 
-    decode_x() can decode the same when given the corresponding reverse-table,
-    plus the corresponding start and end character values.
+    decode_x() can decode the same when given the corresponding reverse-table.
 
     Neither function attempts to validate the tables in anyway, both functions
     assume the tables are well-formed.  The tables are not expected to be
@@ -48,95 +47,61 @@ Authors:
 static const uint8_t DB32_START = 51;
 static const uint8_t DB32_END = 89;
 static const uint8_t DB32_FORWARD[32] = "3456789ABCDEFGHIJKLMNOPQRSTUVWXY";
-static const uint8_t DB32_REVERSE[39] = {
-      0,  // 51 '3' [ 0]
-      1,  // 52 '4' [ 1]
-      2,  // 53 '5' [ 2]
-      3,  // 54 '6' [ 3]
-      4,  // 55 '7' [ 4]
-      5,  // 56 '8' [ 5]
-      6,  // 57 '9' [ 6]
-    255,  // 58 ':' [ 7]
-    255,  // 59 ';' [ 8]
-    255,  // 60 '<' [ 9]
-    255,  // 61 '=' [10]
-    255,  // 62 '>' [11]
-    255,  // 63 '?' [12]
-    255,  // 64 '@' [13]
-      7,  // 65 'A' [14]
-      8,  // 66 'B' [15]
-      9,  // 67 'C' [16]
-     10,  // 68 'D' [17]
-     11,  // 69 'E' [18]
-     12,  // 70 'F' [19]
-     13,  // 71 'G' [20]
-     14,  // 72 'H' [21]
-     15,  // 73 'I' [22]
-     16,  // 74 'J' [23]
-     17,  // 75 'K' [24]
-     18,  // 76 'L' [25]
-     19,  // 77 'M' [26]
-     20,  // 78 'N' [27]
-     21,  // 79 'O' [28]
-     22,  // 80 'P' [29]
-     23,  // 81 'Q' [30]
-     24,  // 82 'R' [31]
-     25,  // 83 'S' [32]
-     26,  // 84 'T' [33]
-     27,  // 85 'U' [34]
-     28,  // 86 'V' [35]
-     29,  // 87 'W' [36]
-     30,  // 88 'X' [37]
-     31,  // 89 'Y' [38]
-};
-
-// SB32: Sorted-Base32: standard RFC-3548 letters, but in sorted order
-// [removes 0, 1, 8, 9]
-static const uint8_t SB32_START = 50;
-static const uint8_t SB32_END = 90;
-static const uint8_t SB32_FORWARD[32] = "234567ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-static const uint8_t SB32_REVERSE[41] = {
-      0,  // 50 '2' [ 0]
-      1,  // 51 '3' [ 1]
-      2,  // 52 '4' [ 2]
-      3,  // 53 '5' [ 3]
-      4,  // 54 '6' [ 4]
-      5,  // 55 '7' [ 5]
-    255,  // 56 '8' [ 6]
-    255,  // 57 '9' [ 7]
-    255,  // 58 ':' [ 8]
-    255,  // 59 ';' [ 9]
-    255,  // 60 '<' [10]
-    255,  // 61 '=' [11]
-    255,  // 62 '>' [12]
-    255,  // 63 '?' [13]
-    255,  // 64 '@' [14]
-      6,  // 65 'A' [15]
-      7,  // 66 'B' [16]
-      8,  // 67 'C' [17]
-      9,  // 68 'D' [18]
-     10,  // 69 'E' [19]
-     11,  // 70 'F' [20]
-     12,  // 71 'G' [21]
-     13,  // 72 'H' [22]
-     14,  // 73 'I' [23]
-     15,  // 74 'J' [24]
-     16,  // 75 'K' [25]
-     17,  // 76 'L' [26]
-     18,  // 77 'M' [27]
-     19,  // 78 'N' [28]
-     20,  // 79 'O' [29]
-     21,  // 80 'P' [30]
-     22,  // 81 'Q' [31]
-     23,  // 82 'R' [32]
-     24,  // 83 'S' [33]
-     25,  // 84 'T' [34]
-     26,  // 85 'U' [35]
-     27,  // 86 'V' [36]
-     28,  // 87 'W' [37]
-     29,  // 88 'X' [38]
-     30,  // 89 'Y' [39]
-     31,  // 90 'Z' [40]
+static const uint8_t DB32_REVERSE[256] = {
+    255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,
+    255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,
+    255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,
+    255,255,255,
+      0,  // '3' [51]
+      1,  // '4' [52]
+      2,  // '5' [53]
+      3,  // '6' [54]
+      4,  // '7' [55]
+      5,  // '8' [56]
+      6,  // '9' [57]
+    255,  // ':' [58]
+    255,  // ';' [59]
+    255,  // '<' [60]
+    255,  // '=' [61]
+    255,  // '>' [62]
+    255,  // '?' [63]
+    255,  // '@' [64]
+      7,  // 'A' [65]
+      8,  // 'B' [66]
+      9,  // 'C' [67]
+     10,  // 'D' [68]
+     11,  // 'E' [69]
+     12,  // 'F' [70]
+     13,  // 'G' [71]
+     14,  // 'H' [72]
+     15,  // 'I' [73]
+     16,  // 'J' [74]
+     17,  // 'K' [75]
+     18,  // 'L' [76]
+     19,  // 'M' [77]
+     20,  // 'N' [78]
+     21,  // 'O' [79]
+     22,  // 'P' [80]
+     23,  // 'Q' [81]
+     24,  // 'R' [82]
+     25,  // 'S' [83]
+     26,  // 'T' [84]
+     27,  // 'U' [85]
+     28,  // 'V' [86]
+     29,  // 'W' [87]
+     30,  // 'X' [88]
+     31,  // 'Y' [89]
+    255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,
+    255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,
+    255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,
+    255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,
+    255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,
+    255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,
+    255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,
+    255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,
+    255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,
+    255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,
+    255,255,255,255,255,255,
 };
 
 
@@ -164,14 +129,14 @@ encode_x(const size_t bin_len, const uint8_t *bin_buf,
     }
     count = bin_len / 5;
     for (block=0; block < count; block++) {
-        // pack 40 bits onto taxi
+        // pack 40 bits into the taxi (8 bits at a time)
         taxi = (taxi << 8) | bin_buf[0];
         taxi = (taxi << 8) | bin_buf[1];
         taxi = (taxi << 8) | bin_buf[2];
         taxi = (taxi << 8) | bin_buf[3];
         taxi = (taxi << 8) | bin_buf[4];
 
-        // unpack 40 bits from taxi
+        // unpack 40 bits from the taxi (5 bits at a time)
         txt_buf[0] = x_forward[(taxi >> 35) & 31];
         txt_buf[1] = x_forward[(taxi >> 30) & 31];
         txt_buf[2] = x_forward[(taxi >> 25) & 31];
@@ -189,7 +154,7 @@ encode_x(const size_t bin_len, const uint8_t *bin_buf,
 }
 
 
-/* decode_x(): decode using alphabet defined by x_reverse, x_start, x_end
+/* decode_x(): decode using alphabet defined by x_reverse
 
 Return value is the status:
     status >=  0 means invalid base32 letter (char is returned)
@@ -201,10 +166,10 @@ Return value is the status:
 static int
 decode_x(const size_t txt_len, const uint8_t *txt_buf,
          const size_t bin_len,       uint8_t *bin_buf,
-         const uint8_t *x_reverse, const uint8_t x_start, const uint8_t x_end)
+         const uint8_t *x_reverse)
 {
     size_t i;
-    uint8_t c, r;
+    uint8_t r;
     uint8_t block, count;
     uint64_t taxi = 0;
 
@@ -219,14 +184,10 @@ decode_x(const size_t txt_len, const uint8_t *txt_buf,
     for (block=0; block < count; block++) {
 
         // pack 40 bits onto taxi (5 bits at a time):
-        for (i = 0; i < 8; i++) {
-            c = txt_buf[i];
-            if (c < x_start || c > x_end) {
-                return c;  // invalid base32 letter
-            }
-            r = x_reverse[c - x_start];
+        for (i=0; i < 8; i++) {
+            r = x_reverse[txt_buf[i]];
             if (r > 31) {
-                return c;  // invalid base32 letter (a 255 in reverse table)
+                return txt_buf[i];  // invalid base32 letter (a 255 in reverse table)
             }
             taxi = (taxi << 5) | r;
         }
@@ -241,57 +202,6 @@ decode_x(const size_t txt_len, const uint8_t *txt_buf,
         // move the pointers
         txt_buf += 8;
         bin_buf += 5;
-    }
-    return -1;
-}
-
-
-/* Experimental decoder that doesn't use a reverse table
-
-     3   9     A   Y
-    51  57    65  89
-    ======    ======
-      51        58
-*/
-static int
-decode_db32(const size_t txt_len, const uint8_t *txt_buf,
-            const size_t bin_len,       uint8_t *bin_buf)
-{
-    size_t i, j;
-    uint8_t c, r;
-    uint16_t taxi = 0;
-    uint8_t bits = 0;
-
-    if (txt_len < 8 || txt_len > MAX_TXT_LEN || txt_len % 8 != 0) {
-        return -2;
-    }
-    if (bin_len != txt_len * 5 / 8) {
-        return -3;
-    }
-    for (i=j=0; i < txt_len; i++) {
-        c = txt_buf[i];
-        if (c > 89) {
-            return c;
-        }
-        if (c >= 65) {
-            r = c - 58;
-        }
-        else if (c >= 51 && c <= 57) {
-            r = c - 51;
-        }
-        else {
-            return c;
-        }
-        taxi = (taxi << 5) | r;
-        bits += 5;
-        while (bits >= 8) {
-            bits -= 8;
-            bin_buf[j] = (taxi >> bits) & 0xff;
-            j++;
-        }
-    }
-    if (bits != 0 || j != bin_len || i != txt_len) {
-        return -4;
     }
     return -1;
 }
@@ -383,10 +293,7 @@ dbase32_db32dec(PyObject *self, PyObject *args)
     bin_buf = (uint8_t *)PyBytes_AS_STRING(pyret);
 
     // decode_x() returns -1 on success:
-    status = decode_x(
-        txt_len, txt_buf, bin_len, bin_buf,
-        DB32_REVERSE, DB32_START, DB32_END
-    );
+    status = decode_x(txt_len, txt_buf, bin_len, bin_buf, DB32_REVERSE);
     if (status != -1) {
         if (status >= 0) {
             PyErr_Format(PyExc_ValueError, "invalid base32 letter: %c", status);

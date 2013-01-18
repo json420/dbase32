@@ -25,7 +25,7 @@
 import timeit
 
 setup = """
-gc.enable()
+
 import os
 from base64 import b32encode, b32decode, b64encode, b64decode
 
