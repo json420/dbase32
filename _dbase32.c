@@ -163,7 +163,7 @@ encode_x(const size_t bin_len, const uint8_t *bin_buf,
     if (txt_len != bin_len * 8 / 5) {
         return 2;
     }
-    for (i = j = 0; i < bin_len; i++) {
+    for (i=j=0; i < bin_len; i++) {
         taxi = (taxi << 8) | bin_buf[i];
         bits += 8;
         while (bits >= 5) {
@@ -204,7 +204,7 @@ decode_x(const size_t txt_len, const uint8_t *txt_buf,
     if (bin_len != txt_len * 5 / 8) {
         return -3;
     }
-    for (i = j = 0; i < txt_len; i++) {
+    for (i=j=0; i < txt_len; i++) {
         c = txt_buf[i];
         if (c < x_start || c > x_end) {
             return c;  // invalid base32 letter
@@ -250,7 +250,7 @@ decode_db32(const size_t txt_len, const uint8_t *txt_buf,
     if (bin_len != txt_len * 5 / 8) {
         return -3;
     }
-    for (i = j = 0; i < txt_len; i++) {
+    for (i=j=0; i < txt_len; i++) {
         c = txt_buf[i];
         if (c > 89) {
             return c;
