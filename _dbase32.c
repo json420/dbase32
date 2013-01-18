@@ -150,7 +150,7 @@ Return value is the status:
 */
 static uint8_t
 encode_x(const size_t bin_len, const uint8_t *bin_buf,
-         const size_t txt_len, uint8_t *txt_buf,
+         const size_t txt_len,       uint8_t *txt_buf,
          const uint8_t *x_forward)
 {
     size_t i, j;
@@ -190,7 +190,7 @@ Return value is the status:
 */
 static int
 decode_x(const size_t txt_len, const uint8_t *txt_buf,
-         const size_t bin_len, uint8_t *bin_buf,
+         const size_t bin_len,       uint8_t *bin_buf,
          const uint8_t *x_reverse, const uint8_t x_start, const uint8_t x_end)
 {
     size_t i, j;
@@ -237,7 +237,7 @@ decode_x(const size_t txt_len, const uint8_t *txt_buf,
 */
 static int
 decode_db32(const size_t txt_len, const uint8_t *txt_buf,
-            const size_t bin_len, uint8_t *bin_buf)
+            const size_t bin_len,       uint8_t *bin_buf)
 {
     size_t i, j;
     uint8_t c, r;

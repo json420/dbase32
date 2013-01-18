@@ -110,7 +110,13 @@ hb32 = build_encoding('hb32', 'DMAN',
     'Hippie-Base32', 'max unique-snowflake units away from RFC-3548'
 )
 
-encodings = (b32, sb32, db32)
+zb32 = build_encoding('zb32', '0lv2'.upper(),
+    'z-base-32',
+    'http://philzimmermann.com/docs/human-oriented-base-32-encoding.txt'
+)
+
+
+encodings = (b32, sb32, db32, zb32)
 for enc in encodings:
     print_c(enc)
 for enc in encodings:

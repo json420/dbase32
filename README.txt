@@ -108,16 +108,16 @@ widely used, we'd be doing everyone a disservice by popularizing an encoding
 that on the surface looks exactly like RFC-3548, but is in fact 100% not the
 same.
 
-So let's rule out "Sorted-Base32".
+So let's rule out Sorted-Base32.
 
 With even a single character difference in the encoding alphabet, it only
 takes a mere dozen or so random IDs to have an *extremely* high probably of
 getting an ID containing the symbol not present in the other alphabet.  At
-which point the coder knows the RFC-3548 looking-encoding is in fact not,
-and they can fix their code.
+which point the programmer knows the encoding that looked very much like
+RFC-3548 is in fact not, and they can fix their code.
 
 The problem of picking the character set comes down to this: here are 36
-symbols, and we need to pick 4 to exclude::
+symbols, and we need to remove 4 or them::
 
     0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ
 
@@ -150,10 +150,63 @@ The topmost offers the max possible symbol difference from RFC-3548 (d=4), the
 work, as we only need d=1.
 
 It may seem like splitting hairs, but I think even small improvements in how
-quickly one can understand a technology will a big impact on its adoption
-success.  We certainly don't want something that is *more* complex than
+quickly one can understand a technology can have a big impact on its adoption
+success.  We certainly don't want something that seems *more* complex than
 RFC-3548.
 
-We have some solid engineering problems were solving, issues that might effect
-anyone using base32-encoded IDs, especially in document oriented databases,
-distributed file systems, and so on.
+We have some solid engineering problems we're solving, issues that might
+effect anyone using base32-encoded IDs, especially in document oriented
+databases, distributed file systems, etc.  Even so, a non-standard base32
+encoding means we're going out on limb here.  It would be far better for
+Dmedia and Novacut if the encoding we come up with was also adopted by others.
+
+In addition to the above engineering advantages (for specific problems),
+I'd also like to have something that's just a tiny bit simpler and more
+elegant than RFC-3548. Not the same, and certainly not worse.  Better, even
+if only by a smidge.
+
+So instead of opening Pandora's box in an epic search for the best 32 letters,
+which would mean a reverse table that's bigger and full of more dead spots
+than RFC-3548, I think we should restrict ourselves to picking the best of the
+five above options.
+
+
+Signal to Noise
+---------------
+
+I'm unconvinced that one set of 32 can be much better than another because it
+depends so heavily on the font being used, and the people of the world of course
+aren't all using the same font.  Opinions are all over the map, for the most
+part.
+
+The once place where there seems to be near-consensus is around:
+
+    0O (zero and oh)
+    1I (one and eye)
+
+At least there is agreement on them being a problem, not so much on the best
+way fix it (remove the number, remove the letter, or even remove both?).
+
+Fortunately, our hands are tied and we can only remove the numbers, so lets do
+that.  Now we're down to three options, with two more symbols to remove,
+choosing among ``2``, ``3``, ``Y``, and ``Z``:
+
+     23456789ABCDEFGHIJKLMNOPQRSTUVWX YZ
+    2 3456789ABCDEFGHIJKLMNOPQRSTUVWXY Z
+    23 456789ABCDEFGHIJKLMNOPQRSTUVWXYZ
+
+    3456789ABCDEFGHIJKLMNOPQRSTUVWXY
+
+ 2 z
+ 3
+ 4 A
+
+
+ 8EMO
+ 01IO
+ B8IO
+
+01IO
+
+http://philzimmermann.com/docs/human-oriented-base-32-encoding.txt
+
