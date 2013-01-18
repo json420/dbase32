@@ -171,7 +171,7 @@ encode_x(const size_t bin_len, const uint8_t *bin_buf,
         taxi = (taxi << 8) | bin_buf[3];
         taxi = (taxi << 8) | bin_buf[4];
 
-        // unpack 40 bits onto taxi
+        // unpack 40 bits from taxi
         txt_buf[0] = x_forward[(taxi >> 35) & 31];
         txt_buf[1] = x_forward[(taxi >> 30) & 31];
         txt_buf[2] = x_forward[(taxi >> 25) & 31];
