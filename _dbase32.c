@@ -203,10 +203,10 @@ decode_x(const size_t txt_len, const uint8_t *txt_buf,
          const size_t bin_len,       uint8_t *bin_buf,
          const uint8_t *x_reverse, const uint8_t x_start, const uint8_t x_end)
 {
-    size_t i, j;
+    size_t i;
     uint8_t c, r;
-    uint16_t taxi = 0;
-    uint8_t bits = 0;
+    uint8_t block, count;
+    uint64_t taxi = 0;
 
     if (txt_len < 8 || txt_len > MAX_TXT_LEN || txt_len % 8 != 0) {
         return -2;
@@ -214,25 +214,33 @@ decode_x(const size_t txt_len, const uint8_t *txt_buf,
     if (bin_len != txt_len * 5 / 8) {
         return -3;
     }
-    for (i=j=0; i < txt_len; i++) {
-        c = txt_buf[i];
-        if (c < x_start || c > x_end) {
-            return c;  // invalid base32 letter
+
+    count = txt_len / 8;
+    for (block=0; block < count; block++) {
+
+        // pack 40 bits onto taxi (5 bits at a time):
+        for (i = 0; i < 8; i++) {
+            c = txt_buf[i];
+            if (c < x_start || c > x_end) {
+                return c;  // invalid base32 letter
+            }
+            r = x_reverse[c - x_start];
+            if (r > 31) {
+                return c;  // invalid base32 letter (a 255 in reverse table)
+            }
+            taxi = (taxi << 5) | r;
         }
-        r = x_reverse[c - x_start];
-        if (r > 31) {
-            return c;  // invalid base32 letter (a 255 in reverse table)
-        }
-        taxi = (taxi << 5) | r;
-        bits += 5;
-        while (bits >= 8) {
-            bits -= 8;
-            bin_buf[j] = (taxi >> bits) & 255;
-            j++;
-        }
-    }
-    if (bits != 0 || j != bin_len || i != txt_len) {
-        return -4;
+
+        // unpack 40 bits from taxi (8 bits at a time):
+        bin_buf[0] = (taxi >> 32) & 255;
+        bin_buf[1] = (taxi >> 24) & 255;
+        bin_buf[2] = (taxi >> 16) & 255;
+        bin_buf[3] = (taxi >>  8) & 255;
+        bin_buf[4] =  taxi & 255;
+
+        // move the pointers
+        txt_buf += 8;
+        bin_buf += 5;
     }
     return -1;
 }
