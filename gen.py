@@ -90,7 +90,7 @@ def print_c(*encodings):
 
 
 b32 = build_encoding('b32', '0189',
-    'RFC-3548 Base32', 'different binary vs encoded sort order (deal breaker)',
+    'RFC-3548', 'different binary vs encoded sort order (deal breaker!)',
     forward='ABCDEFGHIJKLMNOPQRSTUVWXYZ234567'
 )
 
@@ -99,9 +99,8 @@ sb32 = build_encoding('sb32', '0189',
 )
 
 db32 = build_encoding('db32', '012Z',
-    'Dmedia-Base32', 'non-standard 3-9, A-Y letters (sorted)'
+    'Dmedia-Base32', 'non-standard 3-9, A-Y letters'
 )
-
 
 izob32 = build_encoding('izob32', 'EMOC',
     'Base32-by-IZO', 'The great bearded one speaketh'
