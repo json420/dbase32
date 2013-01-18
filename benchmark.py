@@ -34,6 +34,11 @@ data = os.urandom(30)
 text_b32 = b32encode(data)
 text_b64 = b64encode(data)
 text_db32 = db32enc_p(data)
+
+assert b32decode(text_b32) == data
+assert b64decode(text_b64) == data
+assert db32dec_p(text_db32) == data
+assert db32dec_c(text_db32) == data
 """
 
 N = 100 * 1000
@@ -56,7 +61,7 @@ print('')
 
 print('Decodes/second:')
 run('b32decode(text_b32)')
-run('b64decode(text_b32)')
+run('b64decode(text_b64)')
 run('db32dec_p(text_db32)')
 run('db32dec_c(text_db32)')
 print('')
