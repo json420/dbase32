@@ -179,7 +179,8 @@ decode_x(const size_t txt_len, const uint8_t *txt_buf,
     for (block=0; block < count; block++) {
         // Pack 40 bits into the taxi (5 bits at a time):
         // (gcc -O3 will properly unroll, looks too messy hand-unrolled)
-        for (highbits=i=0; i < 8; i++) {
+        highbits = 0;
+        for (i=0; i < 8; i++) {
             r = x_reverse[txt_buf[i]];
             highbits |= r;
             taxi = (taxi << 5) | r;
