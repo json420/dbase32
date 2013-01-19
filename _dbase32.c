@@ -126,14 +126,14 @@ encode_x(const size_t bin_len, const uint8_t *bin_buf,
     }
     count = bin_len / 5;
     for (block=0; block < count; block++) {
-        // pack 40 bits into the taxi (8 bits at a time)
+        // Pack 40 bits into the taxi (8 bits at a time):
         taxi = (taxi << 8) | bin_buf[0];
         taxi = (taxi << 8) | bin_buf[1];
         taxi = (taxi << 8) | bin_buf[2];
         taxi = (taxi << 8) | bin_buf[3];
         taxi = (taxi << 8) | bin_buf[4];
 
-        // unpack 40 bits from the taxi (5 bits at a time)
+        // Unpack 40 bits from the taxi (5 bits at a time):
         txt_buf[0] = x_forward[(taxi >> 35) & 31];
         txt_buf[1] = x_forward[(taxi >> 30) & 31];
         txt_buf[2] = x_forward[(taxi >> 25) & 31];
@@ -143,7 +143,7 @@ encode_x(const size_t bin_len, const uint8_t *bin_buf,
         txt_buf[6] = x_forward[(taxi >>  5) & 31];
         txt_buf[7] = x_forward[taxi & 31];
 
-        // move the pointers
+        // Move the pointers:
         bin_buf += 5;
         txt_buf += 8;
     }
@@ -177,14 +177,14 @@ decode_x(const size_t txt_len, const uint8_t *txt_buf,
     }
     count = txt_len / 8;
     for (block=0; block < count; block++) {
-        // pack 40 bits into the taxi (5 bits at a time):
+        // Pack 40 bits into the taxi (5 bits at a time):
         for (highbits=i=0; i < 8; i++) {
             r = x_reverse[txt_buf[i]];
             highbits |= r;
             taxi = (taxi << 5) | r;
         }
 
-        // faster if we remove the `if (r > 32)` out of the above loop:
+        // One error check (branch) per block, rather than 8:
         if (highbits & 224) {
             for (i=0; i < 8; i++) {
                 r = x_reverse[txt_buf[i]];
@@ -195,14 +195,14 @@ decode_x(const size_t txt_len, const uint8_t *txt_buf,
             return -4;  // huh?
         }
 
-        // unpack 40 bits from the taxi (8 bits at a time):
+        // Unpack 40 bits from the taxi (8 bits at a time):
         bin_buf[0] = (taxi >> 32) & 255;
         bin_buf[1] = (taxi >> 24) & 255;
         bin_buf[2] = (taxi >> 16) & 255;
         bin_buf[3] = (taxi >>  8) & 255;
         bin_buf[4] = taxi & 255;
 
-        // move the pointers
+        // Move the pointers:
         txt_buf += 8;
         bin_buf += 5;
     }
