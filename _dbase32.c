@@ -194,7 +194,7 @@ decode_x(const size_t txt_len, const uint8_t *txt_buf,
            224: 11100000 <= bits set in table for invalid characters
 
         So above we preserve the 3 high bits in r (if ever set), and then do
-        a single check on the final r value.  Around a 20% faster, worth it.
+        a single error check on the final r value.  Around 20% faster, worth it.
         */
         if (r & 224) {
             for (i=0; i < 8; i++) {
