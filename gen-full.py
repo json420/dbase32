@@ -18,7 +18,7 @@ def do_iter(reverse):
     for (r, c, i) in reverse:
         if c is None:
             buf.append(str(r))
-            if len(buf) >= 16:
+            if len(buf) >= 19:
                 yield buf
                 buf = []
         else:
