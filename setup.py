@@ -72,7 +72,7 @@ class Test(Command):
 
 
 _dbase32 = Extension('_dbase32', sources=['_dbase32.c'],
-    extra_compile_args=['-O3']
+#    extra_compile_args=['-O3']
 )
 
 setup(

@@ -178,25 +178,24 @@ decode_x(const size_t txt_len, const uint8_t *txt_buf,
     count = txt_len / 8;
     for (block=0; block < count; block++) {
         // Pack 40 bits into the taxi (5 bits at a time):
-        // (gcc -O3 will properly unroll, looks too messy hand-unrolled)
-        r = 0;
-        for (i=0; i < 8; i++) {
-            r = (r & 224) | x_reverse[txt_buf[i]];
-            taxi = (taxi << 5) | r;
-        }
+        r = x_reverse[txt_buf[0]];                taxi = (taxi << 5) | r;
+        r = x_reverse[txt_buf[1]] | (r & 224);    taxi = (taxi << 5) | r;
+        r = x_reverse[txt_buf[2]] | (r & 224);    taxi = (taxi << 5) | r;
+        r = x_reverse[txt_buf[3]] | (r & 224);    taxi = (taxi << 5) | r;
+        r = x_reverse[txt_buf[4]] | (r & 224);    taxi = (taxi << 5) | r;
+        r = x_reverse[txt_buf[5]] | (r & 224);    taxi = (taxi << 5) | r;
+        r = x_reverse[txt_buf[6]] | (r & 224);    taxi = (taxi << 5) | r;
+        r = x_reverse[txt_buf[7]] | (r & 224);    taxi = (taxi << 5) | r;
 
         /*
-        r = (r & 224) | x_reverse[txt_buf[0]];    taxi = (taxi << 5) | r;
-        r = (r & 224) | x_reverse[txt_buf[1]];    taxi = (taxi << 5) | r;
-        r = (r & 224) | x_reverse[txt_buf[2]];    taxi = (taxi << 5) | r;
-        r = (r & 224) | x_reverse[txt_buf[3]];    taxi = (taxi << 5) | r;
-        r = (r & 224) | x_reverse[txt_buf[4]];    taxi = (taxi << 5) | r;
-        r = (r & 224) | x_reverse[txt_buf[5]];    taxi = (taxi << 5) | r;
-        r = (r & 224) | x_reverse[txt_buf[6]];    taxi = (taxi << 5) | r;
-        r = (r & 224) | x_reverse[txt_buf[7]];    taxi = (taxi << 5) | r;
-        */
+        Only one error check (branch) per block, rather than 8:
 
-        // One error check (branch) per block, rather than 8:
+            31: 00011111 <= bits set in table for valid characters
+           224: 11100000 <= bits set in table for invalid characters
+
+        So above we preserve the 3 high bits in r (if ever set), and then do
+        a single error on the final r value.  Around a 20% faster, worth it.
+        */
         if (r & 224) {
             for (i=0; i < 8; i++) {
                 r = x_reverse[txt_buf[i]];
@@ -204,7 +203,7 @@ decode_x(const size_t txt_len, const uint8_t *txt_buf,
                     return txt_buf[i];
                 }
             }
-            return -4;  // huh?
+            return -4;  // Whoa, we screwed up something!
         }
 
         // Unpack 40 bits from the taxi (8 bits at a time):
