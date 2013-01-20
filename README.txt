@@ -195,18 +195,40 @@ choosing among ``2``, ``3``, ``Y``, and ``Z``:
     2 3456789ABCDEFGHIJKLMNOPQRSTUVWXY Z
     23 456789ABCDEFGHIJKLMNOPQRSTUVWXYZ
 
+We can remove YZ, 2Z, or 23.  My vote is to remove 2 and Z, as they look quite
+similar to each other, and I feel that probably provides the best overall
+signal-to-noise.  So that gives us this alphabet:
+
     3456789ABCDEFGHIJKLMNOPQRSTUVWXY
 
- 2 z
- 3
- 4 A
+
+Dmedia-Base32
+-------------
+
+    =============  ===========  ===========  ===========
+       Binary         Base32       S-Base32     D-Base32
+    =============  ===========  ===========  ===========
+     0 0000000000  13 3XO53XO5   0 22222222   0 33333333
+     1 1111111111  14 53XO53XO   1 46CL46CL   1 57BK57BK
+     2 2222222222  15 77777777   2 6CL46CL4   2 7BK57BK5
+     3 3333333333   0 AAAAAAAA   3 AGTNAGTN   3 9FSM9FSM
+     4 4444444444   1 CEIRCEIR   4 CL46CL46   4 BK57BK57
+     5 5555555555   2 EIRCEIRC   5 EPEPEPEP   5 DODODODO
+     6 6666666666   3 GMZTGMZT   6 GTNAGTNA   6 FSM9FSM9
+     7 7777777777   4 IRCEIRCE   7 IXVRIXVR   7 HWUQHWUQ
+     8 8888888888   5 KVKVKVKV   8 L46CL46C   8 K57BK57B
+     9 9999999999   6 MZTGMZTG   9 NAGTNAGT   9 M9FSM9FS
+    10 aaaaaaaaaa   7 O53XO53X  10 PEPEPEPE  10 ODODODOD
+    11 bbbbbbbbbb   8 RCEIRCEI  11 RIXVRIXV  11 QHWUQHWU
+    12 cccccccccc   9 TGMZTGMZ  12 TNAGTNAG  12 SM9FSM9F
+    13 dddddddddd  10 VKVKVKVK  13 VRIXVRIX  13 UQHWUQHW
+    14 eeeeeeeeee  11 XO53XO53  14 XVRIXVRI  14 WUQHWUQH
+    15 ffffffffff  12 ZTGMZTGM  15 ZZZZZZZZ  15 YYYYYYYY
+    =============  ===========  ===========  ===========
 
 
- 8EMO
- 01IO
- B8IO
+A Note on Lowercase
+-------------------
 
-01IO
-
-http://philzimmermann.com/docs/human-oriented-base-32-encoding.txt
+    http://philzimmermann.com/docs/human-oriented-base-32-encoding.txt
 
