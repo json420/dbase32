@@ -176,15 +176,69 @@ DB32_REVERSE = (
      31,  # 89 'Y' [38]
 )
 
+DB32_REVERSE_FULL = (
+    255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,
+    255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,
+    255,255,255,255,255,255,255,255,255,255,255,255,255,
+      0,  # '3' [51]
+      1,  # '4' [52]
+      2,  # '5' [53]
+      3,  # '6' [54]
+      4,  # '7' [55]
+      5,  # '8' [56]
+      6,  # '9' [57]
+    255,  # ':' [58]
+    255,  # ';' [59]
+    255,  # '<' [60]
+    255,  # '=' [61]
+    255,  # '>' [62]
+    255,  # '?' [63]
+    255,  # '@' [64]
+      7,  # 'A' [65]
+      8,  # 'B' [66]
+      9,  # 'C' [67]
+     10,  # 'D' [68]
+     11,  # 'E' [69]
+     12,  # 'F' [70]
+     13,  # 'G' [71]
+     14,  # 'H' [72]
+     15,  # 'I' [73]
+     16,  # 'J' [74]
+     17,  # 'K' [75]
+     18,  # 'L' [76]
+     19,  # 'M' [77]
+     20,  # 'N' [78]
+     21,  # 'O' [79]
+     22,  # 'P' [80]
+     23,  # 'Q' [81]
+     24,  # 'R' [82]
+     25,  # 'S' [83]
+     26,  # 'T' [84]
+     27,  # 'U' [85]
+     28,  # 'V' [86]
+     29,  # 'W' [87]
+     30,  # 'X' [88]
+     31,  # 'Y' [89]
+    255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,
+    255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,
+    255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,
+    255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,
+    255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,
+    255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,
+    255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,
+    255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,
+    255,255,255,255,255,255,255,255,255,255,255,255,255,255,
+)
+
 
 def _encode_x_iter(data, x_forward):
     offset = 0
     for i in range(len(data) // 5):
         taxi = data[offset]
-        taxi = (taxi << 8) | data[offset + 1]
-        taxi = (taxi << 8) | data[offset + 2]
-        taxi = (taxi << 8) | data[offset + 3]
-        taxi = (taxi << 8) | data[offset + 4]
+        taxi = data[offset + 1] | (taxi << 8) 
+        taxi = data[offset + 2] | (taxi << 8) 
+        taxi = data[offset + 3] | (taxi << 8) 
+        taxi = data[offset + 4] | (taxi << 8) 
         yield x_forward[(taxi >> 35) & 31]
         yield x_forward[(taxi >> 30) & 31]
         yield x_forward[(taxi >> 25) & 31]
@@ -209,6 +263,57 @@ def encode_x(data, x_forward):
             'len(data) is {}, need len(data) % 5 == 0'.format(len(data))
         )
     return ''.join(_encode_x_iter(data, x_forward))
+
+
+def _decode_x_iter2(text, x_reverse):
+    offset = 0
+    for i in range(len(text) // 8):
+        r = x_reverse[ord(text[offset])]
+        taxi = r
+        r = x_reverse[ord(text[offset + 1])] | (r & 224) 
+        taxi = r | (taxi << 5)
+        r = x_reverse[ord(text[offset + 2])] | (r & 224) 
+        taxi = r | (taxi << 5)
+        r = x_reverse[ord(text[offset + 3])] | (r & 224) 
+        taxi = r | (taxi << 5)
+        r = x_reverse[ord(text[offset + 4])] | (r & 224) 
+        taxi = r | (taxi << 5)
+        r = x_reverse[ord(text[offset + 5])] | (r & 224) 
+        taxi = r | (taxi << 5)
+        r = x_reverse[ord(text[offset + 6])] | (r & 224) 
+        taxi = r | (taxi << 5)
+        r = x_reverse[ord(text[offset + 7])] | (r & 224) 
+        taxi = r | (taxi << 5)
+
+        if (r & 224):
+            for j in range(8):
+                t = text[offset + j]
+                r = x_reverse[ord(t)]
+                if r > 31:
+                    raise ValueError('invalid base32 letter: {}'.format(t))
+            raise Exception('something went wrong!')
+
+        yield (taxi >> 32) & 255
+        yield (taxi >> 24) & 255
+        yield (taxi >> 16) & 255
+        yield (taxi >> 8) & 255
+        yield taxi & 255
+        offset += 8
+
+
+def decode_x2(text, x_reverse):
+    assert isinstance(text, str)
+    if not (8 <= len(text) <= MAX_TXT_LEN):
+        raise ValueError(
+            'len(text) is {}, need 8 <= len(text) <= {}'.format(
+                len(text), MAX_TXT_LEN
+            )
+        )
+    if len(text) % 8 != 0:
+        raise ValueError(
+            'len(text) is {}, need len(text) % 8 == 0'.format(len(text))
+        )
+    return bytes(_decode_x_iter2(text, x_reverse))
 
 
 def _decode_x_iter(text, x_reverse, x_start, x_end):
@@ -267,7 +372,7 @@ def db32dec_p(text):
     b'binary foo'
 
     """
-    return decode_x(text, DB32_REVERSE, DB32_START, DB32_END)
+    return decode_x2(text, DB32_REVERSE_FULL)
 
 
 def sb32enc(data):

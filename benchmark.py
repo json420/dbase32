@@ -42,7 +42,7 @@ assert db32dec_p(text_db32) == data
 assert db32dec_c(text_db32) == data
 """
 
-N = 5000 * 1000
+N = 50 * 1000
 
 def run(statement):
     t = timeit.Timer(statement, setup)
@@ -51,18 +51,18 @@ def run(statement):
     print('{:>14,}: {}'.format(rate, statement))
 
 
-print('')
+#print('')
 
-print('Encodes/second:')
-#run('b32encode(data)')
-#run('db32enc_p(data)')
-run('b64encode(data)')
-run('db32enc_c(data)')
-print('')
+#print('Encodes/second:')
+run('b32encode(data)')
+run('db32enc_p(data)')
+#run('b64encode(data)')
+#run('db32enc_c(data)')
+#print('')
 
-print('Decodes/second:')
-#run('b32decode(text_b32)')
-#run('db32dec_p(text_db32)')
-run('b64decode(text_b64)')
-run('db32dec_c(text_db32)')
-print('')
+#print('Decodes/second:')
+run('b32decode(text_b32)')
+run('db32dec_p(text_db32)')
+#run('b64decode(text_b64)')
+#run('db32dec_c(text_db32)')
+#print('')
