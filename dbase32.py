@@ -178,15 +178,22 @@ DB32_REVERSE = (
 
 
 def _encode_x_iter(data, x_forward):
-    taxi = 0
-    bits = 0
-    for d in data:
-        taxi = (taxi << 8) | d
-        bits += 8
-        while bits >= 5:
-            bits -= 5
-            yield x_forward[(taxi >> bits) & 31]
-    assert bits == 0
+    offset = 0
+    for i in range(len(data) // 5):
+        taxi = data[offset]
+        taxi = (taxi << 8) | data[offset + 1]
+        taxi = (taxi << 8) | data[offset + 2]
+        taxi = (taxi << 8) | data[offset + 3]
+        taxi = (taxi << 8) | data[offset + 4]
+        yield x_forward[(taxi >> 35) & 31]
+        yield x_forward[(taxi >> 30) & 31]
+        yield x_forward[(taxi >> 25) & 31]
+        yield x_forward[(taxi >> 20) & 31]
+        yield x_forward[(taxi >> 15) & 31]
+        yield x_forward[(taxi >> 10) & 31]
+        yield x_forward[(taxi >>  5) & 31]
+        yield x_forward[taxi & 31]
+        offset += 5
 
 
 def encode_x(data, x_forward):
