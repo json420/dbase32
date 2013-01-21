@@ -116,7 +116,7 @@ encode_x(const size_t bin_len, const uint8_t *bin_buf,
          const uint8_t *x_forward)
 {
     size_t block, count;
-    uint64_t taxi = 0;
+    uint64_t taxi;
 
     if (bin_len < 5 || bin_len > MAX_BIN_LEN || bin_len % 5 != 0) {
         return 1;
@@ -127,11 +127,11 @@ encode_x(const size_t bin_len, const uint8_t *bin_buf,
     count = bin_len / 5;
     for (block=0; block < count; block++) {
         // Pack 40 bits into the taxi (8 bits at a time):
-        taxi = (taxi << 8) | bin_buf[0];
-        taxi = (taxi << 8) | bin_buf[1];
-        taxi = (taxi << 8) | bin_buf[2];
-        taxi = (taxi << 8) | bin_buf[3];
-        taxi = (taxi << 8) | bin_buf[4];
+        taxi = bin_buf[0];
+        taxi = bin_buf[1] | (taxi << 8);
+        taxi = bin_buf[2] | (taxi << 8);
+        taxi = bin_buf[3] | (taxi << 8);
+        taxi = bin_buf[4] | (taxi << 8);
 
         // Unpack 40 bits from the taxi (5 bits at a time):
         txt_buf[0] = x_forward[(taxi >> 35) & 31];
@@ -167,7 +167,7 @@ decode_x(const size_t txt_len, const uint8_t *txt_buf,
 {
     size_t i, block, count;
     uint8_t r;
-    uint64_t taxi = 0;
+    uint64_t taxi;
 
     if (txt_len < 8 || txt_len > MAX_TXT_LEN || txt_len % 8 != 0) {
         return -2;
@@ -178,14 +178,14 @@ decode_x(const size_t txt_len, const uint8_t *txt_buf,
     count = txt_len / 8;
     for (block=0; block < count; block++) {
         // Pack 40 bits into the taxi (5 bits at a time):
-        r = x_reverse[txt_buf[0]];                taxi = (taxi << 5) | r;
-        r = x_reverse[txt_buf[1]] | (r & 224);    taxi = (taxi << 5) | r;
-        r = x_reverse[txt_buf[2]] | (r & 224);    taxi = (taxi << 5) | r;
-        r = x_reverse[txt_buf[3]] | (r & 224);    taxi = (taxi << 5) | r;
-        r = x_reverse[txt_buf[4]] | (r & 224);    taxi = (taxi << 5) | r;
-        r = x_reverse[txt_buf[5]] | (r & 224);    taxi = (taxi << 5) | r;
-        r = x_reverse[txt_buf[6]] | (r & 224);    taxi = (taxi << 5) | r;
-        r = x_reverse[txt_buf[7]] | (r & 224);    taxi = (taxi << 5) | r;
+        r = x_reverse[txt_buf[0]];                taxi = r;
+        r = x_reverse[txt_buf[1]] | (r & 224);    taxi = r | (taxi << 5);
+        r = x_reverse[txt_buf[2]] | (r & 224);    taxi = r | (taxi << 5);
+        r = x_reverse[txt_buf[3]] | (r & 224);    taxi = r | (taxi << 5);
+        r = x_reverse[txt_buf[4]] | (r & 224);    taxi = r | (taxi << 5);
+        r = x_reverse[txt_buf[5]] | (r & 224);    taxi = r | (taxi << 5);
+        r = x_reverse[txt_buf[6]] | (r & 224);    taxi = r | (taxi << 5);
+        r = x_reverse[txt_buf[7]] | (r & 224);    taxi = r | (taxi << 5);
 
         /* Only one error check (branch) per block, rather than 8:
 
