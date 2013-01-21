@@ -187,15 +187,13 @@ decode_x(const size_t txt_len, const uint8_t *txt_buf,
         r = x_reverse[txt_buf[6]] | (r & 224);    taxi = (taxi << 5) | r;
         r = x_reverse[txt_buf[7]] | (r & 224);    taxi = (taxi << 5) | r;
 
-        /*
-        Only one error check (branch) per block, rather than 8:
+        /* Only one error check (branch) per block, rather than 8:
 
             31: 00011111 <= bits set in table for valid characters
            224: 11100000 <= bits set in table for invalid characters
 
         So above we preserve the 3 high bits in r (if ever set), and then do
-        a single error check on the final r value.
-        */
+        a single error check on the final r value.  */
         if (r & 224) {
             for (i=0; i < 8; i++) {
                 r = x_reverse[txt_buf[i]];
