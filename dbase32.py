@@ -234,11 +234,12 @@ DB32_REVERSE_FULL = (
 def _encode_x_iter(data, x_forward):
     offset = 0
     for i in range(len(data) // 5):
-        taxi = data[offset]
-        taxi = data[offset + 1] | (taxi << 8) 
-        taxi = data[offset + 2] | (taxi << 8) 
-        taxi = data[offset + 3] | (taxi << 8) 
-        taxi = data[offset + 4] | (taxi << 8) 
+        block = data[offset:offset + 5]
+        taxi = block[0]
+        taxi = block[1] | (taxi << 8) 
+        taxi = block[2] | (taxi << 8) 
+        taxi = block[3] | (taxi << 8) 
+        taxi = block[4] | (taxi << 8) 
         yield x_forward[(taxi >> 35) & 31]
         yield x_forward[(taxi >> 30) & 31]
         yield x_forward[(taxi >> 25) & 31]
@@ -268,21 +269,22 @@ def encode_x(data, x_forward):
 def _decode_x_iter2(text, x_reverse):
     offset = 0
     for i in range(len(text) // 8):
-        r = x_reverse[ord(text[offset])]
+        block = text[offset:offset + 8]
+        r = x_reverse[ord(block[0])]
         taxi = r
-        r = x_reverse[ord(text[offset + 1])] | (r & 224) 
+        r = x_reverse[ord(block[1])] | (r & 224) 
         taxi = r | (taxi << 5)
-        r = x_reverse[ord(text[offset + 2])] | (r & 224) 
+        r = x_reverse[ord(block[2])] | (r & 224) 
         taxi = r | (taxi << 5)
-        r = x_reverse[ord(text[offset + 3])] | (r & 224) 
+        r = x_reverse[ord(block[3])] | (r & 224) 
         taxi = r | (taxi << 5)
-        r = x_reverse[ord(text[offset + 4])] | (r & 224) 
+        r = x_reverse[ord(block[4])] | (r & 224) 
         taxi = r | (taxi << 5)
-        r = x_reverse[ord(text[offset + 5])] | (r & 224) 
+        r = x_reverse[ord(block[5])] | (r & 224) 
         taxi = r | (taxi << 5)
-        r = x_reverse[ord(text[offset + 6])] | (r & 224) 
+        r = x_reverse[ord(block[6])] | (r & 224) 
         taxi = r | (taxi << 5)
-        r = x_reverse[ord(text[offset + 7])] | (r & 224) 
+        r = x_reverse[ord(block[7])] | (r & 224) 
         taxi = r | (taxi << 5)
 
         if (r & 224):
