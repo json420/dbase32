@@ -125,6 +125,7 @@ class TestFunctions(TestCase):
         self.assertIs(misc.check_forward(good), good)
 
     def test_gen_reverse(self):
+        # Dmedia-Base32:
         forward = '3456789ABCDEFGHIJKLMNOPQRSTUVWXY'
         reverse = misc.gen_reverse(forward)
         self.assertIsInstance(reverse, tuple)
@@ -148,13 +149,13 @@ class TestFunctions(TestCase):
                 self.assertEqual(r.value, forward.find(r.key))
         self.assertEqual(main,
             (
-                (51, '3', 0),
-                (52, '4', 1),
-                (53, '5', 2),
-                (54, '6', 3),
-                (55, '7', 4),
-                (56, '8', 5),
-                (57, '9', 6),
+                (51, '3',   0),
+                (52, '4',   1),
+                (53, '5',   2),
+                (54, '6',   3),
+                (55, '7',   4),
+                (56, '8',   5),
+                (57, '9',   6),
                 (58, ':', 255),
                 (59, ';', 255),
                 (60, '<', 255),
@@ -162,30 +163,98 @@ class TestFunctions(TestCase):
                 (62, '>', 255),
                 (63, '?', 255),
                 (64, '@', 255),
-                (65, 'A', 7),
-                (66, 'B', 8),
-                (67, 'C', 9),
-                (68, 'D', 10),
-                (69, 'E', 11),
-                (70, 'F', 12),
-                (71, 'G', 13),
-                (72, 'H', 14),
-                (73, 'I', 15),
-                (74, 'J', 16),
-                (75, 'K', 17),
-                (76, 'L', 18),
-                (77, 'M', 19),
-                (78, 'N', 20),
-                (79, 'O', 21),
-                (80, 'P', 22),
-                (81, 'Q', 23),
-                (82, 'R', 24),
-                (83, 'S', 25),
-                (84, 'T', 26),
-                (85, 'U', 27),
-                (86, 'V', 28),
-                (87, 'W', 29),
-                (88, 'X', 30),
-                (89, 'Y', 31),
+                (65, 'A',   7),
+                (66, 'B',   8),
+                (67, 'C',   9),
+                (68, 'D',  10),
+                (69, 'E',  11),
+                (70, 'F',  12),
+                (71, 'G',  13),
+                (72, 'H',  14),
+                (73, 'I',  15),
+                (74, 'J',  16),
+                (75, 'K',  17),
+                (76, 'L',  18),
+                (77, 'M',  19),
+                (78, 'N',  20),
+                (79, 'O',  21),
+                (80, 'P',  22),
+                (81, 'Q',  23),
+                (82, 'R',  24),
+                (83, 'S',  25),
+                (84, 'T',  26),
+                (85, 'U',  27),
+                (86, 'V',  28),
+                (87, 'W',  29),
+                (88, 'X',  30),
+                (89, 'Y',  31),
+            )
+        )
+
+        # Standard RFC-3548 Base32:
+        forward = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567'
+        reverse = misc.gen_reverse(forward)
+        self.assertIsInstance(reverse, tuple)
+        self.assertEqual(len(reverse), 256)
+        for (i, r) in enumerate(reverse):
+            self.assertIsInstance(r, misc.Reverse)
+            self.assertEqual(r.i, i)
+        count = 0
+        for (i, r) in enumerate(reverse[0:50]):
+            self.assertEqual(r, (i, None, 255))
+            count += 1
+        for (i, r) in enumerate(reverse[91:256]):
+            self.assertEqual(r, (91 + i, None, 255))
+            count += 1
+        main = reverse[50:91]
+        self.assertEqual(len(main) + count, 256)
+        for r in main:
+            self.assertEqual(r.key, chr(r.i))
+            self.assertEqual(r.i, ord(r.key))
+            if r.value != 255:
+                self.assertEqual(r.value, forward.find(r.key))
+        self.assertEqual(main,
+            (
+                (50, '2',  26),
+                (51, '3',  27),
+                (52, '4',  28),
+                (53, '5',  29),
+                (54, '6',  30),
+                (55, '7',  31),
+                (56, '8', 255),
+                (57, '9', 255),
+                (58, ':', 255),
+                (59, ';', 255),
+                (60, '<', 255),
+                (61, '=', 255),
+                (62, '>', 255),
+                (63, '?', 255),
+                (64, '@', 255),
+                (65, 'A',   0),
+                (66, 'B',   1),
+                (67, 'C',   2),
+                (68, 'D',   3),
+                (69, 'E',   4),
+                (70, 'F',   5),
+                (71, 'G',   6),
+                (72, 'H',   7),
+                (73, 'I',   8),
+                (74, 'J',   9),
+                (75, 'K',  10),
+                (76, 'L',  11),
+                (77, 'M',  12),
+                (78, 'N',  13),
+                (79, 'O',  14),
+                (80, 'P',  15),
+                (81, 'Q',  16),
+                (82, 'R',  17),
+                (83, 'S',  18),
+                (84, 'T',  19),
+                (85, 'U',  20),
+                (86, 'V',  21),
+                (87, 'W',  22),
+                (88, 'X',  23),
+                (89, 'Y',  24),
+                (90, 'Z',  25),
             )
         )
