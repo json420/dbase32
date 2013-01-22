@@ -54,7 +54,7 @@ class Test(Command):
         pass
 
     def run(self):
-        pynames = ['dbase32', 'test_dbase32']
+        pynames = ['dbase32', 'dbase32.tests']
 
         # Add unit-tests:
         loader = TestLoader()
@@ -83,7 +83,7 @@ setup(
     author='Jason Gerard DeRose',
     author_email='jderose@novacut.com',
     license='LGPLv3+',
-    py_modules=['dbase32', 'test_dbase32'],
+    packages=['dbase32', 'dbase32.tests'],
     ext_modules=[_dbase32],
     cmdclass={'test': Test},
 )
