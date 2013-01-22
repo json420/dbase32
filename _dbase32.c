@@ -27,23 +27,8 @@ Authors:
 #define MAX_BIN_LEN 60
 #define MAX_TXT_LEN 96
 
-/*
-    encode_x() can encode to an arbitrary base32 alphabet by giving it an
-    appropriate forward-table.
 
-    decode_x() can decode the same when given the corresponding reverse-table.
-
-    Neither function attempts to validate the tables in anyway, both functions
-    assume the tables are well-formed.  The tables are not expected to be
-    directly provided via user input, or even external API.  The tables are
-    static, pre-calculated values.
-
-    The gen.py script is used to create these tables... they should *not* be
-    created by hand!
-*/
-
-// DB32: Dmedia-Base32: non-standard 3-9, A-Y letters (sorted)
-// [removes 0, 1, 2, Z]
+// Dmedia-Base32: non-standard 3-9, A-Y letters (sorted)
 static const uint8_t DB32_START = 51;
 static const uint8_t DB32_END = 89;
 static const uint8_t DB32_FORWARD[32] = "3456789ABCDEFGHIJKLMNOPQRSTUVWXY";
@@ -102,18 +87,16 @@ static const uint8_t DB32_REVERSE[256] = {
 };
 
 
-/* encode_x(): encode using alphabet defined by x_forward
+/* dbase32_encode()
 
 Return value is the status:
     status == 0 means success
     status == 1 means invalid bin_len
     status == 2 means invalid txt_len
-    status == 3 means internal error
-*/
+    status == 3 means internal error  */
 static uint8_t
-encode_x(const size_t bin_len, const uint8_t *bin_buf,
-         const size_t txt_len,       uint8_t *txt_buf,
-         const uint8_t *x_forward)
+dbase32_encode(const size_t bin_len, const uint8_t *bin_buf,
+               const size_t txt_len,       uint8_t *txt_buf)
 {
     size_t block, count;
     uint64_t taxi;
@@ -134,14 +117,14 @@ encode_x(const size_t bin_len, const uint8_t *bin_buf,
         taxi = bin_buf[4] | (taxi << 8);
 
         // Unpack 40 bits from the taxi (5 bits at a time):
-        txt_buf[0] = x_forward[(taxi >> 35) & 31];
-        txt_buf[1] = x_forward[(taxi >> 30) & 31];
-        txt_buf[2] = x_forward[(taxi >> 25) & 31];
-        txt_buf[3] = x_forward[(taxi >> 20) & 31];
-        txt_buf[4] = x_forward[(taxi >> 15) & 31];
-        txt_buf[5] = x_forward[(taxi >> 10) & 31];
-        txt_buf[6] = x_forward[(taxi >>  5) & 31];
-        txt_buf[7] = x_forward[taxi & 31];
+        txt_buf[0] = DB32_FORWARD[(taxi >> 35) & 31];
+        txt_buf[1] = DB32_FORWARD[(taxi >> 30) & 31];
+        txt_buf[2] = DB32_FORWARD[(taxi >> 25) & 31];
+        txt_buf[3] = DB32_FORWARD[(taxi >> 20) & 31];
+        txt_buf[4] = DB32_FORWARD[(taxi >> 15) & 31];
+        txt_buf[5] = DB32_FORWARD[(taxi >> 10) & 31];
+        txt_buf[6] = DB32_FORWARD[(taxi >>  5) & 31];
+        txt_buf[7] = DB32_FORWARD[taxi & 31];
 
         // Move the pointers:
         bin_buf += 5;
@@ -151,19 +134,17 @@ encode_x(const size_t bin_len, const uint8_t *bin_buf,
 }
 
 
-/* decode_x(): decode using alphabet defined by x_reverse
+/* dbase32_decode()
 
 Return value is the status:
     status >=  0 means invalid base32 letter (char is returned)
     status == -1 means success
     status == -2 means invalid txt_len
     status == -3 means invalid bin_len
-    status == -4 means internal error
-*/
+    status == -4 means internal error  */
 static int
-decode_x(const size_t txt_len, const uint8_t *txt_buf,
-         const size_t bin_len,       uint8_t *bin_buf,
-         const uint8_t *x_reverse)
+dbase32_decode(const size_t txt_len, const uint8_t *txt_buf,
+               const size_t bin_len,       uint8_t *bin_buf)
 {
     size_t i, block, count;
     uint8_t r;
@@ -178,25 +159,25 @@ decode_x(const size_t txt_len, const uint8_t *txt_buf,
     count = txt_len / 8;
     for (block=0; block < count; block++) {
         // Pack 40 bits into the taxi (5 bits at a time):
-        r = x_reverse[txt_buf[0]];                taxi = r;
-        r = x_reverse[txt_buf[1]] | (r & 224);    taxi = r | (taxi << 5);
-        r = x_reverse[txt_buf[2]] | (r & 224);    taxi = r | (taxi << 5);
-        r = x_reverse[txt_buf[3]] | (r & 224);    taxi = r | (taxi << 5);
-        r = x_reverse[txt_buf[4]] | (r & 224);    taxi = r | (taxi << 5);
-        r = x_reverse[txt_buf[5]] | (r & 224);    taxi = r | (taxi << 5);
-        r = x_reverse[txt_buf[6]] | (r & 224);    taxi = r | (taxi << 5);
-        r = x_reverse[txt_buf[7]] | (r & 224);    taxi = r | (taxi << 5);
+        r = DB32_REVERSE[txt_buf[0]];                taxi = r;
+        r = DB32_REVERSE[txt_buf[1]] | (r & 224);    taxi = r | (taxi << 5);
+        r = DB32_REVERSE[txt_buf[2]] | (r & 224);    taxi = r | (taxi << 5);
+        r = DB32_REVERSE[txt_buf[3]] | (r & 224);    taxi = r | (taxi << 5);
+        r = DB32_REVERSE[txt_buf[4]] | (r & 224);    taxi = r | (taxi << 5);
+        r = DB32_REVERSE[txt_buf[5]] | (r & 224);    taxi = r | (taxi << 5);
+        r = DB32_REVERSE[txt_buf[6]] | (r & 224);    taxi = r | (taxi << 5);
+        r = DB32_REVERSE[txt_buf[7]] | (r & 224);    taxi = r | (taxi << 5);
 
         /* Only one error check (branch) per block, rather than 8:
 
-            31: 00011111 <= bits set in table for valid characters
-           224: 11100000 <= bits set in table for invalid characters
+            31: 00011111 <= bits set in reverse-table for valid characters
+           224: 11100000 <= bits set in reverse-table for invalid characters
 
         So above we preserve the 3 high bits in r (if ever set), and then do
         a single error check on the final r value.  */
         if (r & 224) {
             for (i=0; i < 8; i++) {
-                r = x_reverse[txt_buf[i]];
+                r = DB32_REVERSE[txt_buf[i]];
                 if (r > 31) {
                     return txt_buf[i];
                 }
@@ -258,8 +239,8 @@ dbase32_db32enc(PyObject *self, PyObject *args)
     }
     txt_buf = (uint8_t *)PyUnicode_1BYTE_DATA(pyret);
 
-    // encode_x() returns 0 on success:
-    status = encode_x(bin_len, bin_buf, txt_len, txt_buf, DB32_FORWARD);
+    // dbase32_encode() returns 0 on success:
+    status = dbase32_encode(bin_len, bin_buf, txt_len, txt_buf);
     PyBuffer_Release(&pybuf);
     if (status != 0) {
         PyErr_SetString(PyExc_RuntimeError, "something went very wrong");
@@ -304,8 +285,8 @@ dbase32_db32dec(PyObject *self, PyObject *args)
     }
     bin_buf = (uint8_t *)PyBytes_AS_STRING(pyret);
 
-    // decode_x() returns -1 on success:
-    status = decode_x(txt_len, txt_buf, bin_len, bin_buf, DB32_REVERSE);
+    // dbase32_decode() returns -1 on success:
+    status = dbase32_decode(txt_len, txt_buf, bin_len, bin_buf);
     if (status != -1) {
         if (status >= 0) {
             PyErr_Format(PyExc_ValueError, "invalid base32 letter: %c", status);

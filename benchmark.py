@@ -31,7 +31,7 @@ from base64 import b32encode, b32decode, b64encode, b64decode
 
 from dbase32 import db32enc_p, db32enc_c, db32dec_p, db32dec_c
 
-data = os.urandom(30)
+data = os.urandom(60)
 text_b32 = b32encode(data)
 text_b64 = b64encode(data)
 text_db32 = db32enc_p(data)
