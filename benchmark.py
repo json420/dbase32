@@ -31,7 +31,7 @@ from base64 import b32encode, b32decode, b64encode, b64decode
 
 from dbase32 import db32enc_p, db32enc_c, db32dec_p, db32dec_c
 
-data = os.urandom(60)
+data = os.urandom(30)
 text_b32 = b32encode(data)
 text_b64 = b64encode(data)
 text_db32 = db32enc_p(data)
@@ -42,27 +42,26 @@ assert db32dec_p(text_db32) == data
 assert db32dec_c(text_db32) == data
 """
 
-N = 50 * 1000
-
-def run(statement):
+def run(statement, slow=False):
+    n = 50 * 1000 if slow else 2500 * 1000
     t = timeit.Timer(statement, setup)
-    elapsed = t.timeit(N)
-    rate = int(N / elapsed)
+    elapsed = t.timeit(n)
+    rate = int(n / elapsed)
     print('{:>14,}: {}'.format(rate, statement))
 
 
-#print('')
+print('')
 
-#print('Encodes/second:')
-run('b32encode(data)')
-run('db32enc_p(data)')
-#run('b64encode(data)')
-#run('db32enc_c(data)')
-#print('')
+print('Encodes/second:')
+run('b32encode(data)', slow=True)
+run('db32enc_p(data)', slow=True)
+run('b64encode(data)')
+run('db32enc_c(data)')
+print('')
 
-#print('Decodes/second:')
-run('b32decode(text_b32)')
-run('db32dec_p(text_db32)')
-#run('b64decode(text_b64)')
-#run('db32dec_c(text_db32)')
-#print('')
+print('Decodes/second:')
+run('b32decode(text_b32)', slow=True)
+run('db32dec_p(text_db32)', slow=True)
+run('b64decode(text_b64)')
+run('db32dec_c(text_db32)')
+print('')
