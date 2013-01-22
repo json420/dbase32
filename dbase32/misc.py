@@ -24,6 +24,9 @@
 Helper functions for defining and validating an base32 encoding.
 """
 
+from collections import namedtuple
+
+
 POSSIBLE = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'
 
 TYPE_ERROR = '{}: need a {!r}; got a {!r}: {!r}'
@@ -32,7 +35,7 @@ TYPE_ERROR = '{}: need a {!r}; got a {!r}: {!r}'
 def gen_forward(remove):
     """
     Generate a forward-table by specifying the symbols to *remove*.
-    
+
     For example:
 
     >>> gen_forward('0123')
@@ -49,11 +52,15 @@ def gen_forward(remove):
             TYPE_ERROR.format('remove', str, type(remove), remove)
         )
     if len(remove) != 4:
-        raise ValueError('len(remove) != 4; got {!r}'.format(remove))
+        raise ValueError(
+            'len(remove) != 4: [{}] {!r}'.format(len(remove), remove)
+        )
     remove_set = set(remove)
     if len(remove_set) != 4:
         raise ValueError(
-            'remove must contain 4 unique symbols; got {!r}'.format(remove)
+            'len(set(remove)) != 4: [{}] {!r}'.format(
+                len(remove_set), remove
+            )
         )
     if not remove_set.issubset(POSSIBLE):
         raise ValueError(
@@ -62,4 +69,45 @@ def gen_forward(remove):
     forward = set(POSSIBLE) - remove_set
     assert len(forward) == 32
     return ''.join(sorted(forward))
+
+
+def check_forward(forward):
+    if not isinstance(forward, str):
+        raise TypeError(
+            TYPE_ERROR.format('forward', str, type(forward), forward)
+        )
+    if len(forward) != 32:
+        raise ValueError(
+            'len(forward) != 32: [{}] {!r}'.format(len(forward), forward)
+        )
+    forward_set = set(forward)
+    if len(forward_set) != 32:
+        raise ValueError(
+            'len(set(forward)) != 32: [{}] {!r}'.format(
+                len(forward_set), forward
+            )
+        )
+    if not forward_set.issubset(POSSIBLE):
+        raise ValueError(
+            'forward: {!r} not a subset of {!r}'.format(forward, POSSIBLE)
+        )
+    return forward
+
+
+def _gen_reverse_iter(forward):
+    start = ord(min(forward))
+    stop = ord(max(forward)) + 1
+    for (i, d) in enumerate(range(start, stop)):
+        c = chr(d)
+        r = forward.find(c)
+        assert r < 32
+        if r < 0:
+            r = 255
+        yield r
+
+
+def gen_reverse(forward):
+    assert len(set(forward)) == len(forward)
+    assert set(forward).issubset(possible)
+    return tuple(build_reverse_iter(forward))
 

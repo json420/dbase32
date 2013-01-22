@@ -43,21 +43,21 @@ class TestFunctions(TestCase):
             misc.gen_forward('ABC')
         self.assertEqual(
             str(cm.exception),
-            "len(remove) != 4; got 'ABC'"
+            "len(remove) != 4: [3] 'ABC'"
         )
 
         with self.assertRaises(ValueError) as cm:
             misc.gen_forward('ABCDE')
         self.assertEqual(
             str(cm.exception),
-            "len(remove) != 4; got 'ABCDE'"
+            "len(remove) != 4: [5] 'ABCDE'"
         )
 
         with self.assertRaises(ValueError) as cm:
             misc.gen_forward('ABCA')
         self.assertEqual(
             str(cm.exception),
-            "remove must contain 4 unique symbols; got 'ABCA'"
+            "len(set(remove)) != 4: [3] 'ABCA'"
         )
 
         with self.assertRaises(ValueError) as cm:
@@ -79,3 +79,47 @@ class TestFunctions(TestCase):
             misc.gen_forward('8967'),
             '012345ABCDEFGHIJKLMNOPQRSTUVWXYZ'
         )
+
+    def test_check_forward(self):
+        bad = b'0123456789ABCDEFGHIJKLMNOPQRSTUV'
+        with self.assertRaises(TypeError) as cm:
+            misc.check_forward(bad)
+        self.assertEqual(
+            str(cm.exception),
+            TYPE_ERROR.format('forward', str, bytes, bad)
+        )
+
+        bad = '3456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+        with self.assertRaises(ValueError) as cm:
+            misc.check_forward(bad)
+        self.assertEqual(
+            str(cm.exception),
+            'len(forward) != 32: [33] {!r}'.format(bad)
+        )
+
+        bad = '56789ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+        with self.assertRaises(ValueError) as cm:
+            misc.check_forward(bad)
+        self.assertEqual(
+            str(cm.exception),
+            'len(forward) != 32: [31] {!r}'.format(bad)
+        )
+
+        bad = '45678ZABCDEFGHIJKLMNOPQRSTUVWXYZ'
+        with self.assertRaises(ValueError) as cm:
+            misc.check_forward(bad)
+        self.assertEqual(
+            str(cm.exception),
+            'len(set(forward)) != 32: [31] {!r}'.format(bad)
+        )
+
+        bad = '456789abcDEFGHIJKLMNOPQRSTUVWXYZ'
+        with self.assertRaises(ValueError) as cm:
+            misc.check_forward(bad)
+        self.assertEqual(
+            str(cm.exception),
+            'forward: {!r} not a subset of {!r}'.format(bad, misc.POSSIBLE)
+        )
+
+        good = '012356789ABCDEFGHJKLMNPQRSTVWXYZ'
+        self.assertIs(misc.check_forward(good), good)
