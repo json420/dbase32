@@ -254,7 +254,7 @@ encoding alphabet, it will require tweaks to our schema validation functions
 and to the FileStore layout.  We'll do our best to provide a reasonable
 migration tool for users with existing Dmedia libraries, but I do not plan to
 support the existing version zero interim hashing protocol alongside the final
-version one protocol.
+version one protocol.  This encoding change just makes that too much work.
 
 So this will require a coordinated released of `filestore`, `microfiber`,
 `dmedia`, and `novacut` when we switch from RFC-3548 base32 to D-Base32.  It's
@@ -263,8 +263,69 @@ too late in the month for this to happen for 13.01, so we'll target this for
 our D-Base32 encoding.
 
 
-A Note on Lowercase
--------------------
+Thoughts?
+---------
+
+So what do people think?
+
+Any compelling proposals for ways in which we could stick with standard
+RFC-3548 base32 encoding and not have interoperability problems with a database
+that internally builds its indexes with the binary IDs?
+
+Anything people think we should do differently in the proposed D-Base32
+encoding?
+
+
+PS: A Note on Lowercase
+-----------------------
+
+Anyone with typographic savvy will tell you that using lowercase letters will
+make the IDs more readable, and I don't disagree.  This is something that the
+ZRTP folks put a lot of thought into with their z-base-32 encoding, which you
+can read about here::
 
     http://philzimmermann.com/docs/human-oriented-base-32-encoding.txt
+
+However, I personally think the overall readability of our *schema* is far more
+important than the readability of our encoded IDs.  After all, there is nothing
+to *read* in the IDs as they are random, meaningless values, not words.
+Whereas the *words* used in rest of the schema have been careful chosen to be
+both clear and concise, and are *always* lowercase.
+
+The reason I prefer uppercase IDs in the schema is it helps differentiate the
+meaningless garble from the bits you actually will read.  For me, it helps push
+the IDs into the background, and brings out rest of the schema more clearly in
+the foreground.
+
+For example, consider this Novacut edit node with lowercase IDs::
+
+    {
+        "_id": "jg444obnf5juunspcce5ypik",
+        "type": "novacut/node",
+        "time": 1234567892,
+        "audio": [],
+        "node": {
+            "type": "video/sequence",
+            "src": [
+                "3hhsrsvxt5zgy2b6ljpn457p",
+                "rxjm24dmcrz4ys6l6fopdqrx"
+            ]
+        }
+    }
+
+And the same with uppercase IDs::
+
+    {
+        "_id": "JG444OBNF5JUUNSPCCE5YPIK",
+        "type": "novacut/node",
+        "time": 1234567892,
+        "audio": [],
+        "node": {
+            "type": "video/sequence",
+            "src": [
+                "3HHSRSVXT5ZGY2B6LJPN457P",
+                "RXJM24DMCRZ4YS6L6FOPDQRX"
+            ]
+        }
+    }
 
