@@ -28,8 +28,9 @@ from collections import namedtuple
 
 
 POSSIBLE = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'
-
 TYPE_ERROR = '{}: need a {!r}; got a {!r}: {!r}'
+
+Reverse = namedtuple('Reverse', 'i key value')
 
 
 def gen_forward(remove):
@@ -96,18 +97,20 @@ def check_forward(forward):
 
 def _gen_reverse_iter(forward):
     start = ord(min(forward))
-    stop = ord(max(forward)) + 1
-    for (i, d) in enumerate(range(start, stop)):
-        c = chr(d)
-        r = forward.find(c)
-        assert r < 32
-        if r < 0:
-            r = 255
-        yield r
+    end = ord(max(forward))
+    for i in range(256):
+        if start <= i <= end:
+            key = chr(i)
+            value = forward.find(key)
+            assert value < 32
+            if value < 0:
+                value = 255
+            yield Reverse(i, key, value)
+        else:
+            yield Reverse(i, None, 255)
 
 
 def gen_reverse(forward):
-    assert len(set(forward)) == len(forward)
-    assert set(forward).issubset(possible)
-    return tuple(build_reverse_iter(forward))
+    check_forward(forward)
+    return tuple(_gen_reverse_iter(forward))
 
