@@ -27,8 +27,8 @@ Install `dbase32`.
 """
 
 import sys
-if sys.version_info < (3, 2):
-    sys.exit('dbase32 requires Python 3.2 or newer')
+if sys.version_info < (3, 3):
+    sys.exit('dbase32 requires Python 3.3 or newer')
 
 from distutils.core import setup, Extension
 from distutils.cmd import Command
@@ -54,7 +54,12 @@ class Test(Command):
         pass
 
     def run(self):
-        pynames = ['dbase32', 'dbase32.tests']
+        pynames = [
+            'dbase32',
+            'dbase32.misc',
+            'dbase32.tests',
+            'dbase32.tests.test_misc',
+        ]
 
         # Add unit-tests:
         loader = TestLoader()
