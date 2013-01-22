@@ -3,8 +3,8 @@ Houston, We Have A Sorting Problem
 
 No idea why this didn't dawn on me much earlier, but better late than never,
 I guess.  There is a serious design problem with how we currently
-base32-encode the file IDs, and this is something that we must fix before
-we bless the final version one hashing protocol.
+base32-encode IDs, and this is something that we must fix before we bless the
+final version one hashing protocol.
 
 Standard RFC-3548 base32 encoding has an unfortunate property in that the sort
 order of the encoded data is different than the binary data, for example:
@@ -134,8 +134,8 @@ Engineering Considerations
 --------------------------
 
 Engineering-wise, it's attractive to chop off characters at the ends so that
-the reverse-table doesn't require any unnecessary "dead-spots" (as, for
-example, the RFC-3548 set requires for ``8`` and ``9``).
+the reverse-table doesn't require any unnecessary internal "dead-spots" (as,
+for example, the RFC-3548 set requires for ``8`` and ``9``).
 
 When it comes to end-chopping, there are five permutations::
 
@@ -166,18 +166,18 @@ elegant than RFC-3548. Not the same, and certainly not worse.  Better, even
 if only by a smidge.
 
 So instead of opening Pandora's box in an epic search for the best 32 letters,
-which would mean a reverse table that's bigger and full of more dead spots
-than RFC-3548, I think we should restrict ourselves to picking the best of the
-five above options.
+which would mean a reverse table is full of more dead spots than RFC-3548, I
+think we should restrict ourselves to picking the best of the five above
+options.
 
 
 Signal to Noise
 ---------------
 
 I'm unconvinced that one set of 32 can be much better than another because it
-depends so heavily on the font being used, and the people of the world of course
-aren't all using the same font.  Opinions are all over the map, for the most
-part.
+depends so heavily on the font being used, and the people of the world of
+course aren't all using the same font.  Opinions are all over the map, for the
+most part.
 
 The once place where there seems to be near-consensus is around:
 
@@ -205,6 +205,9 @@ signal-to-noise.  So that gives us this alphabet:
 Dmedia-Base32
 -------------
 
+I'm calling our encoding D-Base32 (D is for Dmedia, and D is for Database).  It
+has the desired property of preserving the sort order, as you can see:
+
     =============  ===========  ===========  ===========
        Binary         Base32       S-Base32     D-Base32
     =============  ===========  ===========  ===========
@@ -225,6 +228,39 @@ Dmedia-Base32
     14 eeeeeeeeee  11 XO53XO53  14 XVRIXVRI  14 WUQHWUQH
     15 ffffffffff  12 ZTGMZTGM  15 ZZZZZZZZ  15 YYYYYYYY
     =============  ===========  ===========  ===========
+
+Because D-Base32 is *not* designed to encode arbitrary data, but instead is
+designed only to encode our well-formed IDs, we're not supporting padding.
+
+Data to be encoded must be a multiple of 5 bytes in length, and ASCII/UTF-8
+text to be decode must be a multiple of 8 bytes in length.  This strict
+validation is good in terms of enforcing correctness at other levels, and it
+makes the implementation easier, eliminates a lot of potential spots for
+security goofs.
+
+In terms of implementation, I currently have both a pure-Python version and a
+high-performance C extension in this new `dbase32` project on Launchpad:
+
+    https://launchpad.net/dbase32
+
+The C extension currently only supports Python 3.3 and newer (because I'm using
+the new PyUnicode API).  There are daily builds for Raring:
+
+    https://launchpad.net/~novacut/+archive/daily
+
+This encoding will be used both for our 120-bit random IDs, and our 240-bit
+intrinsic IDs (derived from the file content-hash).  Because it uses a different
+encoding alphabet, it will require tweaks to our schema validation functions
+and to the FileStore layout.  We'll do our best to provide a reasonable
+migration tool for users with existing Dmedia libraries, but I do not plan to
+support the existing version zero interim hashing protocol alongside the final
+version one protocol.
+
+So this will require a coordinated released of `filestore`, `microfiber`,
+`dmedia`, and `novacut` when we switch from RFC-3548 base32 to D-Base32.  It's
+too late in the month for this to happen for 13.01, so we'll target this for
+13.02, which also gives us time to get feedback from folks before we finalize
+our D-Base32 encoding.
 
 
 A Note on Lowercase
