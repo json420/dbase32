@@ -133,9 +133,9 @@ engineering properties that might help us narrow the search.
 Engineering Considerations
 --------------------------
 
-Engineering-wise, it's attractive to chop off characters at the ends so that
-the reverse-table doesn't require any unnecessary internal "dead-spots" (as,
-for example, the RFC-3548 set requires for ``8`` and ``9``).
+In terms of engineering aesthetic, it's attractive to chop off characters at
+the ends so that the reverse-table doesn't require any unnecessary internal
+"dead-spots" (as, for example, the RFC-3548 set requires for ``8`` and ``9``).
 
 When it comes to end-chopping, there are five permutations::
 
@@ -166,8 +166,8 @@ elegant than RFC-3548. Not the same, and certainly not worse.  Better, even
 if only by a smidge.
 
 So instead of opening Pandora's box in an epic search for the best 32 letters,
-which would mean a reverse table is full of more dead spots than RFC-3548, I
-think we should restrict ourselves to picking the best of the five above
+which would mean a reverse table that is full of more dead spots than RFC-3548,
+I think we should restrict ourselves to picking the best of the five above
 options.
 
 
@@ -179,7 +179,7 @@ depends so heavily on the font being used, and the people of the world of
 course aren't all using the same font.  Opinions are all over the map, for the
 most part.
 
-The once place where there seems to be near-consensus is around:
+The once place where there seems to be near-consensus is around::
 
     0O (zero and oh)
     1I (one and eye)
@@ -188,16 +188,15 @@ At least there is agreement on them being a problem, not so much on the best
 way fix it (remove the number, remove the letter, or even remove both?).
 
 Fortunately, our hands are tied and we can only remove the numbers, so lets do
-that.  Now we're down to three options, with two more symbols to remove,
-choosing among ``2``, ``3``, ``Y``, and ``Z``:
+that.  Now we're down to three options, with two more symbols to remove::
 
      23456789ABCDEFGHIJKLMNOPQRSTUVWX YZ
     2 3456789ABCDEFGHIJKLMNOPQRSTUVWXY Z
     23 456789ABCDEFGHIJKLMNOPQRSTUVWXYZ
 
-We can remove YZ, 2Z, or 23.  My vote is to remove 2 and Z, as they look quite
-similar to each other, and I feel that probably provides the best overall
-signal-to-noise.  So that gives us this alphabet:
+We can remove ``YZ``, ``2Z``, or ``23``.  My vote is to remove ``2Z``, as they
+look quite similar to each other, and I feel that probably provides the best
+overall signal-to-noise.  So that gives us this alphabet::
 
     3456789ABCDEFGHIJKLMNOPQRSTUVWXY
 
@@ -230,11 +229,12 @@ has the desired property of preserving the sort order, as you can see:
     =============  ===========  ===========  ===========
 
 Because D-Base32 is *not* designed to encode arbitrary data, but instead is
-designed only to encode our well-formed IDs, we're not supporting padding.
+designed only to encode our well-formed IDs, we're only supporting IDs that are
+multiples of 40-bits, and we're *not* supporting padding.
 
 Data to be encoded must be a multiple of 5 bytes in length, and ASCII/UTF-8
-text to be decode must be a multiple of 8 bytes in length.  This strict
-validation is good in terms of enforcing correctness at other levels, and it
+text to be decoded must be a multiple of 8 bytes in length.  This strict
+validation is good in terms of enforcing correctness at higher levels, and it
 makes the implementation easier, eliminates a lot of potential spots for
 security goofs.
 
@@ -249,14 +249,15 @@ the new PyUnicode API).  There are daily builds for Raring:
     https://launchpad.net/~novacut/+archive/daily
 
 This encoding will be used both for our 120-bit random IDs, and our 240-bit
-intrinsic IDs (derived from the file content-hash).  Because it uses a different
-encoding alphabet, it will require tweaks to our schema validation functions
+intrinsic IDs (derived from the file content-hashes).  Because of the different
+encoding alphabet, it will require tweaks to our schema validation functions 
 and to the FileStore layout.  We'll do our best to provide a reasonable
 migration tool for users with existing Dmedia libraries, but I do not plan to
 support the existing version zero interim hashing protocol alongside the final
-version one protocol.  This encoding change just makes that too much work.
+version one protocol.  This base32 encoding change just makes that too much
+work.
 
-So this will require a coordinated released of `filestore`, `microfiber`,
+So this will require coordinated releases of `filestore`, `microfiber`,
 `dmedia`, and `novacut` when we switch from RFC-3548 base32 to D-Base32.  It's
 too late in the month for this to happen for 13.01, so we'll target this for
 13.02, which also gives us time to get feedback from folks before we finalize
@@ -268,9 +269,9 @@ Thoughts?
 
 So what do people think?
 
-Any compelling proposals for ways in which we could stick with standard
-RFC-3548 base32 encoding and not have interoperability problems with a database
-that internally builds its indexes with the binary IDs?
+Any compelling proposals for ways in which we could stick with standard RFC-3548
+base32 encoding and not have interoperability problems with a database that
+indexes according to the binary IDs?  Would it be worth it?
 
 Anything people think we should do differently in the proposed D-Base32
 encoding?
@@ -280,9 +281,9 @@ PS: A Note on Lowercase
 -----------------------
 
 Anyone with typographic savvy will tell you that using lowercase letters will
-make the IDs more readable, and I don't disagree.  This is something that the
-ZRTP folks put a lot of thought into with their z-base-32 encoding, which you
-can read about here::
+make the IDs more readable, and I don't disagree.  This is something that folks
+put a lot of thought into for the z-base-32 encoding, which you can read about
+here::
 
     http://philzimmermann.com/docs/human-oriented-base-32-encoding.txt
 
@@ -293,9 +294,9 @@ Whereas the *words* used in rest of the schema have been careful chosen to be
 both clear and concise, and are *always* lowercase.
 
 The reason I prefer uppercase IDs in the schema is it helps differentiate the
-meaningless garble from the bits you actually will read.  For me, it helps push
-the IDs into the background, and brings out rest of the schema more clearly in
-the foreground.
+meaningless garble from the bits you actually will *read*.  For me, it helps
+push the IDs into the background, and brings out rest of the schema more clearly
+in the foreground.
 
 For example, consider this Novacut edit node with lowercase IDs::
 
@@ -329,3 +330,5 @@ And the same with uppercase IDs::
         }
     }
 
+Of course, arguments for lowercase IDs are welcomed... but please keep in mind
+the overall schema readability.
