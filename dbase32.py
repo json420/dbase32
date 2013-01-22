@@ -24,12 +24,19 @@
 `dbase32` - base32-encoding with a sorted-order alphabet (for databases).
 """
 
+from os import urandom
+
+
 __version__ = '0.1.0'
 
 __all__ = ('db32enc', 'db32dec')
 
 MAX_BIN_LEN = 60  # 480 bits
 MAX_TXT_LEN = 96
+
+RANDOM_BITS = 120
+RANDOM_BYTES = RANDOM_BITS // 8
+RANDOM_B32LEN = RANDOM_BITS // 5
 
 # B32: RFC-3548: different binary vs encoded sort order (deal breaker!)
 # [removes 0, 1, 8, 9]
@@ -397,4 +404,13 @@ try:
 except ImportError:
     db32enc = db32enc_p
     db32dec = db32dec_p
+
+
+def random_id(numbytes=RANDOM_BYTES):
+    """
+    Returns a 120-bit DBase32-encoded random ID.
+
+    The ID will be 24-characters long, URL and filesystem safe.
+    """
+    return db32enc(urandom(numbytes))
 
