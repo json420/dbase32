@@ -34,8 +34,35 @@ from distutils.core import setup, Extension
 from distutils.cmd import Command
 from unittest import TestLoader, TextTestRunner
 from doctest import DocTestSuite
+from venv import EnvBuilder
+from os import path
+import tempfile
+import shutil
+from subprocess import check_call
 
 import dbase32
+
+
+class TestEnvBuilder(EnvBuilder):
+    def __init__(self):
+        self.tmpdir = tempfile.mkdtemp(prefix='venv.')
+        super().__init__(system_site_packages=True, symlinks=True)
+        self.create(path.join(self.tmpdir, 'tests'))
+
+    def __del__(self):
+        if path.isdir(self.tmpdir):
+            print(self.tmpdir)
+            shutil.rmtree(self.tmpdir)
+
+    def post_setup(self, context):
+        setup = path.abspath(__file__)
+        check_call([context.env_exe, setup, 'install'])
+        run_tests = path.join(context.env_dir, 'local', 'bin', 'dbase32-run-tests')
+        assert path.isfile(run_tests)
+        self.run_tests_cmd = [context.env_exe, run_tests]
+
+    def run_tests(self):
+        check_call(self.run_tests_cmd)
 
 
 class Test(Command):
@@ -72,6 +99,9 @@ class Test(Command):
         result = runner.run(suite)
         if not result.wasSuccessful():
             raise SystemExit(2)
+
+        testenv = TestEnvBuilder()
+        testenv.run_tests()
 
 
 _dbase32 = Extension('_dbase32', sources=['_dbase32.c'],
