@@ -155,7 +155,7 @@ class TestConstants(TestCase):
 
 
 class TestFunctions(TestCase):
-    def skin_if_no_c_ext(self):
+    def skip_if_no_c_ext(self):
         if not C_EXT_AVAIL:
             self.skipTest('cannot import `_dbase32` C extension')
 
@@ -209,7 +209,7 @@ class TestFunctions(TestCase):
         """
         Test the C implementation of db32enc().
         """
-        self.skin_if_no_c_ext()
+        self.skip_if_no_c_ext()
         self.check_db32enc_common(dbase32.db32enc_c)
 
         # Compare against the Python version db32enc_p
@@ -282,7 +282,7 @@ class TestFunctions(TestCase):
         """
         Test the C implementation of db32enc().
         """
-        self.skin_if_no_c_ext()
+        self.skip_if_no_c_ext()
         self.check_db32dec_common(dbase32.db32dec_c)
 
         # Compare against the dbase32.db32dec_p pure-Python version:
@@ -345,7 +345,7 @@ class TestFunctions(TestCase):
         """
         Test binary vs D-Base32 sort order, with a *lot* of values.
         """
-        self.skin_if_no_c_ext()
+        self.skip_if_no_c_ext()
         ids = [os.urandom(30) for i in range(20 * 1000)]
         ids.extend(os.urandom(15) for i in range(30 * 1000))
         pairs = tuple(
@@ -371,7 +371,7 @@ class TestFunctions(TestCase):
         """
         Test encode/decode round-trip with C implementation.
         """
-        self.skin_if_no_c_ext()
+        self.skip_if_no_c_ext()
 
         # The C implementation is wicked fast, so let's test a *lot* of values:
         for size in [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60]:
