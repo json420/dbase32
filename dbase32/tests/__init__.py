@@ -26,16 +26,12 @@ Unit tests for `dbase32` module.
 
 from unittest import TestCase
 import os
-from base64 import b32encode, b32decode
 from random import SystemRandom
 from collections import Counter
 
 from dbase32 import misc
 import dbase32
 
-
-assert hasattr(dbase32, 'db32enc')
-assert hasattr(dbase32, 'db32dec')
 
 random = SystemRandom()
 possible = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'
@@ -51,6 +47,18 @@ class TestConstants(TestCase):
         self.assertEqual(dbase32.MAX_TXT_LEN % 8, 0)
         self.assertEqual(dbase32.MAX_BIN_LEN, dbase32.MAX_TXT_LEN * 5 // 8)
 
+    def test_random(self):
+        self.assertIsInstance(dbase32.RANDOM_BITS, int)
+        self.assertEqual(dbase32.RANDOM_BITS % 40, 0)
+
+        self.assertIsInstance(dbase32.RANDOM_BYTES, int)
+        self.assertEqual(dbase32.RANDOM_BYTES, dbase32.RANDOM_BITS // 8)
+        self.assertEqual(dbase32.RANDOM_BYTES % 5, 0)
+
+        self.assertIsInstance(dbase32.RANDOM_B32LEN, int)
+        self.assertEqual(dbase32.RANDOM_B32LEN, dbase32.RANDOM_BITS // 5)
+        self.assertEqual(dbase32.RANDOM_B32LEN % 8, 0)
+
     def test_start(self):
         self.assertEqual(
             dbase32.DB32_START,
@@ -59,6 +67,10 @@ class TestConstants(TestCase):
         self.assertEqual(
             dbase32.DB32_START,
             ord(dbase32.DB32_FORWARD[0])
+        )
+        self.assertEqual(
+            dbase32.DB32_START,
+            misc.get_start(dbase32.DB32_FORWARD)
         )
 
     def test_end(self):
@@ -69,6 +81,10 @@ class TestConstants(TestCase):
         self.assertEqual(
             dbase32.DB32_END,
             ord(dbase32.DB32_FORWARD[-1])
+        )
+        self.assertEqual(
+            dbase32.DB32_END,
+            misc.get_end(dbase32.DB32_FORWARD)
         )
 
     def test_forward(self):
@@ -115,49 +131,22 @@ class TestConstants(TestCase):
         for i in range(32):
             self.assertEqual(counts[i], 1)
 
+    def test_db32enc_alias(self):
+        if hasattr(dbase32, 'db32enc_c'):
+            self.assertIs(dbase32.db32enc, dbase32.db32enc_c)
+            self.assertIsNot(dbase32.db32enc, dbase32.db32enc_p)
+        else:
+            self.assertIs(dbase32.db32enc, dbase32.db32enc_p)
+
+    def test_db32dec_alias(self):
+        if hasattr(dbase32, 'db32dec_c'):
+            self.assertIs(dbase32.db32dec, dbase32.db32dec_c)
+            self.assertIsNot(dbase32.db32dec, dbase32.db32dec_p)
+        else:
+            self.assertIs(dbase32.db32dec, dbase32.db32dec_p)
+
 
 class TestFunctions(TestCase):
-    def test_b32enc(self):
-        """
-        Test encode_x() with the standard RFC-3548 base32 tables.
-        """
-        # A few static value sanity checks:
-        self.assertEqual(dbase32.b32enc(b'\x00\x00\x00\x00\x00'), 'AAAAAAAA')
-        self.assertEqual(dbase32.b32enc(b'\xff\xff\xff\xff\xff'), '77777777')
-        self.assertEqual(dbase32.b32enc(b'\x00' * 60), 'A' * 96)
-        self.assertEqual(dbase32.b32enc(b'\xff' * 60), '7' * 96)
-
-        # Compare against base64.b32encode() from stdlib:
-        for size in [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60]:
-            for i in range(100):
-                data = os.urandom(size)
-                self.assertEqual(
-                    dbase32.b32enc(data),
-                    b32encode(data).decode('utf-8')
-                )
-
-    def test_b32dec(self):
-        """
-        Test decode_x() with the standard RFC-3548 base32 tables.
-        """
-        # A few static value sanity checks:
-        self.assertEqual(dbase32.b32dec('AAAAAAAA'), b'\x00\x00\x00\x00\x00')
-        self.assertEqual(dbase32.b32dec('77777777'), b'\xff\xff\xff\xff\xff')
-        self.assertEqual(dbase32.b32dec('A' * 96), b'\x00' * 60)
-        self.assertEqual(dbase32.b32dec('7' * 96), b'\xff' * 60)
-
-        # Compare against base64.b32decode() from stdlib:
-        for size in [8, 16, 24, 32, 40, 48, 56, 64, 72, 80, 88, 96]:
-            for i in range(100):
-                text = ''.join(
-                    random.choice(dbase32.B32_FORWARD) for n in range(size)
-                )
-                assert len(text) == size
-                self.assertEqual(
-                    dbase32.b32dec(text),
-                    b32decode(text.encode('utf-8'))
-                )
-
     def check_db32enc_common(self, db32enc):
         """
         Encoder tests both the Python and the C implementations must pass.
