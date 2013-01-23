@@ -29,6 +29,12 @@ from unittest import TestCase
 from dbase32.misc import TYPE_ERROR
 from dbase32 import misc
 
+# Dmedia-Base32:
+DB32_FORWARD = '3456789ABCDEFGHIJKLMNOPQRSTUVWXY'
+
+# Standard RFC-3548 Base32:
+B32_FORWARD = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567'
+
 
 class TestFunctions(TestCase):
     def test_gen_forward(self):
@@ -123,6 +129,38 @@ class TestFunctions(TestCase):
 
         good = '012356789ABCDEFGHJKLMNPQRSTVWXYZ'
         self.assertIs(misc.check_forward(good), good)
+
+    def test_get_start(self):
+        self.assertEqual(
+            misc.get_start('3456789ABCDEFGHIJKLMNOPQRSTUVWXY'), 51
+        )
+        self.assertEqual(
+            misc.get_start('NOPQRSTUVWXY3456789ABCDEFGHIJKLM'), 51
+        )
+        self.assertEqual(chr(51), '3')
+        self.assertEqual(
+            misc.get_start('ABCDEFGHIJKLMNOPQRSTUVWXYZ234567'), 50
+        )
+        self.assertEqual(
+            misc.get_start('234567ABCDEFGHIJKLMNOPQRSTUVWXYZ'), 50
+        )
+        self.assertEqual(chr(50), '2')
+
+    def test_get_end(self):
+        self.assertEqual(
+            misc.get_end('3456789ABCDEFGHIJKLMNOPQRSTUVWXY'), 89
+        )
+        self.assertEqual(
+            misc.get_end('NOPQRSTUVWXY3456789ABCDEFGHIJKLM'), 89
+        )
+        self.assertEqual(chr(89), 'Y')
+        self.assertEqual(
+            misc.get_end('ABCDEFGHIJKLMNOPQRSTUVWXYZ234567'), 90
+        )
+        self.assertEqual(
+            misc.get_end('234567ABCDEFGHIJKLMNOPQRSTUVWXYZ'), 90
+        )
+        self.assertEqual(chr(90), 'Z')
 
     def test_gen_reverse(self):
         # Dmedia-Base32:

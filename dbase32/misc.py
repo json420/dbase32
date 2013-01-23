@@ -95,9 +95,19 @@ def check_forward(forward):
     return forward
 
 
+def get_start(forward):
+    check_forward(forward)
+    return ord(min(forward))
+
+
+def get_end(forward):
+    check_forward(forward)
+    return ord(max(forward))
+
+
 def _gen_reverse_iter(forward):
-    start = ord(min(forward))
-    end = ord(max(forward))
+    start = get_start(forward)
+    end = get_end(forward)
     for i in range(256):
         if start <= i <= end:
             key = chr(i)
@@ -113,4 +123,21 @@ def _gen_reverse_iter(forward):
 def gen_reverse(forward):
     check_forward(forward)
     return tuple(_gen_reverse_iter(forward))
+
+
+def group_empty_iter(reverse, size=19):
+    buf = []
+    for r in reverse:
+        if r.key is None:
+            buf.append(r)
+            if len(buf) >= size:
+                yield buf
+                buf = []
+        else:
+            if buf:
+                yield buf
+                buf = []
+            yield r
+    if buf:
+        yield buf
 
