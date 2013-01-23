@@ -199,7 +199,7 @@ class TestFunctions(TestCase):
         self.assertEqual(db32enc(b'\x00' * 60), '3' * 96)
         self.assertEqual(db32enc(b'\xff' * 60), 'Y' * 96)
 
-    def test_dbenc32_p(self):
+    def test_db32enc_p(self):
         """
         Test the pure-Python implementation of db32enc().
         """
