@@ -36,6 +36,11 @@ parser = optparse.OptionParser(
     usage='%prog',
 	version=dbase32.__version__,
 )
+parser.add_option('--rfc',
+    help='generate standard RFC-3548 base32 tables',
+    action='store_true',
+    default=False,
+)
 parser.add_option('-r',
     dest='remove',
     help='symbols to remove; default is {!r}'.format(REMOVE),
@@ -55,15 +60,19 @@ parser.add_option('-p',
 (options, args) = parser.parse_args()
 
 
-forward = misc.gen_forward(options.remove)
+if options.rfc:
+    forward = misc.B32_FORWARD
+    name = 'b32'
+else:
+    forward = misc.gen_forward(options.remove)
+    name = options.name
 reverse = misc.gen_reverse(forward)
 start = misc.get_start(forward)
 end = misc.get_end(forward)
-name = options.name.upper()
 line_iter = (misc.iter_python if options.python else misc.iter_c)
 
 
 print('')
-for line in line_iter(name, forward, reverse, start, end):
+for line in line_iter(name.upper(), forward, reverse, start, end):
     print(line)
 print('')

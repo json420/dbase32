@@ -29,8 +29,10 @@ from collections import namedtuple
 
 POSSIBLE = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'
 TYPE_ERROR = '{}: need a {!r}; got a {!r}: {!r}'
-
 Reverse = namedtuple('Reverse', 'i key value')
+
+# Standard RFC-3548 Base32:
+B32_FORWARD = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567'
 
 
 def gen_forward(remove):
