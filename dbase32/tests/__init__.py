@@ -27,7 +27,8 @@ Unit tests for `dbase32` module.
 from unittest import TestCase
 import os
 from random import SystemRandom
-from collections import Counter
+import base64
+from collections import Counter, namedtuple
 
 from dbase32 import misc
 import dbase32
@@ -37,6 +38,13 @@ random = SystemRandom()
 possible = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'
 assert ''.join(sorted(set(possible))) == possible
 assert len(possible) == 36
+
+
+# True if the C extension is avialable
+C_EXT_AVAIL = hasattr(dbase32, 'db32enc_c')
+
+# Used in test_sort_p()
+Tup = namedtuple('Tup', 'data b32 db32')
 
 
 class TestConstants(TestCase):
@@ -132,14 +140,14 @@ class TestConstants(TestCase):
             self.assertEqual(counts[i], 1)
 
     def test_db32enc_alias(self):
-        if hasattr(dbase32, 'db32enc_c'):
+        if C_EXT_AVAIL:
             self.assertIs(dbase32.db32enc, dbase32.db32enc_c)
             self.assertIsNot(dbase32.db32enc, dbase32.db32enc_p)
         else:
             self.assertIs(dbase32.db32enc, dbase32.db32enc_p)
 
     def test_db32dec_alias(self):
-        if hasattr(dbase32, 'db32dec_c'):
+        if C_EXT_AVAIL:
             self.assertIs(dbase32.db32dec, dbase32.db32dec_c)
             self.assertIsNot(dbase32.db32dec, dbase32.db32dec_p)
         else:
@@ -147,6 +155,10 @@ class TestConstants(TestCase):
 
 
 class TestFunctions(TestCase):
+    def skin_if_no_c_ext(self):
+        if not C_EXT_AVAIL:
+            self.skipTest('cannot import `_dbase32` C extension')
+
     def check_db32enc_common(self, db32enc):
         """
         Encoder tests both the Python and the C implementations must pass.
@@ -197,9 +209,7 @@ class TestFunctions(TestCase):
         """
         Test the C implementation of db32enc().
         """
-        if not hasattr(dbase32, 'db32enc_c'):
-            self.skipTest('cannot import `_dbase32` C extension')
-
+        self.skin_if_no_c_ext()
         self.check_db32enc_common(dbase32.db32enc_c)
 
         # Compare against the Python version db32enc_p
@@ -272,9 +282,7 @@ class TestFunctions(TestCase):
         """
         Test the C implementation of db32enc().
         """
-        if not hasattr(dbase32, 'db32dec_c'):
-            self.skipTest('cannot import `_dbase32` C extension')
-
+        self.skin_if_no_c_ext()
         self.check_db32dec_common(dbase32.db32dec_c)
 
         # Compare against the dbase32.db32dec_p pure-Python version:
@@ -290,12 +298,67 @@ class TestFunctions(TestCase):
                     dbase32.db32dec_p(text)
                 )
 
+    def test_sort_p(self):
+        """
+        Confirm assumptions about RFC-3548 sort-order, test D-Base32 sort-order.
+        """
+        ids = [os.urandom(30) for i in range(1000)]
+        ids.extend(os.urandom(15) for i in range(1500))
+
+        orig = tuple(
+            Tup(
+                data,
+                base64.b32encode(data).decode('utf-8'),
+                dbase32.db32enc_p(data)
+            )
+            for data in ids
+        )
+
+        # Be really careful that we set things up correctly:
+        for t in orig:
+            self.assertIsInstance(t.data, bytes)
+            self.assertIn(len(t.data), (30, 15))
+
+            self.assertIsInstance(t.b32, str)
+            self.assertIsInstance(t.db32, str)
+            self.assertIn(len(t.b32), (24, 48))
+            self.assertEqual(len(t.b32), len(t.db32))
+            self.assertNotEqual(t.b32, t.db32)
+
+            self.assertEqual(t.b32, base64.b32encode(t.data).decode('utf-8'))
+            self.assertEqual(t.db32, dbase32.db32enc_p(t.data))
+
+        # Now sort and compare:
+        sort_by_data = sorted(orig, key=lambda t: t.data)
+        sort_by_b32 = sorted(orig, key=lambda t: t.b32)
+        sort_by_db32 = sorted(orig, key=lambda t: t.db32)
+        self.assertNotEqual(sort_by_data, sort_by_b32)
+        self.assertEqual(sort_by_data, sort_by_db32)
+
+        # Extra safety that we didn't goof:
+        sort_by_data.sort(key=lambda t: t.db32)  # Now sort by db32
+        sort_by_b32.sort(key=lambda t: t.data)  # Now sort by data
+        self.assertEqual(sort_by_data, sort_by_b32)
+
+    def test_sort_c(self):
+        """
+        Test binary vs D-Base32 sort order, with a *lot* of values.
+        """
+        self.skin_if_no_c_ext()
+        ids = [os.urandom(30) for i in range(20 * 1000)]
+        ids.extend(os.urandom(15) for i in range(30 * 1000))
+        pairs = tuple(
+            (data, dbase32.db32enc_c(data)) for data in ids
+        )
+        sort_by_bin = sorted(pairs, key=lambda t: t[0])
+        sort_by_txt = sorted(pairs, key=lambda t: t[1])
+        self.assertEqual(sort_by_bin, sort_by_txt)
+
     def test_roundtrip_c(self):
         """
         Test encode/decode round-trip with C implementation.
         """
-        if not hasattr(dbase32, 'db32enc_c'):
-            self.skipTest('cannot import `_dbase32` C extension')
+        self.skin_if_no_c_ext()
 
         # The C implementation is wicked fast, so let's test a *lot* of values:
         for size in [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60]:
