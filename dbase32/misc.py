@@ -141,3 +141,41 @@ def group_empty_iter(reverse, size=19):
     if buf:
         yield buf
 
+
+def iter_c(name, forward, reverse, start, end):
+    yield 'static const uint8_t {}_START = {};'.format(name, start)
+    yield 'static const uint8_t {}_END = {};'.format(name, end)
+
+    yield 'static const uint8_t {}_FORWARD[{}] = "{}";'.format(
+        name, len(forward), forward
+    )
+
+    yield 'static const uint8_t {}_REVERSE[{}] = {{'.format(
+        name, len(reverse)
+    )
+
+    for item in group_empty_iter(reverse):
+        if isinstance(item, list):
+            yield '    {},'.format(','.join(str(r.value) for r in item))
+        else:
+            r = item
+            yield '    {:>3},  // {!r} [{:>2}]'.format(r.value, r.key, r.i)
+
+    yield '};'
+
+
+def iter_python(name, forward, reverse, start, end):
+    yield '{}_START = {}'.format(name, start)
+    yield '{}_END = {}'.format(name, end)
+    yield '{}_FORWARD = {!r}'.format(name,  forward)
+
+    yield '{}_REVERSE = ('.format(name)
+    for item in group_empty_iter(reverse):
+        if isinstance(item, list):
+            yield '    {},'.format(','.join(str(r.value) for r in item))
+        else:
+            r = item
+            yield '    {:>3},  # {!r} [{:>2}]'.format(r.value, r.key, r.i)
+
+    yield ')'
+
