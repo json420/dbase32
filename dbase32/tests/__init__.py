@@ -382,3 +382,25 @@ class TestFunctions(TestCase):
                     data
                 )
 
+    def test_random_id(self):
+        txt = dbase32.random_id()
+        self.assertIsInstance(txt, str)
+        self.assertEqual(len(txt), 24)
+        data = dbase32.db32dec(txt)
+        self.assertIsInstance(data, bytes)
+        self.assertEqual(len(data), 15)
+        self.assertEqual(dbase32.db32enc(data), txt)
+
+        for size in [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60]:
+            txt = dbase32.random_id(size)
+            self.assertIsInstance(txt, str)
+            self.assertEqual(len(txt), size * 8 // 5)
+            data = dbase32.db32dec(txt)
+            self.assertIsInstance(data, bytes)
+            self.assertEqual(len(data), size)
+            self.assertEqual(dbase32.db32enc(data), txt)
+
+        # Sanity check on their randomness:
+        count = 5000
+        accum = set(dbase32.random_id() for i in range(count))
+        self.assertEqual(len(accum), count)
