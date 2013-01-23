@@ -27,6 +27,9 @@ Benchmark the db32enc(), db32dec() C implementation.
 """
 
 import timeit
+import platform
+
+import dbase32
 
 bin_len = 60
 count = 2500 * 1000  # 2.5 million
@@ -51,15 +54,21 @@ def run(statement):
     rate = int(count / elapsed)
     print('{:>14,}: {}'.format(rate, statement))
 
-
 print('')
+
+print('dbase32: {} ({} {})'.format(
+    dbase32.__version__, platform.dist()[0], platform.dist()[1])
+)
+print('Python: {}, {}, {}'.format(
+    platform.python_version(), platform.machine(), platform.system())
+)
 
 print('Encodes/second:')
 run('b64encode(data)')
 run('db32enc(data)')
-print('')
 
 print('Decodes/second:')
 run('b64decode(text_b64)')
 run('db32dec(text_db32)')
+
 print('')
