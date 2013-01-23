@@ -375,7 +375,7 @@ class TestFunctions(TestCase):
 
         # The C implementation is wicked fast, so let's test a *lot* of values:
         for size in [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60]:
-            for i in range(100 * 1000):
+            for i in range(50 * 1000):
                 data = os.urandom(size)
                 self.assertEqual(
                     dbase32.db32dec_c(dbase32.db32enc_c(data)),
