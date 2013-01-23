@@ -38,9 +38,20 @@ from venv import EnvBuilder
 from os import path
 import tempfile
 import shutil
-from subprocess import check_call
+from subprocess import check_call, call
 
 import dbase32
+
+
+def run(step, location, callback, *args):
+    print('')
+    print('*' * 80)
+    print('*  ({}) running tests in {}...'.format(step, location))
+    print('*' * 80)
+    ret = callback(*args)
+    print('*' * 80)
+    print('')
+    return ret
 
 
 class TestEnvBuilder(EnvBuilder):
@@ -51,7 +62,7 @@ class TestEnvBuilder(EnvBuilder):
 
     def __del__(self):
         if path.isdir(self.tmpdir):
-            print(self.tmpdir)
+            print('Removing {!r}'.format(self.tmpdir))
             shutil.rmtree(self.tmpdir)
 
     def post_setup(self, context):
@@ -62,7 +73,7 @@ class TestEnvBuilder(EnvBuilder):
         self.run_tests_cmd = [context.env_exe, run_tests]
 
     def run_tests(self):
-        check_call(self.run_tests_cmd)
+        return call(self.run_tests_cmd) == 0
 
 
 class Test(Command):
@@ -77,6 +88,7 @@ class Test(Command):
         pass
 
     def run(self):
+        # First run the tests in the source tree
         pynames = [
             'dbase32',
             'dbase32.rfc3548',
@@ -85,23 +97,19 @@ class Test(Command):
             'dbase32.tests.test_rfc3548',
             'dbase32.tests.test_misc',
         ]
-
-        # Add unit-tests:
         loader = TestLoader()
         suite = loader.loadTestsFromNames(pynames)
-
-        # Add doc-tests:
         for name in pynames:
             suite.addTest(DocTestSuite(name))
-
-        # Run the tests:
         runner = TextTestRunner(verbosity=2)
-        result = runner.run(suite)
+        result = run(1, 'source tree', runner.run, suite)
         if not result.wasSuccessful():
-            raise SystemExit(2)
+            raise SystemExit('Tests failed in source tree!')
 
+        # Now run the tests in a virtual environment:
         testenv = TestEnvBuilder()
-        testenv.run_tests()
+        if not run(2, 'virtual environment', testenv.run_tests):
+            raise SystemExit('Tests failed in virtual environment!')
 
 
 _dbase32 = Extension('_dbase32', sources=['_dbase32.c'],
