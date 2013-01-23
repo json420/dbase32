@@ -38,152 +38,12 @@ RANDOM_BITS = 120
 RANDOM_BYTES = RANDOM_BITS // 8
 RANDOM_B32LEN = RANDOM_BITS // 5
 
-# B32: RFC-3548: different binary vs encoded sort order (deal breaker!)
-# [removes 0, 1, 8, 9]
-B32_START = 50
-B32_END = 90
-B32_FORWARD = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567'
-B32_REVERSE = (
-     26,  # 50 '2' [ 0]
-     27,  # 51 '3' [ 1]
-     28,  # 52 '4' [ 2]
-     29,  # 53 '5' [ 3]
-     30,  # 54 '6' [ 4]
-     31,  # 55 '7' [ 5]
-    255,  # 56 '8' [ 6]
-    255,  # 57 '9' [ 7]
-    255,  # 58 ':' [ 8]
-    255,  # 59 ';' [ 9]
-    255,  # 60 '<' [10]
-    255,  # 61 '=' [11]
-    255,  # 62 '>' [12]
-    255,  # 63 '?' [13]
-    255,  # 64 '@' [14]
-      0,  # 65 'A' [15]
-      1,  # 66 'B' [16]
-      2,  # 67 'C' [17]
-      3,  # 68 'D' [18]
-      4,  # 69 'E' [19]
-      5,  # 70 'F' [20]
-      6,  # 71 'G' [21]
-      7,  # 72 'H' [22]
-      8,  # 73 'I' [23]
-      9,  # 74 'J' [24]
-     10,  # 75 'K' [25]
-     11,  # 76 'L' [26]
-     12,  # 77 'M' [27]
-     13,  # 78 'N' [28]
-     14,  # 79 'O' [29]
-     15,  # 80 'P' [30]
-     16,  # 81 'Q' [31]
-     17,  # 82 'R' [32]
-     18,  # 83 'S' [33]
-     19,  # 84 'T' [34]
-     20,  # 85 'U' [35]
-     21,  # 86 'V' [36]
-     22,  # 87 'W' [37]
-     23,  # 88 'X' [38]
-     24,  # 89 'Y' [39]
-     25,  # 90 'Z' [40]
-)
-
-# SB32: Sorted-Base32: standard RFC-3548 letters, but in sorted order
-# [removes 0, 1, 8, 9]
-SB32_START = 50
-SB32_END = 90
-SB32_FORWARD = '234567ABCDEFGHIJKLMNOPQRSTUVWXYZ'
-SB32_REVERSE = (
-      0,  # 50 '2' [ 0]
-      1,  # 51 '3' [ 1]
-      2,  # 52 '4' [ 2]
-      3,  # 53 '5' [ 3]
-      4,  # 54 '6' [ 4]
-      5,  # 55 '7' [ 5]
-    255,  # 56 '8' [ 6]
-    255,  # 57 '9' [ 7]
-    255,  # 58 ':' [ 8]
-    255,  # 59 ';' [ 9]
-    255,  # 60 '<' [10]
-    255,  # 61 '=' [11]
-    255,  # 62 '>' [12]
-    255,  # 63 '?' [13]
-    255,  # 64 '@' [14]
-      6,  # 65 'A' [15]
-      7,  # 66 'B' [16]
-      8,  # 67 'C' [17]
-      9,  # 68 'D' [18]
-     10,  # 69 'E' [19]
-     11,  # 70 'F' [20]
-     12,  # 71 'G' [21]
-     13,  # 72 'H' [22]
-     14,  # 73 'I' [23]
-     15,  # 74 'J' [24]
-     16,  # 75 'K' [25]
-     17,  # 76 'L' [26]
-     18,  # 77 'M' [27]
-     19,  # 78 'N' [28]
-     20,  # 79 'O' [29]
-     21,  # 80 'P' [30]
-     22,  # 81 'Q' [31]
-     23,  # 82 'R' [32]
-     24,  # 83 'S' [33]
-     25,  # 84 'T' [34]
-     26,  # 85 'U' [35]
-     27,  # 86 'V' [36]
-     28,  # 87 'W' [37]
-     29,  # 88 'X' [38]
-     30,  # 89 'Y' [39]
-     31,  # 90 'Z' [40]
-)
-
 # DB32: Dmedia-Base32: non-standard 3-9, A-Y letters (sorted)
 # [removes 0, 1, 2, Z]
 DB32_START = 51
 DB32_END = 89
 DB32_FORWARD = '3456789ABCDEFGHIJKLMNOPQRSTUVWXY'
 DB32_REVERSE = (
-      0,  # 51 '3' [ 0]
-      1,  # 52 '4' [ 1]
-      2,  # 53 '5' [ 2]
-      3,  # 54 '6' [ 3]
-      4,  # 55 '7' [ 4]
-      5,  # 56 '8' [ 5]
-      6,  # 57 '9' [ 6]
-    255,  # 58 ':' [ 7]
-    255,  # 59 ';' [ 8]
-    255,  # 60 '<' [ 9]
-    255,  # 61 '=' [10]
-    255,  # 62 '>' [11]
-    255,  # 63 '?' [12]
-    255,  # 64 '@' [13]
-      7,  # 65 'A' [14]
-      8,  # 66 'B' [15]
-      9,  # 67 'C' [16]
-     10,  # 68 'D' [17]
-     11,  # 69 'E' [18]
-     12,  # 70 'F' [19]
-     13,  # 71 'G' [20]
-     14,  # 72 'H' [21]
-     15,  # 73 'I' [22]
-     16,  # 74 'J' [23]
-     17,  # 75 'K' [24]
-     18,  # 76 'L' [25]
-     19,  # 77 'M' [26]
-     20,  # 78 'N' [27]
-     21,  # 79 'O' [28]
-     22,  # 80 'P' [29]
-     23,  # 81 'Q' [30]
-     24,  # 82 'R' [31]
-     25,  # 83 'S' [32]
-     26,  # 84 'T' [33]
-     27,  # 85 'U' [34]
-     28,  # 86 'V' [35]
-     29,  # 87 'W' [36]
-     30,  # 88 'X' [37]
-     31,  # 89 'Y' [38]
-)
-
-DB32_REVERSE_FULL = (
     255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,
     255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,
     255,255,255,255,255,255,255,255,255,255,255,255,255,
@@ -237,25 +97,78 @@ DB32_REVERSE_FULL = (
     255,255,255,255,255,255,255,255,255,255,255,255,255,255,
 )
 
+# B32: RFC-3548: different binary vs encoded sort order (deal breaker!)
+# [removes 0, 1, 8, 9]
+B32_START = 50
+B32_END = 90
+B32_FORWARD = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567'
+B32_REVERSE = (
+    255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,
+    255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,
+    255,255,255,255,255,255,255,255,255,255,255,255,
+     26,  # '2' [50]
+     27,  # '3' [51]
+     28,  # '4' [52]
+     29,  # '5' [53]
+     30,  # '6' [54]
+     31,  # '7' [55]
+    255,  # '8' [56]
+    255,  # '9' [57]
+    255,  # ':' [58]
+    255,  # ';' [59]
+    255,  # '<' [60]
+    255,  # '=' [61]
+    255,  # '>' [62]
+    255,  # '?' [63]
+    255,  # '@' [64]
+      0,  # 'A' [65]
+      1,  # 'B' [66]
+      2,  # 'C' [67]
+      3,  # 'D' [68]
+      4,  # 'E' [69]
+      5,  # 'F' [70]
+      6,  # 'G' [71]
+      7,  # 'H' [72]
+      8,  # 'I' [73]
+      9,  # 'J' [74]
+     10,  # 'K' [75]
+     11,  # 'L' [76]
+     12,  # 'M' [77]
+     13,  # 'N' [78]
+     14,  # 'O' [79]
+     15,  # 'P' [80]
+     16,  # 'Q' [81]
+     17,  # 'R' [82]
+     18,  # 'S' [83]
+     19,  # 'T' [84]
+     20,  # 'U' [85]
+     21,  # 'V' [86]
+     22,  # 'W' [87]
+     23,  # 'X' [88]
+     24,  # 'Y' [89]
+     25,  # 'Z' [90]
+    255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,
+    255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,
+    255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,
+    255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,
+    255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,
+    255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,
+    255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,
+    255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,
+    255,255,255,255,255,255,255,255,255,255,255,255,255,
+)
+
 
 def _encode_x_iter(data, x_forward):
-    offset = 0
-    for i in range(len(data) // 5):
-        block = data[offset:offset + 5]
-        taxi = block[0]
-        taxi = block[1] | (taxi << 8) 
-        taxi = block[2] | (taxi << 8) 
-        taxi = block[3] | (taxi << 8) 
-        taxi = block[4] | (taxi << 8) 
-        yield x_forward[(taxi >> 35) & 31]
-        yield x_forward[(taxi >> 30) & 31]
-        yield x_forward[(taxi >> 25) & 31]
-        yield x_forward[(taxi >> 20) & 31]
-        yield x_forward[(taxi >> 15) & 31]
-        yield x_forward[(taxi >> 10) & 31]
-        yield x_forward[(taxi >>  5) & 31]
-        yield x_forward[taxi & 31]
-        offset += 5
+    taxi = 0
+    bits = 0
+    for d in data:
+        taxi = (taxi << 8) | d
+        bits += 8
+        while bits >= 5:
+            bits -= 5
+            yield x_forward[(taxi >> bits) & 31]
+    assert bits == 0
 
 
 def encode_x(data, x_forward):
@@ -273,66 +186,11 @@ def encode_x(data, x_forward):
     return ''.join(_encode_x_iter(data, x_forward))
 
 
-def _decode_x_iter2(text, x_reverse):
-    offset = 0
-    for i in range(len(text) // 8):
-        block = text[offset:offset + 8]
-        r = x_reverse[ord(block[0])]
-        taxi = r
-        r = x_reverse[ord(block[1])] | (r & 224) 
-        taxi = r | (taxi << 5)
-        r = x_reverse[ord(block[2])] | (r & 224) 
-        taxi = r | (taxi << 5)
-        r = x_reverse[ord(block[3])] | (r & 224) 
-        taxi = r | (taxi << 5)
-        r = x_reverse[ord(block[4])] | (r & 224) 
-        taxi = r | (taxi << 5)
-        r = x_reverse[ord(block[5])] | (r & 224) 
-        taxi = r | (taxi << 5)
-        r = x_reverse[ord(block[6])] | (r & 224) 
-        taxi = r | (taxi << 5)
-        r = x_reverse[ord(block[7])] | (r & 224) 
-        taxi = r | (taxi << 5)
-
-        if (r & 224):
-            for j in range(8):
-                t = text[offset + j]
-                r = x_reverse[ord(t)]
-                if r > 31:
-                    raise ValueError('invalid base32 letter: {}'.format(t))
-            raise Exception('something went wrong!')
-
-        yield (taxi >> 32) & 255
-        yield (taxi >> 24) & 255
-        yield (taxi >> 16) & 255
-        yield (taxi >> 8) & 255
-        yield taxi & 255
-        offset += 8
-
-
-def decode_x2(text, x_reverse):
-    assert isinstance(text, str)
-    if not (8 <= len(text) <= MAX_TXT_LEN):
-        raise ValueError(
-            'len(text) is {}, need 8 <= len(text) <= {}'.format(
-                len(text), MAX_TXT_LEN
-            )
-        )
-    if len(text) % 8 != 0:
-        raise ValueError(
-            'len(text) is {}, need len(text) % 8 == 0'.format(len(text))
-        )
-    return bytes(_decode_x_iter2(text, x_reverse))
-
-
-def _decode_x_iter(text, x_reverse, x_start, x_end):
+def _decode_x_iter(text, x_reverse):
     taxi = 0
     bits = 0
     for t in text:
-        i = ord(t)
-        if not (x_start <= i <= x_end):
-            raise ValueError('invalid base32 letter: {}'.format(t))
-        r = x_reverse[i - x_start]
+        r = x_reverse[ord(t)]
         if r > 31:
             raise ValueError('invalid base32 letter: {}'.format(t))
         taxi = (taxi << 5) | r
@@ -343,7 +201,7 @@ def _decode_x_iter(text, x_reverse, x_start, x_end):
     assert bits == 0
 
 
-def decode_x(text, x_reverse, x_start, x_end):
+def decode_x(text, x_reverse):
     assert isinstance(text, str)
     if not (8 <= len(text) <= MAX_TXT_LEN):
         raise ValueError(
@@ -355,7 +213,7 @@ def decode_x(text, x_reverse, x_start, x_end):
         raise ValueError(
             'len(text) is {}, need len(text) % 8 == 0'.format(len(text))
         )
-    return bytes(_decode_x_iter(text, x_reverse, x_start, x_end))
+    return bytes(_decode_x_iter(text, x_reverse))
 
 
 def db32enc_p(data):
@@ -381,20 +239,14 @@ def db32dec_p(text):
     b'binary foo'
 
     """
-    return decode_x2(text, DB32_REVERSE_FULL)
+    return decode_x(text, DB32_REVERSE)
 
-
-def sb32enc(data):
-    return encode_x(data, SB32_FORWARD)
-
-def sb32dec(text):
-    return decode_x(text, SB32_REVERSE, SB32_START, SB32_END)
 
 def b32enc(data):
     return encode_x(data, B32_FORWARD)
 
 def b32dec(text):
-    return decode_x(text, B32_REVERSE, B32_START, B32_END)
+    return decode_x(text, B32_REVERSE)
 
 
 try:

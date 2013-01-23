@@ -31,71 +31,13 @@ from random import SystemRandom
 
 import dbase32
 
+
 assert hasattr(dbase32, 'db32enc')
 assert hasattr(dbase32, 'db32dec')
-
 
 random = SystemRandom()
 possible = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'
 assert ''.join(sorted(set(possible))) == possible
-
-
-# B32: RFC-3548 Base32: binary sort order will not match encoded, oh noes!
-# [removes 0, 1, 8, 9]
-B32_START = 50
-B32_END = 90
-B32_FORWARD = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567'
-B32_REVERSE = (
-     26,  # 50 '2' [ 0]
-     27,  # 51 '3' [ 1]
-     28,  # 52 '4' [ 2]
-     29,  # 53 '5' [ 3]
-     30,  # 54 '6' [ 4]
-     31,  # 55 '7' [ 5]
-    255,  # 56 '8' [ 6]
-    255,  # 57 '9' [ 7]
-    255,  # 58 ':' [ 8]
-    255,  # 59 ';' [ 9]
-    255,  # 60 '<' [10]
-    255,  # 61 '=' [11]
-    255,  # 62 '>' [12]
-    255,  # 63 '?' [13]
-    255,  # 64 '@' [14]
-      0,  # 65 'A' [15]
-      1,  # 66 'B' [16]
-      2,  # 67 'C' [17]
-      3,  # 68 'D' [18]
-      4,  # 69 'E' [19]
-      5,  # 70 'F' [20]
-      6,  # 71 'G' [21]
-      7,  # 72 'H' [22]
-      8,  # 73 'I' [23]
-      9,  # 74 'J' [24]
-     10,  # 75 'K' [25]
-     11,  # 76 'L' [26]
-     12,  # 77 'M' [27]
-     13,  # 78 'N' [28]
-     14,  # 79 'O' [29]
-     15,  # 80 'P' [30]
-     16,  # 81 'Q' [31]
-     17,  # 82 'R' [32]
-     18,  # 83 'S' [33]
-     19,  # 84 'T' [34]
-     20,  # 85 'U' [35]
-     21,  # 86 'V' [36]
-     22,  # 87 'W' [37]
-     23,  # 88 'X' [38]
-     24,  # 89 'Y' [39]
-     25,  # 90 'Z' [40]
-)
-
-
-def b32enc_p(data):
-    return dbase32.encode_x(data, B32_FORWARD)
-
-
-def b32dec_p(text):
-    return dbase32.decode_x(text, B32_REVERSE, B32_START, B32_END)
 
 
 class TestConstants(TestCase):
@@ -109,11 +51,6 @@ class TestConstants(TestCase):
         self.assertEqual(dbase32.DB32_START, ord(min(dbase32.DB32_FORWARD)))
         self.assertEqual(dbase32.DB32_END, ord(dbase32.DB32_FORWARD[-1]))
         self.assertEqual(dbase32.DB32_END, ord(max(dbase32.DB32_FORWARD)))
-        stop = dbase32.DB32_END + 1
-        self.assertEqual(
-            stop - dbase32.DB32_START,
-            len(dbase32.DB32_REVERSE)
-        )
 
     def test_forward(self):
         self.assertEqual(''.join(sorted(set(possible))), possible)
@@ -129,65 +66,49 @@ class TestConstants(TestCase):
         self.assertEqual(len(dbase32.DB32_FORWARD), 32)
 
     def test_reverse(self):
-        self.assertEqual(dbase32.DB32_REVERSE[0], 0)
-        self.assertEqual(dbase32.DB32_REVERSE[-1], 31)
-        offset = ord(dbase32.DB32_FORWARD[0])
-        yes = 0
-        no = 0
-        for (i, value) in enumerate(dbase32.DB32_REVERSE):
-            char = chr(i + offset)
-            if char in dbase32.DB32_FORWARD:
-                self.assertEqual(value, yes)
-                yes += 1
-            else:
-                self.assertEqual(value, 255)
-                no += 1
-        self.assertEqual(yes, 32)
-        self.assertEqual(len(dbase32.DB32_REVERSE) - no, 32)
-        self.assertEqual(len(dbase32.DB32_REVERSE), 39)
+        self.assertIsInstance(dbase32.DB32_REVERSE, tuple)
+        self.assertEqual(len(dbase32.DB32_REVERSE), 256)
 
 
 class TestFunctions(TestCase):
-    def test_encode_x(self):
+    def test_b32enc(self):
         """
         Test encode_x() with the standard RFC-3548 base32 tables.
-
-        See b32enc_p() defined above.
         """
         # A few static value sanity checks:
-        self.assertEqual(b32enc_p(b'\x00\x00\x00\x00\x00'), 'AAAAAAAA')
-        self.assertEqual(b32enc_p(b'\xff\xff\xff\xff\xff'), '77777777')
-        self.assertEqual(b32enc_p(b'\x00' * 60), 'A' * 96)
-        self.assertEqual(b32enc_p(b'\xff' * 60), '7' * 96)
+        self.assertEqual(dbase32.b32enc(b'\x00\x00\x00\x00\x00'), 'AAAAAAAA')
+        self.assertEqual(dbase32.b32enc(b'\xff\xff\xff\xff\xff'), '77777777')
+        self.assertEqual(dbase32.b32enc(b'\x00' * 60), 'A' * 96)
+        self.assertEqual(dbase32.b32enc(b'\xff' * 60), '7' * 96)
 
         # Compare against base64.b32encode() from stdlib:
         for size in [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60]:
             for i in range(100):
                 data = os.urandom(size)
                 self.assertEqual(
-                    b32enc_p(data),
+                    dbase32.b32enc(data),
                     b32encode(data).decode('utf-8')
                 )
 
-    def test_decode_x(self):
+    def test_b32dec(self):
         """
         Test decode_x() with the standard RFC-3548 base32 tables.
-
-        See b32dec_p() defined above.
         """
         # A few static value sanity checks:
-        self.assertEqual(b32dec_p('AAAAAAAA'), b'\x00\x00\x00\x00\x00')
-        self.assertEqual(b32dec_p('77777777'), b'\xff\xff\xff\xff\xff')
-        self.assertEqual(b32dec_p('A' * 96), b'\x00' * 60)
-        self.assertEqual(b32dec_p('7' * 96), b'\xff' * 60)
+        self.assertEqual(dbase32.b32dec('AAAAAAAA'), b'\x00\x00\x00\x00\x00')
+        self.assertEqual(dbase32.b32dec('77777777'), b'\xff\xff\xff\xff\xff')
+        self.assertEqual(dbase32.b32dec('A' * 96), b'\x00' * 60)
+        self.assertEqual(dbase32.b32dec('7' * 96), b'\xff' * 60)
 
         # Compare against base64.b32decode() from stdlib:
         for size in [8, 16, 24, 32, 40, 48, 56, 64, 72, 80, 88, 96]:
             for i in range(100):
-                text = ''.join(random.choice(B32_FORWARD) for n in range(size))
+                text = ''.join(
+                    random.choice(dbase32.B32_FORWARD) for n in range(size)
+                )
                 assert len(text) == size
                 self.assertEqual(
-                    b32dec_p(text),
+                    dbase32.b32dec(text),
                     b32decode(text.encode('utf-8'))
                 )
 
