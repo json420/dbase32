@@ -336,6 +336,7 @@ class TestFunctions(TestCase):
         self.assertEqual(sort_by_data, sort_by_db32)
 
         # Extra safety that we didn't goof:
+        sort_by_db32 = None
         sort_by_data.sort(key=lambda t: t.db32)  # Now sort by db32
         sort_by_b32.sort(key=lambda t: t.data)  # Now sort by data
         self.assertEqual(sort_by_data, sort_by_b32)
@@ -354,6 +355,18 @@ class TestFunctions(TestCase):
         sort_by_txt = sorted(pairs, key=lambda t: t[1])
         self.assertEqual(sort_by_bin, sort_by_txt)
 
+    def test_roundtrip_p(self):
+        """
+        Test encode/decode round-trip with Python implementation.
+        """
+        for size in [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60]:
+            for i in range(1000):
+                data = os.urandom(size)
+                self.assertEqual(
+                    dbase32.db32dec_p(dbase32.db32enc_p(data)),
+                    data
+                )
+
     def test_roundtrip_c(self):
         """
         Test encode/decode round-trip with C implementation.
@@ -362,7 +375,7 @@ class TestFunctions(TestCase):
 
         # The C implementation is wicked fast, so let's test a *lot* of values:
         for size in [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60]:
-            for i in range(10000):
+            for i in range(100 * 1000):
                 data = os.urandom(size)
                 self.assertEqual(
                     dbase32.db32dec_c(dbase32.db32enc_c(data)),
