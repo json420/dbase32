@@ -91,7 +91,7 @@ setup(
     author_email='jderose@novacut.com',
     license='LGPLv3+',
     packages=['dbase32', 'dbase32.tests'],
-    scripts=['dbase32-gen-tables'],
+    scripts=['dbase32-gen-tables', 'dbase32-benchmark'],
     ext_modules=[_dbase32],
     cmdclass={'test': Test},
 )

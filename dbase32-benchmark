@@ -28,27 +28,27 @@ Benchmark the db32enc(), db32dec() C implementation.
 
 import timeit
 
+bin_len = 60
+count = 2500 * 1000  # 2.5 million
+
 setup = """
 import os
 from base64 import b64encode, b64decode
-
 from dbase32 import db32enc, db32dec
 
-
-data = os.urandom(60)
+data = os.urandom({})
 text_b64 = b64encode(data)
 text_db32 = db32enc(data)
 
 assert b64decode(text_b64) == data
 assert db32dec(text_db32) == data
-"""
+""".format(bin_len)
 
-N = 2500 * 1000
 
 def run(statement):
     t = timeit.Timer(statement, setup)
-    elapsed = t.timeit(N)
-    rate = int(N / elapsed)
+    elapsed = t.timeit(count)
+    rate = int(count / elapsed)
     print('{:>14,}: {}'.format(rate, statement))
 
 
