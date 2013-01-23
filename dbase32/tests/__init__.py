@@ -28,7 +28,9 @@ from unittest import TestCase
 import os
 from base64 import b32encode, b32decode
 from random import SystemRandom
+from collections import Counter
 
+from dbase32 import misc
 import dbase32
 
 
@@ -38,23 +40,38 @@ assert hasattr(dbase32, 'db32dec')
 random = SystemRandom()
 possible = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'
 assert ''.join(sorted(set(possible))) == possible
+assert len(possible) == 36
 
 
 class TestConstants(TestCase):
     def test_max(self):
+        self.assertIsInstance(dbase32.MAX_BIN_LEN, int)
+        self.assertIsInstance(dbase32.MAX_TXT_LEN, int)
         self.assertEqual(dbase32.MAX_BIN_LEN % 5, 0)
         self.assertEqual(dbase32.MAX_TXT_LEN % 8, 0)
         self.assertEqual(dbase32.MAX_BIN_LEN, dbase32.MAX_TXT_LEN * 5 // 8)
 
-    def test_start_end(self):
-        self.assertEqual(dbase32.DB32_START, ord(dbase32.DB32_FORWARD[0]))
-        self.assertEqual(dbase32.DB32_START, ord(min(dbase32.DB32_FORWARD)))
-        self.assertEqual(dbase32.DB32_END, ord(dbase32.DB32_FORWARD[-1]))
-        self.assertEqual(dbase32.DB32_END, ord(max(dbase32.DB32_FORWARD)))
+    def test_start(self):
+        self.assertEqual(
+            dbase32.DB32_START,
+            ord(min(dbase32.DB32_FORWARD))
+        )
+        self.assertEqual(
+            dbase32.DB32_START,
+            ord(dbase32.DB32_FORWARD[0])
+        )
+
+    def test_end(self):
+        self.assertEqual(
+            dbase32.DB32_END,
+            ord(max(dbase32.DB32_FORWARD))
+        )
+        self.assertEqual(
+            dbase32.DB32_END,
+            ord(dbase32.DB32_FORWARD[-1])
+        )
 
     def test_forward(self):
-        self.assertEqual(''.join(sorted(set(possible))), possible)
-        self.assertEqual(len(possible), 36)
         self.assertEqual(
             ''.join(sorted(set(dbase32.DB32_FORWARD))),
             dbase32.DB32_FORWARD
@@ -63,11 +80,40 @@ class TestConstants(TestCase):
             set(dbase32.DB32_FORWARD),
             set(possible) - set('012Z')
         )
+        self.assertIsInstance(dbase32.DB32_FORWARD, str)
         self.assertEqual(len(dbase32.DB32_FORWARD), 32)
+        self.assertEqual(dbase32.DB32_FORWARD, misc.gen_forward('012Z'))
 
     def test_reverse(self):
         self.assertIsInstance(dbase32.DB32_REVERSE, tuple)
         self.assertEqual(len(dbase32.DB32_REVERSE), 256)
+        self.assertEqual(min(dbase32.DB32_REVERSE), 0)
+        self.assertEqual(max(dbase32.DB32_REVERSE), 255)
+        self.assertEqual(
+            dbase32.DB32_REVERSE,
+            tuple(r.value for r in misc.gen_reverse(dbase32.DB32_FORWARD))
+        )
+
+        for (i, value) in enumerate(dbase32.DB32_REVERSE):
+            if i < 51:
+                self.assertEqual(value, 255)
+            if 51 <= i <= 57:
+                self.assertEqual(value, i - 51)
+            if 58 <= i <= 64:
+                self.assertEqual(value, 255)
+            if 65 <= i <= 89:
+                self.assertEqual(value, i - 58)
+            if i > 89:
+                self.assertEqual(value, 255)
+
+        expected = set(range(32))
+        expected.add(255)
+        self.assertEqual(set(dbase32.DB32_REVERSE), expected)
+
+        counts = Counter(dbase32.DB32_REVERSE)
+        self.assertEqual(counts[255], 256 - 32)
+        for i in range(32):
+            self.assertEqual(counts[i], 1)
 
 
 class TestFunctions(TestCase):
