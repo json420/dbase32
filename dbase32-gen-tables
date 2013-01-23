@@ -30,6 +30,7 @@ from dbase32 import misc
 
 REMOVE = '012Z'
 NAME = 'db32'
+B32_FORWARD = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567'
 
 
 parser = optparse.OptionParser(
@@ -61,7 +62,7 @@ parser.add_option('-p',
 
 
 if options.rfc:
-    forward = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567'
+    forward = B32_FORWARD
     name = 'b32'
 else:
     forward = misc.gen_forward(options.remove)
