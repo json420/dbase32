@@ -61,7 +61,7 @@ parser.add_option('-p',
 
 
 if options.rfc:
-    forward = misc.B32_FORWARD
+    forward = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567'
     name = 'b32'
 else:
     forward = misc.gen_forward(options.remove)

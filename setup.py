@@ -56,8 +56,10 @@ class Test(Command):
     def run(self):
         pynames = [
             'dbase32',
+            'dbase32.rfc3548',
             'dbase32.misc',
             'dbase32.tests',
+            'dbase32.tests.test_rfc3548',
             'dbase32.tests.test_misc',
         ]
 
