@@ -52,7 +52,8 @@ for name in pynames:
 # Run the tests:
 runner = TextTestRunner(verbosity=2)
 result = runner.run(suite)
-print('dbase32.__file__: {!r}'.format(path.abspath(dbase32.__file__)))
+print('script: {!r}'.format(path.abspath(__file__)))
+print('dbase32: {!r}'.format(path.abspath(dbase32.__file__)))
 if not result.wasSuccessful():
     raise SystemExit(2)
 
