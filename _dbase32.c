@@ -137,7 +137,7 @@ dbase32_encode(const size_t bin_len, const uint8_t *bin_buf,
 /* dbase32_decode()
 
 Return value is the status:
-    status >=  0 means invalid base32 letter (char is returned)
+    status >=  0 means invalid D-Base32 letter (char is returned)
     status == -1 means success
     status == -2 means invalid txt_len
     status == -3 means invalid bin_len
@@ -301,10 +301,67 @@ dbase32_db32dec(PyObject *self, PyObject *args)
 }
 
 
+/* dbase32_valid()
+
+Return value is the status:
+    status ==  0 means valid D-Base32 ID
+    status  <  0 means invalid txt_len
+    status  >  0 means it contains non D-Base32 letters  */
+static int
+dbase32_valid(const size_t txt_len, const uint8_t *txt_buf)
+{
+    size_t block, count;
+    uint8_t r = 0;
+
+    if (txt_len < 8 || txt_len > MAX_TXT_LEN || txt_len % 8 != 0) {
+        return -1;
+    }
+    count = txt_len / 8;
+    for (block=0; block < count; block++) {
+        // Accumulate bits set in reverse table one block:
+        r |= DB32_REVERSE[txt_buf[0]];
+        r |= DB32_REVERSE[txt_buf[1]];
+        r |= DB32_REVERSE[txt_buf[2]];
+        r |= DB32_REVERSE[txt_buf[3]];
+        r |= DB32_REVERSE[txt_buf[4]];
+        r |= DB32_REVERSE[txt_buf[5]];
+        r |= DB32_REVERSE[txt_buf[6]];
+        r |= DB32_REVERSE[txt_buf[7]];
+
+        // Move the pointer:
+        txt_buf += 8;
+    }
+    return (r & 224);
+}
+
+
+static PyObject *
+dbase32_isdb32(PyObject *self, PyObject *args)
+{
+    const uint8_t *txt_buf;
+    size_t txt_len;
+
+    if (!PyArg_ParseTuple(args, "s:isdb32", &txt_buf)) {
+        return NULL;
+    }
+    txt_len = strlen(txt_buf);
+
+    // dbase32_valid() returns 0 when valid:
+    if (0 == dbase32_valid(txt_len, txt_buf)) {
+        Py_RETURN_TRUE;
+    }
+    else {
+        Py_RETURN_FALSE;
+    }
+}
+
+
+
 /* module init */
 static struct PyMethodDef dbase32_functions[] = {
     {"db32enc_c", dbase32_db32enc, METH_VARARGS, "db32enc(data)"},
     {"db32dec_c", dbase32_db32dec, METH_VARARGS, "db32dec(text)"},
+    {"isdb32", dbase32_isdb32, METH_VARARGS, "isdb32(text)"},
     {NULL, NULL, 0, NULL}
 };
 

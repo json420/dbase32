@@ -37,11 +37,13 @@ count = 2500 * 1000  # 2.5 million
 setup = """
 import os
 from base64 import b64encode, b64decode
-from dbase32 import db32enc, db32dec
+from dbase32 import db32enc, db32dec, DB32ALPHABET
+from _dbase32 import isdb32
 
 data = os.urandom({})
 text_b64 = b64encode(data)
 text_db32 = db32enc(data)
+not_db32 = text_db32[:-1] + 'Z'
 
 assert b64decode(text_b64) == data
 assert db32dec(text_db32) == data
@@ -71,4 +73,11 @@ print('Decodes/second:')
 run('b64decode(text_b64)')
 run('db32dec(text_db32)')
 
+print('Validations/second:')
+run('assert DB32ALPHABET.issuperset(text_db32) is True')
+run('assert isdb32(text_db32) is True')
+run('assert DB32ALPHABET.issuperset(not_db32) is False')
+run('assert isdb32(not_db32) is False')
 print('')
+
+    
