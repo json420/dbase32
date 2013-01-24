@@ -301,24 +301,25 @@ dbase32_db32dec(PyObject *self, PyObject *args)
 }
 
 
-/* dbase32_valid()
-
-Return value is the status:
-    status ==  0 means valid D-Base32 ID
-    status  <  0 means invalid txt_len
-    status  >  0 means it contains non D-Base32 letters  */
-static int
-dbase32_valid(const size_t txt_len, const uint8_t *txt_buf)
+static PyObject *
+dbase32_isdb32(PyObject *self, PyObject *args)
 {
+    const uint8_t *txt_buf;
+    size_t txt_len;
     size_t block, count;
     uint8_t r = 0;
 
-    if (txt_len < 8 || txt_len > MAX_TXT_LEN || txt_len % 8 != 0) {
-        return -1;
+    if (!PyArg_ParseTuple(args, "s:isdb32", &txt_buf)) {
+        return NULL;
     }
+    txt_len = strlen(txt_buf);
+    if (txt_len < 8 || txt_len > MAX_TXT_LEN || txt_len % 8 != 0) {
+        Py_RETURN_FALSE;
+    }
+
     count = txt_len / 8;
     for (block=0; block < count; block++) {
-        // Accumulate bits set in reverse table one block:
+        // Accumulate bits set in reverse table one block at a time:
         r |= DB32_REVERSE[txt_buf[0]];
         r |= DB32_REVERSE[txt_buf[1]];
         r |= DB32_REVERSE[txt_buf[2]];
@@ -331,28 +332,11 @@ dbase32_valid(const size_t txt_len, const uint8_t *txt_buf)
         // Move the pointer:
         txt_buf += 8;
     }
-    return (r & 224);
-}
-
-
-static PyObject *
-dbase32_isdb32(PyObject *self, PyObject *args)
-{
-    const uint8_t *txt_buf;
-    size_t txt_len;
-
-    if (!PyArg_ParseTuple(args, "s:isdb32", &txt_buf)) {
-        return NULL;
-    }
-    txt_len = strlen(txt_buf);
-
-    // dbase32_valid() returns 0 when valid:
-    if (0 == dbase32_valid(txt_len, txt_buf)) {
-        Py_RETURN_TRUE;
-    }
-    else {
+    if (r & 224) {
         Py_RETURN_FALSE;
     }
+
+    Py_RETURN_TRUE;
 }
 
 
