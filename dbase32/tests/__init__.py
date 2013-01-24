@@ -139,6 +139,10 @@ class TestConstants(TestCase):
         for i in range(32):
             self.assertEqual(counts[i], 1)
 
+    def test_alphabet(self):
+        self.assertIsInstance(dbase32.DB32ALPHABET, frozenset)
+        self.assertEqual(dbase32.DB32ALPHABET, frozenset(dbase32.DB32_FORWARD))
+
     def test_db32enc_alias(self):
         if C_EXT_AVAIL:
             self.assertIs(dbase32.db32enc, dbase32.db32enc_c)

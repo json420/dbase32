@@ -96,6 +96,9 @@ DB32_REVERSE = (
     255,255,255,255,255,255,255,255,255,255,255,255,255,255,
 )
 
+# Equivalent of filestore.B32ALPHABET:
+DB32ALPHABET = frozenset(DB32_FORWARD)
+
 
 def _encode_x_iter(data, x_forward):
     taxi = 0
