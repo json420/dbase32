@@ -305,8 +305,7 @@ static PyObject *
 dbase32_isdb32(PyObject *self, PyObject *args)
 {
     const uint8_t *txt_buf;
-    size_t txt_len;
-    size_t block, count;
+    size_t i, txt_len;
     uint8_t r = 0;
 
     if (!PyArg_ParseTuple(args, "s:isdb32", &txt_buf)) {
@@ -317,20 +316,8 @@ dbase32_isdb32(PyObject *self, PyObject *args)
         Py_RETURN_FALSE;
     }
 
-    count = txt_len / 8;
-    for (block=0; block < count; block++) {
-        // Accumulate bits set in reverse table one block at a time:
-        r |= DB32_REVERSE[txt_buf[0]];
-        r |= DB32_REVERSE[txt_buf[1]];
-        r |= DB32_REVERSE[txt_buf[2]];
-        r |= DB32_REVERSE[txt_buf[3]];
-        r |= DB32_REVERSE[txt_buf[4]];
-        r |= DB32_REVERSE[txt_buf[5]];
-        r |= DB32_REVERSE[txt_buf[6]];
-        r |= DB32_REVERSE[txt_buf[7]];
-
-        // Move the pointer:
-        txt_buf += 8;
+    for (i=0; i < txt_len; i++) {
+        r |= DB32_REVERSE[txt_buf[i]];
     }
     if (r & 224) {
         Py_RETURN_FALSE;
