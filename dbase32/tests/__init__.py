@@ -39,11 +39,16 @@ possible = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'
 assert ''.join(sorted(set(possible))) == possible
 assert len(possible) == 36
 
+BIN_SIZES = (5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60)
 TXT_SIZES = (8, 16, 24, 32, 40, 48, 56, 64, 72, 80, 88, 96)
 BAD_LETTERS = '\'"`~!#$%^&*()[]{}|+-_.,\/ 012:;<=>?@Zabcdefghijklmnopqrstuvwxyz'
 
 # True if the C extension is avialable
-C_EXT_AVAIL = hasattr(dbase32, 'db32enc_c')
+try:
+    import _dbase32
+    C_EXT_AVAIL = True
+except ImportError:
+    C_EXT_AVAIL = False
 
 # Used in test_sort_p()
 Tup = namedtuple('Tup', 'data b32 db32')
@@ -283,7 +288,7 @@ class TestFunctions(TestCase):
         self.check_db32enc_common(dbase32.db32enc_c)
 
         # Compare against the Python version db32enc_p
-        for size in [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60]:
+        for size in BIN_SIZES:
             for i in range(1000):
                 data = os.urandom(size)
                 self.assertEqual(
@@ -354,7 +359,7 @@ class TestFunctions(TestCase):
         self.assertEqual(db32dec('Y' * 96), b'\xff' * 60)
 
         # Test invalid letter at each possible position in the string
-        for size in [8, 16, 24, 32, 40, 48, 56, 64, 72, 80, 88, 96]:
+        for size in TXT_SIZES:
             for i in range(size):
                 # Test when there is a single invalid letter:
                 txt = make_string(i, size, 'A', '/')
@@ -397,7 +402,7 @@ class TestFunctions(TestCase):
         self.check_db32dec_common(dbase32.db32dec_c)
 
         # Compare against the dbase32.db32dec_p pure-Python version:
-        for size in [8, 16, 24, 32, 40, 48, 56, 64, 72, 80, 88, 96]:
+        for size in TXT_SIZES:
             for i in range(100):
                 text = ''.join(
                     random.choice(dbase32.DB32_FORWARD)
@@ -470,7 +475,7 @@ class TestFunctions(TestCase):
         """
         Test encode/decode round-trip with Python implementation.
         """
-        for size in [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60]:
+        for size in BIN_SIZES:
             for i in range(1000):
                 data = os.urandom(size)
                 self.assertEqual(
@@ -485,7 +490,7 @@ class TestFunctions(TestCase):
         self.skip_if_no_c_ext()
 
         # The C implementation is wicked fast, so let's test a *lot* of values:
-        for size in [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60]:
+        for size in BIN_SIZES:
             for i in range(50 * 1000):
                 data = os.urandom(size)
                 self.assertEqual(
@@ -507,6 +512,17 @@ class TestFunctions(TestCase):
                 bad = good[:-1] + L
                 self.assertEqual(len(bad), size)
                 self.assertIs(isdb32(bad), False)
+            for i in range(size):
+                bad = make_string(i, size, 'A', '/')
+                self.assertEqual(len(bad), size)
+                self.assertIs(isdb32(bad), False)
+                g = make_string(i, size, 'A', 'B')
+                self.assertIs(isdb32(g), True)
+            for i in range(size):
+                for L in BAD_LETTERS:
+                    bad = make_string(i, size, 'A', L)
+                    self.assertEqual(len(bad), size)
+                    self.assertIs(isdb32(bad), False)
 
     def test_isdb32_p(self):
         self.check_isdb32_common(dbase32.isdb32_p)
@@ -524,7 +540,7 @@ class TestFunctions(TestCase):
         self.assertEqual(len(data), 15)
         self.assertEqual(dbase32.db32enc(data), txt)
 
-        for size in [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60]:
+        for size in BIN_SIZES:
             txt = dbase32.random_id(size)
             self.assertIsInstance(txt, str)
             self.assertEqual(len(txt), size * 8 // 5)
