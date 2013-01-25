@@ -306,7 +306,6 @@ dbase32_isdb32(PyObject *self, PyObject *args)
 {
     const uint8_t *txt_buf;
     size_t i, txt_len;
-    uint8_t r = 0;
 
     if (!PyArg_ParseTuple(args, "s:isdb32", &txt_buf)) {
         return NULL;
@@ -315,14 +314,11 @@ dbase32_isdb32(PyObject *self, PyObject *args)
     if (txt_len < 8 || txt_len > MAX_TXT_LEN || txt_len % 8 != 0) {
         Py_RETURN_FALSE;
     }
-
     for (i=0; i < txt_len; i++) {
-        r |= DB32_REVERSE[txt_buf[i]];
+        if (DB32_REVERSE[txt_buf[i]] & 224) {
+            Py_RETURN_FALSE;
+        }
     }
-    if (r & 224) {
-        Py_RETURN_FALSE;
-    }
-
     Py_RETURN_TRUE;
 }
 
