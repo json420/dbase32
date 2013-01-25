@@ -64,6 +64,27 @@ def make_string(index, count, a, b, c=None):
     return ''.join(string_iter(index, count, a, b, c))
 
 
+def bytes_iter(ints):
+    assert len(ints) % 8 == 0
+    offset = 0
+    taxi = 0
+    for block in range(len(ints) // 8):
+        for i in range(8):
+            value = ints[offset + i]
+            assert 0 <= value <= 31
+            taxi = (taxi << 5) | value
+        yield (taxi >> 32) & 255
+        yield (taxi >> 24) & 255
+        yield (taxi >> 16) & 255
+        yield (taxi >>  8) & 255
+        yield taxi & 255
+        offset += 8
+
+
+def make_bytes(ints):
+    return bytes(bytes_iter(ints))
+
+
 class TestConstants(TestCase):
     def test_max(self):
         self.assertIsInstance(dbase32.MAX_BIN_LEN, int)
@@ -227,6 +248,18 @@ class TestFunctions(TestCase):
         self.assertEqual(db32enc(b'\xff\xff\xff\xff\xff'), 'YYYYYYYY')
         self.assertEqual(db32enc(b'\x00' * 60), '3' * 96)
         self.assertEqual(db32enc(b'\xff' * 60), 'Y' * 96)
+
+        # Test all good symbols:
+        int_list = list(range(32))
+        self.assertEqual(
+            db32enc(make_bytes(int_list)),
+            '3456789ABCDEFGHIJKLMNOPQRSTUVWXY'
+        )
+        int_list.reverse()
+        self.assertEqual(
+            db32enc(make_bytes(int_list)),
+            'YXWVUTSRQPONMLKJIHGFEDCBA9876543'
+        )
 
     def test_db32enc_p(self):
         """
