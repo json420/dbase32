@@ -315,7 +315,7 @@ dbase32_isdb32(PyObject *self, PyObject *args)
         Py_RETURN_FALSE;
     }
     for (i=0; i < txt_len; i++) {
-        if (DB32_REVERSE[txt_buf[i]] & 224) {
+        if (DB32_REVERSE[txt_buf[i]] > 31) {
             Py_RETURN_FALSE;
         }
     }
