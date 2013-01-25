@@ -32,13 +32,13 @@ import platform
 import dbase32
 
 bin_len = 60
-count = 2500 * 1000  # 2.5 million
+count = 1000 * 1000  # 2.5 million
 
 setup = """
 import os
 from base64 import b64encode, b64decode
 from dbase32 import db32enc, db32dec, DB32ALPHABET
-from _dbase32 import isdb32
+from dbase32 import isdb32_p, isdb32_c
 
 data = os.urandom({})
 text_b64 = b64encode(data)
@@ -74,10 +74,10 @@ run('b64decode(text_b64)')
 run('db32dec(text_db32)')
 
 print('Validations/second:')
-run('assert DB32ALPHABET.issuperset(text_db32) is True')
-run('assert isdb32(text_db32) is True')
-run('assert DB32ALPHABET.issuperset(not_db32) is False')
-run('assert isdb32(not_db32) is False')
+run('assert isdb32_p(text_db32) is True')
+run('assert isdb32_c(text_db32) is True')
+run('assert isdb32_p(not_db32) is False')
+run('assert isdb32_c(not_db32) is False')
 print('')
 
     

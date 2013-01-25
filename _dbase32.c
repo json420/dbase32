@@ -332,7 +332,7 @@ dbase32_isdb32(PyObject *self, PyObject *args)
 static struct PyMethodDef dbase32_functions[] = {
     {"db32enc_c", dbase32_db32enc, METH_VARARGS, "db32enc(data)"},
     {"db32dec_c", dbase32_db32dec, METH_VARARGS, "db32dec(text)"},
-    {"isdb32", dbase32_isdb32, METH_VARARGS, "isdb32(text)"},
+    {"isdb32_c", dbase32_isdb32, METH_VARARGS, "isdb32(text)"},
     {NULL, NULL, 0, NULL}
 };
 

@@ -39,6 +39,7 @@ possible = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'
 assert ''.join(sorted(set(possible))) == possible
 assert len(possible) == 36
 
+TXT_SIZES = (8, 16, 24, 32, 40, 48, 56, 64, 72, 80, 88, 96)
 BAD_LETTERS = '\'"`~!#$%^&*()[]{}|+-_.,\/ 012:;<=>?@Zabcdefghijklmnopqrstuvwxyz'
 
 # True if the C extension is avialable
@@ -194,6 +195,13 @@ class TestConstants(TestCase):
             self.assertIsNot(dbase32.db32dec, dbase32.db32dec_p)
         else:
             self.assertIs(dbase32.db32dec, dbase32.db32dec_p)
+
+    def test_isdb32_alias(self):
+        if C_EXT_AVAIL:
+            self.assertIs(dbase32.isdb32, dbase32.isdb32_c)
+            self.assertIsNot(dbase32.isdb32, dbase32.isdb32_p)
+        else:
+            self.assertIs(dbase32.isdb32, dbase32.isdb32_p)
 
 
 class TestFunctions(TestCase):
@@ -485,6 +493,28 @@ class TestFunctions(TestCase):
                     data
                 )
 
+    def check_isdb32_common(self, isdb32):
+        for size in TXT_SIZES:
+            self.assertIs(isdb32('A' * (size - 1)), False)
+            self.assertIs(isdb32('A' * (size + 1)), False)
+            self.assertIs(isdb32('A' * size), True)
+            good = ''.join(
+                random.choice(dbase32.DB32_FORWARD)
+                for n in range(size)
+            )
+            self.assertIs(isdb32(good), True)
+            for L in BAD_LETTERS:
+                bad = good[:-1] + L
+                self.assertEqual(len(bad), size)
+                self.assertIs(isdb32(bad), False)
+
+    def test_isdb32_p(self):
+        self.check_isdb32_common(dbase32.isdb32_p)
+
+    def test_isdb32_c(self):
+        self.skip_if_no_c_ext()
+        self.check_isdb32_common(dbase32.isdb32_c)
+
     def test_random_id(self):
         txt = dbase32.random_id()
         self.assertIsInstance(txt, str)
@@ -507,3 +537,4 @@ class TestFunctions(TestCase):
         count = 5000
         accum = set(dbase32.random_id() for i in range(count))
         self.assertEqual(len(accum), count)
+

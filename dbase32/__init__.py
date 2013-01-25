@@ -183,13 +183,23 @@ def db32dec_p(text):
     return decode_x(text, DB32_REVERSE)
 
 
+def isdb32_p(text):
+    if not (8 <= len(text) <= MAX_TXT_LEN):
+        return False
+    if len(text) % 8 != 0:
+        return False
+    return DB32ALPHABET.issuperset(text)
+
+
 try:
-    from _dbase32 import db32enc_c, db32dec_c
+    from _dbase32 import db32enc_c, db32dec_c, isdb32_c
     db32enc = db32enc_c
     db32dec = db32dec_c
+    isdb32 = isdb32_c
 except ImportError:
     db32enc = db32enc_p
     db32dec = db32dec_p
+    isdb32 = isdb32_p
 
 
 def random_id(numbytes=RANDOM_BYTES):
