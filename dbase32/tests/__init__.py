@@ -39,12 +39,29 @@ possible = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'
 assert ''.join(sorted(set(possible))) == possible
 assert len(possible) == 36
 
+BAD_LETTERS = '\'"`~!#$%^&*()[]{}|+-_.,\/ 012:;<=>?@Zabcdefghijklmnopqrstuvwxyz'
 
 # True if the C extension is avialable
 C_EXT_AVAIL = hasattr(dbase32, 'db32enc_c')
 
 # Used in test_sort_p()
 Tup = namedtuple('Tup', 'data b32 db32')
+
+
+def string_iter(index, count, a, b, c):
+    assert 0 <= index < count
+    for i in range(count):
+        if i < index:
+            yield a
+        elif i == index:
+            yield b
+        else:
+            yield c 
+
+
+def make_string(index, count, a, b, c=None):
+    c = (a if c is None else c)
+    return ''.join(string_iter(index, count, a, b, c))
 
 
 class TestConstants(TestCase):
@@ -162,6 +179,14 @@ class TestFunctions(TestCase):
     def skip_if_no_c_ext(self):
         if not C_EXT_AVAIL:
             self.skipTest('cannot import `_dbase32` C extension')
+ 
+    def test_make_string(self):
+        self.assertEqual(make_string(0, 8, 'A', 'B'), 'BAAAAAAA')
+        self.assertEqual(make_string(4, 8, 'A', 'B'), 'AAAABAAA')
+        self.assertEqual(make_string(7, 8, 'A', 'B'), 'AAAAAAAB')
+        self.assertEqual(make_string(0, 8, 'A', 'B', 'C'), 'BCCCCCCC')
+        self.assertEqual(make_string(4, 8, 'A', 'B', 'C'), 'AAAABCCC')
+        self.assertEqual(make_string(7, 8, 'A', 'B', 'C'), 'AAAAAAAB')
 
     def check_db32enc_common(self, db32enc):
         """
@@ -270,11 +295,52 @@ class TestFunctions(TestCase):
             db32dec('CDEFCDEZ')
         self.assertEqual(str(cm.exception), "invalid base32 letter: Z")
 
+        # Test that it stops at the first invalid letter:
+        with self.assertRaises(ValueError) as cm:
+            db32dec('2ZZZZZZZ')
+        self.assertEqual(str(cm.exception), "invalid base32 letter: 2")
+        with self.assertRaises(ValueError) as cm:
+            db32dec('AAAAAA=Z')
+        self.assertEqual(str(cm.exception), "invalid base32 letter: =")
+        with self.assertRaises(ValueError) as cm:
+            db32dec('CDEZ=2=2')
+        self.assertEqual(str(cm.exception), "invalid base32 letter: Z")
+
         # Test a few handy static values:
         self.assertEqual(db32dec('33333333'), b'\x00\x00\x00\x00\x00')
         self.assertEqual(db32dec('YYYYYYYY'), b'\xff\xff\xff\xff\xff')
         self.assertEqual(db32dec('3' * 96), b'\x00' * 60)
         self.assertEqual(db32dec('Y' * 96), b'\xff' * 60)
+
+        # Test invalid letter at each possible position in the string
+        for size in [8, 16, 24, 32, 40, 48, 56, 64, 72, 80, 88, 96]:
+            for i in range(size):
+                # Test when there is a single invalid letter:
+                txt = make_string(i, size, 'A', '/')
+                with self.assertRaises(ValueError) as cm:
+                    db32dec(txt)
+                self.assertEqual(str(cm.exception), 'invalid base32 letter: /')
+                txt = make_string(i, size, 'A', '.')
+                with self.assertRaises(ValueError) as cm:
+                    db32dec(txt)
+                self.assertEqual(str(cm.exception), 'invalid base32 letter: .')
+
+                # Test that it stops at the *first* invalid letter:
+                txt = make_string(i, size, 'A', '/', '.')
+                with self.assertRaises(ValueError) as cm:
+                    db32dec(txt)
+                self.assertEqual(str(cm.exception), 'invalid base32 letter: /')
+                txt = make_string(i, size, 'A', '.', '/')
+                with self.assertRaises(ValueError) as cm:
+                    db32dec(txt)
+                self.assertEqual(str(cm.exception), 'invalid base32 letter: .')
+
+        # Test a slew of no-no letters:
+        for L in BAD_LETTERS:
+            txt = ('A' * 7) + L
+            with self.assertRaises(ValueError) as cm:
+                db32dec(txt)
+            self.assertEqual(str(cm.exception), 'invalid base32 letter: ' + L)
 
     def test_db32dec_p(self):
         """
