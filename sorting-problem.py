@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 
-from dbase32 import b32enc, sb32enc, db32enc
+from dbase32 import db32enc
+from dbase32.rfc3548 import b32enc, sb32enc
 from collections import namedtuple
 
 Tup = namedtuple('Tup', 'i data hex b32 sb32 db32')
