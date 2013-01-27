@@ -10,7 +10,7 @@ data will match the sort-order of the binary data.
 
 The :mod:`dbase32` package provides a Python3 implementation of the encoding,
 with both a high-performance C extension and a pure-Python fallback.  The C
-versions are automatically selected when available.
+version is automatically selected when available.
 
 Example usage:
 
