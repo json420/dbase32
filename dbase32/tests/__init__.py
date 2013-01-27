@@ -274,6 +274,17 @@ class TestFunctions(TestCase):
             'YXWVUTSRQPONMLKJIHGFEDCBA9876543'
         )
 
+        # Test with wrong type:
+        good = b'Bytes'
+        self.assertEqual(db32enc(good), 'BCVQBSEM')
+        bad = good.decode('utf-8')
+        with self.assertRaises(TypeError) as cm:
+            db32enc(bad)
+        self.assertEqual(
+            str(cm.exception),
+            "'str' does not support the buffer interface"
+        )
+
     def test_db32enc_p(self):
         """
         Test the pure-Python implementation of db32enc().
@@ -387,6 +398,14 @@ class TestFunctions(TestCase):
             with self.assertRaises(ValueError) as cm:
                 db32dec(txt)
             self.assertEqual(str(cm.exception), 'invalid D-Base32 letter: ' + L)
+
+        # Test with wrong type:
+        good = '3' * 8
+        self.assertEqual(db32dec(good), b'\x00\x00\x00\x00\x00')
+        bad = good.encode('utf-8')
+        with self.assertRaises(TypeError) as cm:
+            db32dec(bad)
+        self.assertEqual(str(cm.exception), 'must be str, not bytes')
 
     def test_db32dec_p(self):
         """
@@ -523,6 +542,14 @@ class TestFunctions(TestCase):
                     bad = make_string(i, size, 'A', L)
                     self.assertEqual(len(bad), size)
                     self.assertIs(isdb32(bad), False)
+
+        # Test with wrong type:
+        good = '3' * 8
+        self.assertIs(isdb32(good), True)
+        bad = good.encode('utf-8')
+        with self.assertRaises(TypeError) as cm:
+            isdb32(bad)
+        self.assertEqual(str(cm.exception), 'must be str, not bytes')
 
     def test_isdb32_p(self):
         self.check_isdb32_common(dbase32.isdb32_p)

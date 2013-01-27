@@ -113,7 +113,8 @@ def _encode_x_iter(data, x_forward):
 
 
 def encode_x(data, x_forward):
-    assert isinstance(data, bytes)
+    if not isinstance(data, bytes):
+        raise TypeError("'str' does not support the buffer interface")
     if not (5 <= len(data) <= MAX_BIN_LEN):
         raise ValueError(
             'len(data) is {}, need 5 <= len(data) <= {}'.format(
@@ -143,7 +144,8 @@ def _decode_x_iter(text, x_reverse):
 
 
 def decode_x(text, x_reverse):
-    assert isinstance(text, str)
+    if not isinstance(text, str):
+        raise TypeError('must be str, not bytes')
     if not (8 <= len(text) <= MAX_TXT_LEN):
         raise ValueError(
             'len(text) is {}, need 8 <= len(text) <= {}'.format(
@@ -184,6 +186,8 @@ def db32dec_p(text):
 
 
 def isdb32_p(text):
+    if not isinstance(text, str):
+        raise TypeError('must be str, not bytes')
     if not (8 <= len(text) <= MAX_TXT_LEN):
         return False
     if len(text) % 8 != 0:

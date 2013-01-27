@@ -21,7 +21,7 @@
 #
 
 """
-Helper functions for defining and validating an base32 encoding.
+Helper functions for defining and validating a base-32 encoding.
 """
 
 from collections import namedtuple
