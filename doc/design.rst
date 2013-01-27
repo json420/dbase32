@@ -1,10 +1,5 @@
-Houston, We Have A Sorting Problem
-==================================
-
-No idea why this didn't dawn on me much earlier, but better late than never,
-I guess.  There is a serious design problem with how we currently
-base32-encode IDs, and this is something that we must fix before we bless the
-final version one hashing protocol.
+Design Rationale
+================
 
 Standard RFC-3548 base32 encoding has an unfortunate property in that the sort
 order of the encoded data is different than the binary data, for example:
