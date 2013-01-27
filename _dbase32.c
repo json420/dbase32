@@ -289,7 +289,7 @@ dbase32_db32dec(PyObject *self, PyObject *args)
     status = dbase32_decode(txt_len, txt_buf, bin_len, bin_buf);
     if (status != -1) {
         if (status >= 0) {
-            PyErr_Format(PyExc_ValueError, "invalid base32 letter: %c", status);
+            PyErr_Format(PyExc_ValueError, "invalid D-Base32 letter: %c", status);
         }
         else {
             PyErr_SetString(PyExc_RuntimeError, "something went very wrong");

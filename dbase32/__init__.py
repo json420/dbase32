@@ -28,7 +28,7 @@ from os import urandom
 
 
 __version__ = '0.1.0'
-__all__ = ('db32enc', 'db32dec', 'random_id')
+__all__ = ('db32enc', 'db32dec', 'isdb32', 'random_id')
 
 MAX_BIN_LEN = 60  # 480 bits
 MAX_TXT_LEN = 96
@@ -133,7 +133,7 @@ def _decode_x_iter(text, x_reverse):
     for t in text:
         r = x_reverse[ord(t)]
         if r > 31:
-            raise ValueError('invalid base32 letter: {}'.format(t))
+            raise ValueError('invalid D-Base32 letter: {}'.format(t))
         taxi = (taxi << 5) | r
         bits += 5
         while bits >= 8:
