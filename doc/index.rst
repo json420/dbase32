@@ -20,7 +20,7 @@ Example usage:
 >>> db32dec('BCVQBSEM')
 b'Bytes'
 
-`D-Base32`_ is being developed as part of the `Novacut`_ project.  D-Base32
+D-Base32 is being developed as part of the `Novacut`_ project.  D-Base32
 packages are available for Ubuntu in the `Novacut Stable Releases PPA`_ and the
 `Novacut Daily Builds PPA`_.
 
