@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/python3.3
 
 # dbase32: base32-encoding with a sorted-order alphabet (for databases)
 # Copyright (C) 2013 Novacut Inc
