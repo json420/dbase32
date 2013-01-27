@@ -34,7 +34,6 @@ Description: a database-friendly base32 encoding
  The D-Base32 encoding solves this problem by using an encoding table that is
  in sorted order.
 
-
 Package: python3-dbase32-doc
 Architecture: all
 Section: doc
