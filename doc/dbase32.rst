@@ -54,6 +54,25 @@ Functions
         8 <= len(text) <= 96 and len(text) % 8 == 0
 
 
+.. function:: check_db32(text)
+
+    Raise a ``ValueError`` if *text* is not a valid D-Base32 encoded ID.
+
+    This function will raise a ``ValueError`` if *text* contains any letters
+    that aren't part of the D-Base32 alphabet.  For example:
+
+    >>> check_db32('39AYA9AY')
+    >>> check_db32('39AY27AZ')
+    Traceback (most recent call last):
+      ...
+    ValueError: invalid D-Base32 letter: 2
+
+    This function will likewise raise a ``ValueError`` if *text* doesn't meet
+    the following condition::
+
+        8 <= len(text) <= 96 and len(text) % 8 == 0
+
+
 .. function:: random_id(numbytes=15)
 
     Return a random ID built from *numbytes* worth of entropy.
