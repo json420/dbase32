@@ -329,7 +329,7 @@ dbase32_check_db32(PyObject *self, PyObject *args)
     const uint8_t *txt_buf;
     size_t i, txt_len;
 
-    if (!PyArg_ParseTuple(args, "s:db32dec", &txt_buf)) {
+    if (!PyArg_ParseTuple(args, "s:check_db32", &txt_buf)) {
         return NULL;
     }
     txt_len = strlen(txt_buf);
