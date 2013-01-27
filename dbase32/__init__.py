@@ -195,15 +195,36 @@ def isdb32_p(text):
     return DB32ALPHABET.issuperset(text)
 
 
+def check_db32_p(text):
+    if not isinstance(text, str):
+        raise TypeError('must be str, not bytes')
+    if not (8 <= len(text) <= MAX_TXT_LEN):
+        raise ValueError(
+            'len(text) is {}, need 8 <= len(text) <= {}'.format(
+                len(text), MAX_TXT_LEN
+            )
+        )
+    if len(text) % 8 != 0:
+        raise ValueError(
+            'len(text) is {}, need len(text) % 8 == 0'.format(len(text))
+        )
+    if not DB32ALPHABET.issuperset(text):
+        for t in text:
+            if t not in DB32ALPHABET:    
+                raise ValueError('invalid D-Base32 letter: {}'.format(t))
+
+
 try:
-    from _dbase32 import db32enc_c, db32dec_c, isdb32_c
+    from _dbase32 import db32enc_c, db32dec_c, isdb32_c, check_db32_c
     db32enc = db32enc_c
     db32dec = db32dec_c
     isdb32 = isdb32_c
+    check_db32 = check_db32_c
 except ImportError:
     db32enc = db32enc_p
     db32dec = db32dec_p
     isdb32 = isdb32_p
+    check_db32 = check_db32_p
 
 
 def random_id(numbytes=RANDOM_BYTES):

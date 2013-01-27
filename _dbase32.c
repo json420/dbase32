@@ -323,12 +323,52 @@ dbase32_isdb32(PyObject *self, PyObject *args)
 }
 
 
+static PyObject *
+dbase32_check_db32(PyObject *self, PyObject *args)
+{
+    const uint8_t *txt_buf;
+    size_t i, txt_len;
+
+    if (!PyArg_ParseTuple(args, "s:db32dec", &txt_buf)) {
+        return NULL;
+    }
+    txt_len = strlen(txt_buf);
+
+    // check len(text)
+    if (txt_len < 8 || txt_len > MAX_TXT_LEN) {
+        PyErr_Format(PyExc_ValueError,
+            "len(text) is %u, need 8 <= len(text) <= %u", txt_len, MAX_TXT_LEN
+        );
+        return NULL;
+    }
+    if (txt_len % 8 != 0) {
+        PyErr_Format(PyExc_ValueError,
+            "len(text) is %u, need len(text) % 8 == 0", txt_len
+        );
+        return NULL;
+    }
+
+    // check that text only contains valid D-Base32 letters:
+    for (i=0; i < txt_len; i++) {
+        if (DB32_REVERSE[txt_buf[i]] > 31) {
+            PyErr_Format(PyExc_ValueError,
+                "invalid D-Base32 letter: %c", txt_buf[i]
+            );
+            return NULL;
+        }
+    }
+
+    Py_RETURN_NONE;
+}
+
+
 
 /* module init */
 static struct PyMethodDef dbase32_functions[] = {
     {"db32enc_c", dbase32_db32enc, METH_VARARGS, "db32enc(data)"},
     {"db32dec_c", dbase32_db32dec, METH_VARARGS, "db32dec(text)"},
     {"isdb32_c", dbase32_isdb32, METH_VARARGS, "isdb32(text)"},
+    {"check_db32_c", dbase32_check_db32, METH_VARARGS, "check_db32(text)"},
     {NULL, NULL, 0, NULL}
 };
 
