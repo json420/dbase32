@@ -1,14 +1,14 @@
 Design Rationale
 ================
 
-This is a rationale for why `D-Base32`_ is designed the way it is.
+This is the rationale for why `D-Base32`_ is designed the way it is.
 
 
 Sort order problem
 ------------------
 
 Standard `RFC-3548 Base32`_ encoding has an unfortunate property in that the
-sort order of the encoded data is different than the binary data, for example:
+sort order of the encoded data is different than the binary data, for example::
 
     =============  ===========
        Binary         Base32
@@ -60,7 +60,7 @@ translate into a nonsense query like::
 
     14 <= doc_N <= 3
 
-To be clear, I consider this a total deal-breaker for Dmedia, and so we
+To be clear, I consider this a total deal-breaker for `Dmedia`_, and so we
 are *not* going to use RFC-3548 base32 encoding in the final version 1
 hashing protocol.  It would be a nasty design wart that every implementation
 would have to battle.  And that does not an ecosystem make.
@@ -75,7 +75,7 @@ Simplest solution?
 Perhaps the simplest solution is to use the same set of symbols as RFC-3548,
 but with an encoding table in sorted order?  We might call it Sorted-Base32,
 and it indeed gives us a base32 sort order that matches the binary sort
-order, as you can see:
+order, as you can see::
 
     =============  ===========  ===========
        Binary         Base32       S-Base32
@@ -98,8 +98,8 @@ order, as you can see:
     15 ffffffffff  12 ZTGMZTGM  15 ZZZZZZZZ
     =============  ===========  ===========
 
-This provides the easiest migration path for Dmedia as we wouldn't have to
-change the sub-directories used inside the FileStore layout (there are 1024
+This provides the easiest migration path for `Dmedia`_ as we wouldn't have to
+change the sub-directories used inside the `FileStore`_ layout (there are 1024
 sub-directories, built using the first two characters of the base32-encoded
 file IDs).
 
@@ -159,7 +159,8 @@ We have some solid engineering problems we're solving, issues that might
 effect anyone using base32-encoded IDs, especially in document oriented
 databases, distributed file systems, etc.  Even so, a non-standard base32
 encoding means we're going out on limb here.  It would be far better for
-Dmedia and Novacut if the encoding we come up with was also adopted by others.
+`Dmedia`_ and `Novacut`_ if the encoding we come up with was also adopted
+by others.
 
 In addition to the above engineering advantages (for specific problems),
 I'd also like to have something that's just a tiny bit simpler and more
@@ -205,8 +206,8 @@ overall signal-to-noise.  So that gives us this alphabet::
 Dmedia-Base32
 -------------
 
-I'm calling our encoding D-Base32 (D is for Dmedia, and D is for Database).  It
-has the desired property of preserving the sort order, as you can see:
+I'm calling our encoding D-Base32 (D is for `Dmedia`_, and D is for Database).
+It has the desired property of preserving the sort order, as you can see::
 
     =============  ===========  ===========  ===========
        Binary         Base32       S-Base32     D-Base32
@@ -239,31 +240,6 @@ validation is good in terms of enforcing correctness at higher levels, and it
 makes the implementation easier, eliminates a lot of potential spots for
 security goofs.
 
-In terms of implementation, I currently have both a pure-Python version and a
-high-performance C extension in this new `dbase32` project on Launchpad:
-
-    https://launchpad.net/dbase32
-
-The C extension currently only supports Python 3.3 and newer (because I'm using
-the new PyUnicode API).  There are daily builds for Raring:
-
-    https://launchpad.net/~novacut/+archive/daily
-
-This encoding will be used both for our 120-bit random IDs, and our 240-bit
-intrinsic IDs (derived from the file content-hashes).  Because of the different
-encoding alphabet, it will require tweaks to our schema validation functions 
-and to the FileStore layout.  We'll do our best to provide a reasonable
-migration tool for users with existing Dmedia libraries, but I do not plan to
-support the existing version zero interim hashing protocol alongside the final
-version one protocol.  This base32 encoding change just makes that too much
-work.
-
-So this will require coordinated releases of `filestore`, `microfiber`,
-`dmedia`, and `novacut` when we switch from RFC-3548 base32 to D-Base32.  It's
-too late in the month for this to happen for 13.01, so we'll target this for
-13.02, which also gives us time to get feedback from folks before we finalize
-our D-Base32 encoding.
-
 
 Note on lowercase
 -----------------
@@ -283,7 +259,7 @@ meaningless garble from the bits you actually will *read*.  For me, it helps
 push the IDs into the background, and brings out rest of the schema more clearly
 in the foreground.
 
-For example, consider this Novacut edit node with lowercase IDs::
+For example, consider this `Novacut`_ edit node with lowercase IDs::
 
     {
         "_id": "jg444obnf5juunspcce5ypik",
@@ -318,4 +294,7 @@ And the same with uppercase IDs::
 
 .. _`D-Base32`: https://launchpad.net/dbase32
 .. _`RFC-3548 Base32`: http://tools.ietf.org/html/rfc4648
+.. _`Novacut`: https://launchpad.net/novacut
+.. _`Dmedia`: https://launchpad.net/dmedia
+.. _`FileStore`: https://launchpad.net/filestore
 .. _`z-base-32`: http://philzimmermann.com/docs/human-oriented-base-32-encoding.txt
