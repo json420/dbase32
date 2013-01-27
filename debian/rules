@@ -26,4 +26,8 @@ override_dh_auto_install:
 				--root=$(CURDIR)/debian/python3-dbase32; \
 	done
 
+override_dh_sphinxdoc:
+ifneq "$(shell dh_listpackages | grep -- -doc)" ""
+	dh_sphinxdoc
+endif
 
