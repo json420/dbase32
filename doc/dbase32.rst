@@ -9,14 +9,14 @@ Functions
 
 .. function:: db32enc(data)
 
-    Return bytes in *data* as D-Base32 encoded text.
+    Encode *data* as D-Base32 text.
 
     An ``str`` instance is returned:
 
     >>> db32enc(b'Bytes')
     'BCVQBSEM'
 
-    *data* must meet the following condition::
+    *data* must be a ``bytes`` instance that meets the following condition::
 
         5 <= len(data) <= 60 and len(data) % 5 == 0
 
@@ -30,10 +30,12 @@ Functions
     >>> db32dec('BCVQBSEM')
     b'Bytes'
 
-    In addition to containing only valid D-Base32 letters, *text* must meet
-    the following condition::
+    *text* must be an ``str`` instance meets the following condition::
 
         8 <= len(text) <= 96 and len(text) % 8 == 0
+
+    A ``ValueError`` is raised if *text* contains any letters not in the
+    D-Base32 alphabet.
 
 
 .. function:: isdb32(text)
