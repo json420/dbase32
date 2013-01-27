@@ -28,7 +28,7 @@ from os import urandom
 
 
 __version__ = '0.1.0'
-__all__ = ('db32enc', 'db32dec', 'isdb32', 'random_id')
+__all__ = ('db32enc', 'db32dec', 'isdb32', 'check_db32', 'random_id')
 
 MAX_BIN_LEN = 60  # 480 bits
 MAX_TXT_LEN = 96

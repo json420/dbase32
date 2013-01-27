@@ -39,6 +39,7 @@ import os
 from base64 import b64encode, b64decode
 from dbase32 import db32enc, db32dec, DB32ALPHABET
 from dbase32 import isdb32_p, isdb32_c
+from dbase32 import check_db32_p, check_db32_c
 
 data = os.urandom({})
 text_b64 = b64encode(data)
@@ -78,6 +79,8 @@ run('assert isdb32_p(text_db32) is True')
 run('assert isdb32_c(text_db32) is True')
 run('assert isdb32_p(not_db32) is False')
 run('assert isdb32_c(not_db32) is False')
+run('check_db32_p(text_db32)')
+run('check_db32_c(text_db32)')
 print('')
 
     
