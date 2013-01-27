@@ -5,7 +5,7 @@ The `D-Base32`_ encoding is base-32 variant designed for document oriented
 databases and applications, specifically for encoding document IDs.
 
 D-Base32 uses an alphabet whose letters are in ASCII/UTF-8 sorted order.  This
-means that unlike `RFC-3548`_ Base32 encoding, the sort-order of the encoded
+means that unlike `RFC-3548 Base32`_ encoding, the sort-order of the encoded
 data will match the sort-order of the binary data.
 
 The :mod:`dbase32` package provides a Python3 implementation of the encoding,
@@ -39,7 +39,7 @@ Contents:
 
 
 .. _`D-Base32`: https://launchpad.net/dbase32
-.. _`RFC-3548`: http://tools.ietf.org/html/rfc4648
+.. _`RFC-3548 Base32`: http://tools.ietf.org/html/rfc4648
 .. _`LGPLv3+`: http://www.gnu.org/licenses/lgpl-3.0.html
 .. _`Novacut`: https://wiki.ubuntu.com/Novacut
 .. _`Novacut Stable Releases PPA`: https://launchpad.net/~novacut/+archive/stable

@@ -4,6 +4,43 @@
 .. py:module:: dbase32
     :synopsis: base32-encoding with a sorted-order alphabet (for databases)
     
+Functions
+---------
+
+.. function:: db32enc(data)
+
+    Encode the bytes is *data* in D-Base32.
+
+    An ``str`` instance is returned:
+
+    >>> db32enc(b'Bytes')
+    'BCVQBSEM'
+
+
+.. function:: db32dec(text)
+
+    Decode D-Base32 *text*.
+
+    A ``bytes`` instance is returned:
+
+    >>> db32dec('BCVQBSEM')
+    b'Bytes'
+
+
+.. function:: random_id(numbytes=15)
+
+    Return a random ID built from *numbytes* worth of entropy.
+
+    ID is returned as an ``str`` containing the D-Base32 encoded version:
+
+    >>> random_id()
+    'XM4OINLIPO6VVF549TWYNK89'
+    >>> random_id(5)
+    'V37E4B38'
+
+    The random data is source from ``os.urandom()``.
+
+
 Constants
 ---------
 
@@ -56,29 +93,4 @@ A few handy constants:
 
     >>> RANDOM_BYTES = 15
 
-
-Functions
----------
-
-.. function:: db32enc(data)
-
-    Encode the bytes is *data* in D-Base32.
-
-    An ``str`` instance is returned:
-
-    >>> db32enc(b'Bytes')
-    'BCVQBSEM'
-
-
-.. function:: db32dec(text)
-
-    Decode D-Base32 *text*.
-
-    A ``bytes`` instance is returned:
-
-    >>> db32dec('BCVQBSEM')
-    b'Bytes'
-
-
-.. function:: random_id(numbytes=15)
 

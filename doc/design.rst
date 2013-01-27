@@ -1,8 +1,14 @@
 Design Rationale
 ================
 
-Standard RFC-3548 base32 encoding has an unfortunate property in that the sort
-order of the encoded data is different than the binary data, for example:
+This is a rationale for why `D-Base32`_ is designed the way it is.
+
+
+Sort order problem
+------------------
+
+Standard `RFC-3548 Base32`_ encoding has an unfortunate property in that the
+sort order of the encoded data is different than the binary data, for example:
 
     =============  ===========
        Binary         Base32
@@ -63,7 +69,7 @@ So we're going to use *some* base32 encoding with a sorted-order alphabet,
 but the question is, which one?
 
 
-Simplest Solution?
+Simplest solution?
 ------------------
 
 Perhaps the simplest solution is to use the same set of symbols as RFC-3548,
@@ -125,7 +131,7 @@ However, before we dive into that, I'd like to step back and look at some
 engineering properties that might help us narrow the search.
 
 
-Engineering Considerations
+Engineering considerations
 --------------------------
 
 In terms of engineering aesthetic, it's attractive to chop off characters at
@@ -166,7 +172,7 @@ I think we should restrict ourselves to picking the best of the five above
 options.
 
 
-Signal to Noise
+Signal to noise
 ---------------
 
 I'm unconvinced that one set of 32 can be much better than another because it
@@ -259,28 +265,12 @@ too late in the month for this to happen for 13.01, so we'll target this for
 our D-Base32 encoding.
 
 
-Thoughts?
----------
-
-So what do people think?
-
-Any compelling proposals for ways in which we could stick with standard RFC-3548
-base32 encoding and not have interoperability problems with a database that
-indexes according to the binary IDs?  Would it be worth it?
-
-Anything people think we should do differently in the proposed D-Base32
-encoding?
-
-
-PS: A Note on Lowercase
------------------------
+Note on lowercase
+-----------------
 
 Anyone with typographic savvy will tell you that using lowercase letters will
 make the IDs more readable, and I don't disagree.  This is something that folks
-put a lot of thought into for the z-base-32 encoding, which you can read about
-here::
-
-    http://philzimmermann.com/docs/human-oriented-base-32-encoding.txt
+put a lot of thought into for the `z-base-32`_ encoding.
 
 However, I personally think the overall readability of our *schema* is far more
 important than the readability of our encoded IDs.  After all, there is nothing
@@ -325,5 +315,7 @@ And the same with uppercase IDs::
         }
     }
 
-Of course, arguments for lowercase IDs are welcomed... but please keep in mind
-the overall schema readability.
+
+.. _`D-Base32`: https://launchpad.net/dbase32
+.. _`RFC-3548 Base32`: http://tools.ietf.org/html/rfc4648
+.. _`z-base-32`: http://philzimmermann.com/docs/human-oriented-base-32-encoding.txt
