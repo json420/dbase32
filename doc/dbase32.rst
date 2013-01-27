@@ -3,7 +3,8 @@
 
 .. py:module:: dbase32
     :synopsis: base32-encoding with a sorted-order alphabet (for databases)
-    
+
+
 Functions
 ---------
 
