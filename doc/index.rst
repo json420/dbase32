@@ -1,12 +1,12 @@
 D-Base32
 ========
 
-The `D-Base32`_ encoding is base-32 variant designed for document oriented
+The `D-Base32`_ encoding is a base-32 variant designed for document oriented
 databases and applications, specifically for encoding document IDs.
 
-D-Base32 uses an alphabet whose letters are in ASCII/UTF-8 sorted order.  This
-means that unlike `RFC-3548 Base32`_ encoding, the sort-order of the encoded
-data will match the sort-order of the binary data.
+D-Base32 uses an encoding table whose symbols are in ASCII/UTF-8 sorted order.
+This means that unlike `RFC-3548 Base32`_ encoding, the sort-order of the
+encoded data will match the sort-order of the binary data.
 
 The :mod:`dbase32` package provides a Python3 implementation of the encoding,
 with both a high-performance C extension and a pure-Python fallback.  The C
