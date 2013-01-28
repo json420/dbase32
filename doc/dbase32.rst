@@ -35,8 +35,8 @@ Functions
 
         8 <= len(text) <= 96 and len(text) % 8 == 0
 
-    A ``ValueError`` is raised if *text* contains any letters not in the
-    D-Base32 alphabet.
+    A ``ValueError`` is raised if the above condition is not met, or if *text*
+    contains any letters not in the D-Base32 alphabet.
 
 
 .. function:: isdb32(text)
