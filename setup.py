@@ -43,17 +43,6 @@ from subprocess import check_call, call
 import dbase32
 
 
-def run(step, location, callback, *args):
-    print('')
-    print('*' * 80)
-    print('*  ({}) running tests in {}...'.format(step, location))
-    print('*' * 80)
-    ret = callback(*args)
-    print('*' * 80)
-    print('')
-    return ret
-
-
 class TestEnvBuilder(EnvBuilder):
     def __init__(self):
         self.tmpdir = tempfile.mkdtemp(prefix='venv.')
@@ -102,13 +91,13 @@ class Test(Command):
         for name in pynames:
             suite.addTest(DocTestSuite(name))
         runner = TextTestRunner(verbosity=2)
-        result = run(1, 'source tree', runner.run, suite)
+        result = runner.run(suite)
         if not result.wasSuccessful():
             raise SystemExit('Tests failed in source tree!')
 
         # Now run the tests in a virtual environment:
         testenv = TestEnvBuilder()
-        if not run(2, 'virtual environment', testenv.run_tests):
+        if not testenv.run_tests():
             raise SystemExit('Tests failed in virtual environment!')
 
 
