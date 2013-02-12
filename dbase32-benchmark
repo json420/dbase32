@@ -33,7 +33,8 @@ import argparse
 import dbase32
 
 
-count = 2500 * 1000  # 2.5 million
+FAST = 2500 * 1000  # 2.5 million
+SLOW =  500 * 1000  # 500k
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--bytes', metavar='N', type=int,
@@ -44,13 +45,15 @@ args = parser.parse_args()
 
 
 setup = """
-import os
+from os import urandom
 from base64 import b64encode, b64decode
-from dbase32 import db32enc, db32dec, DB32ALPHABET
+
+from dbase32 import db32enc, db32dec
 from dbase32 import isdb32_p, isdb32_c
 from dbase32 import check_db32_p, check_db32_c
+from dbase32 import random_id
 
-data = os.urandom({})
+data = urandom({})
 text_b64 = b64encode(data)
 text_db32 = db32enc(data)
 not_db32 = text_db32[:-1] + 'Z'
@@ -65,7 +68,8 @@ assert isdb32_c(not_db32) is False
 """.format(args.bytes)
 
 
-def run(statement):
+def run(statement, slow=False):
+    count = (SLOW if slow else FAST)
     t = timeit.Timer(statement, setup)
     elapsed = t.timeit(count)
     rate = int(count / elapsed)
@@ -79,7 +83,7 @@ print('dbase32: {} ({} {})'.format(
 print('Python: {}, {}, {}'.format(
     platform.python_version(), platform.machine(), platform.system())
 )
-print('ID size: {} bytes'.format(args.bytes))
+print('data size: {} bytes'.format(args.bytes))
 
 print('Encodes/second:')
 run('b64encode(data)')
@@ -90,12 +94,14 @@ run('b64decode(text_b64)')
 run('db32dec(text_db32)')
 
 print('Validations/second:')
-run('isdb32_p(text_db32)')
+run('isdb32_p(text_db32)', slow=True)
 run('isdb32_c(text_db32)')
-run('isdb32_p(not_db32)')
-run('isdb32_c(not_db32)')
-run('check_db32_p(text_db32)')
+run('check_db32_p(text_db32)', slow=True)
 run('check_db32_c(text_db32)')
+
+print('Random IDs/second:')
+run('urandom(15)', slow=True)
+run('random_id(15)', slow=True)
+
 print('')
 
-    
