@@ -28,11 +28,20 @@ Benchmark the db32enc(), db32dec() C implementation.
 
 import timeit
 import platform
+import argparse
 
 import dbase32
 
-bin_len = 60
-count = 1000 * 1000  # 2.5 million
+
+count = 2500 * 1000  # 2.5 million
+
+parser = argparse.ArgumentParser()
+parser.add_argument('--bytes', metavar='N', type=int,
+    default=60,
+    help='length of binary ID in bytes',
+)
+args = parser.parse_args()
+
 
 setup = """
 import os
@@ -48,7 +57,12 @@ not_db32 = text_db32[:-1] + 'Z'
 
 assert b64decode(text_b64) == data
 assert db32dec(text_db32) == data
-""".format(bin_len)
+
+assert isdb32_p(text_db32) is True
+assert isdb32_c(text_db32) is True
+assert isdb32_p(not_db32) is False
+assert isdb32_c(not_db32) is False
+""".format(args.bytes)
 
 
 def run(statement):
@@ -65,6 +79,7 @@ print('dbase32: {} ({} {})'.format(
 print('Python: {}, {}, {}'.format(
     platform.python_version(), platform.machine(), platform.system())
 )
+print('ID size: {} bytes'.format(args.bytes))
 
 print('Encodes/second:')
 run('b64encode(data)')
@@ -75,10 +90,10 @@ run('b64decode(text_b64)')
 run('db32dec(text_db32)')
 
 print('Validations/second:')
-run('assert isdb32_p(text_db32) is True')
-run('assert isdb32_c(text_db32) is True')
-run('assert isdb32_p(not_db32) is False')
-run('assert isdb32_c(not_db32) is False')
+run('isdb32_p(text_db32)')
+run('isdb32_c(text_db32)')
+run('isdb32_p(not_db32)')
+run('isdb32_c(not_db32)')
 run('check_db32_p(text_db32)')
 run('check_db32_c(text_db32)')
 print('')
