@@ -672,32 +672,13 @@ class TestFunctions(TestCase):
         self.skip_if_no_c_ext()
         self.check_check_db32_common(dbase32.check_db32_c)
 
-    def test_random_id(self):
-        txt = dbase32.random_id()
-        self.assertIsInstance(txt, str)
-        self.assertEqual(len(txt), 24)
-        data = dbase32.db32dec(txt)
-        self.assertIsInstance(data, bytes)
-        self.assertEqual(len(data), 15)
-        self.assertEqual(dbase32.db32enc(data), txt)
-
-        for size in BIN_SIZES:
-            txt = dbase32.random_id(size)
-            self.assertIsInstance(txt, str)
-            self.assertEqual(len(txt), size * 8 // 5)
-            data = dbase32.db32dec(txt)
-            self.assertIsInstance(data, bytes)
-            self.assertEqual(len(data), size)
-            self.assertEqual(dbase32.db32enc(data), txt)
-
-        # Sanity check on their randomness:
-        count = 5000
-        accum = set(dbase32.random_id() for i in range(count))
-        self.assertEqual(len(accum), count)
-
-    def test_random_id_c(self):
-        self.skip_if_no_c_ext()
-        random_id = dbase32.random_id_c
+    def check_random_id(self, random_id):
+        with self.assertRaises(TypeError) as cm:        
+            random_id(15.0)
+        self.assertEqual(
+            str(cm.exception),
+            'integer argument expected, got float'
+        )
 
         with self.assertRaises(ValueError) as cm:
             random_id(4)
@@ -712,12 +693,31 @@ class TestFunctions(TestCase):
             'size is 29, need size % 5 == 0'
         )
 
+        _id = random_id(15)
+        self.assertIsInstance(_id, str)
+        self.assertEqual(len(_id), 24)
+        data = dbase32.db32dec(_id)
+        self.assertIsInstance(data, bytes)
+        self.assertEqual(len(data), 15)
+        self.assertEqual(dbase32.db32enc(data), _id)
+
         for size in BIN_SIZES:
-            data = random_id(size)
+            _id = random_id(size)
+            self.assertIsInstance(_id, str)
+            self.assertEqual(len(_id), size * 8 // 5)
+            data = dbase32.db32dec(_id)
             self.assertIsInstance(data, bytes)
             self.assertEqual(len(data), size)
+            self.assertEqual(dbase32.db32enc(data), _id)
 
         # Sanity check on their randomness:
         count = 5000
         accum = set(random_id(15) for i in range(count))
         self.assertEqual(len(accum), count)
+
+    def test_random_id_p(self):
+        self.check_random_id(dbase32.random_id_p)
+
+    def test_random_id_c(self):
+        self.skip_if_no_c_ext()
+        self.check_random_id(dbase32.random_id_c)

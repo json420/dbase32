@@ -214,25 +214,33 @@ def check_db32_p(text):
                 raise ValueError('invalid D-Base32 letter: {}'.format(t))
 
 
-try:
-    from _dbase32 import db32enc, db32dec, isdb32, check_db32
-    from _dbase32 import random_id as random_id_c
-    db32enc_c = db32enc
-    db32dec_c = db32dec
-    isdb32_c = isdb32
-    check_db32_c = check_db32
-except ImportError:
-    db32enc = db32enc_p
-    db32dec = db32dec_p
-    isdb32 = isdb32_p
-    check_db32 = check_db32_p
-
-
-def random_id(numbytes=RANDOM_BYTES):
+def random_id_p(size=RANDOM_BYTES):
     """
     Returns a 120-bit DBase32-encoded random ID.
 
     The ID will be 24-characters long, URL and filesystem safe.
     """
-    return db32enc(urandom(numbytes))
+    if not isinstance(size, int):
+        raise TypeError('integer argument expected, got float')
+    if not (5 <= size <= MAX_BIN_LEN):
+        raise ValueError(
+            'size is {}, need 5 <= size <= {}'.format(size, MAX_BIN_LEN)
+        )
+    if size % 5 != 0:
+        raise ValueError('size is {}, need size % 5 == 0'.format(size))
+    return db32enc(urandom(size))
 
+
+try:
+    from _dbase32 import db32enc, db32dec, isdb32, check_db32, random_id
+    db32enc_c = db32enc
+    db32dec_c = db32dec
+    isdb32_c = isdb32
+    check_db32_c = check_db32
+    random_id_c = random_id
+except ImportError:
+    db32enc = db32enc_p
+    db32dec = db32dec_p
+    isdb32 = isdb32_p
+    check_db32 = check_db32_p
+    random_id = random_id_p

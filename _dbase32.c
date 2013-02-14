@@ -366,36 +366,56 @@ static PyObject *
 dbase32_random_id(PyObject *self, PyObject *args)
 {
     PyObject *pyret;
-    size_t size;
+    uint8_t *bin_buf, *txt_buf;
+    size_t bin_len, txt_len;
     int status;
 
-    if (!PyArg_ParseTuple(args, "n:random_id", &size)) {
+    if (!PyArg_ParseTuple(args, "n:random_id", &bin_len)) {
         return NULL;
     }
-    if (size < 5 || size > MAX_BIN_LEN) {
+    if (bin_len < 5 || bin_len > MAX_BIN_LEN) {
         PyErr_Format(PyExc_ValueError,
-            "size is %u, need 5 <= size <= %u", size, MAX_BIN_LEN
+            "size is %u, need 5 <= size <= %u", bin_len, MAX_BIN_LEN
         );
         return NULL;
     }
-    if (size % 5 != 0) {
+    if (bin_len % 5 != 0) {
         PyErr_Format(PyExc_ValueError,
-            "size is %u, need size % 5 == 0", size
+            "size is %u, need size % 5 == 0", bin_len
         );
         return NULL;
     }
 
-    pyret = PyBytes_FromStringAndSize(NULL, size);
-    if (pyret == NULL) {
-        return NULL;
+    // Allocate temp buffer for binary ID:
+    bin_buf = (uint8_t *)malloc(bin_len);
+    if (!bin_buf) {
+        return PyErr_NoMemory();
     }
 
-    status = _PyOS_URandom(PyBytes_AS_STRING(pyret), size);
+    // Get random bytes from /dev/urandom:
+    status = _PyOS_URandom(bin_buf, bin_len);
     if (status == -1) {
+        free(bin_buf);
+        return NULL;
+    }
+
+    // Allocate destination buffer:
+    txt_len = bin_len * 8 / 5;
+    pyret = PyUnicode_New(txt_len, DB32_END);
+    if (pyret == NULL ) {
+        free(bin_buf);
+        return NULL;
+    }
+    txt_buf = (uint8_t *)PyUnicode_1BYTE_DATA(pyret);
+
+    // dbase32_encode() returns 0 on success:
+    status = dbase32_encode(bin_len, bin_buf, txt_len, txt_buf);
+    free(bin_buf);
+    if (status != 0) {
+        PyErr_SetString(PyExc_RuntimeError, "something went very wrong");
         Py_DECREF(pyret);
         return NULL;
     }
-
     return pyret;
 }
 
