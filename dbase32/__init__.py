@@ -216,6 +216,7 @@ def check_db32_p(text):
 
 try:
     from _dbase32 import db32enc, db32dec, isdb32, check_db32
+    from _dbase32 import random_id as random_id_c
     db32enc_c = db32enc
     db32dec_c = db32dec
     isdb32_c = isdb32

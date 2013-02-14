@@ -362,6 +362,44 @@ dbase32_check_db32(PyObject *self, PyObject *args)
 }
 
 
+static PyObject *
+dbase32_random_id(PyObject *self, PyObject *args)
+{
+    PyObject *pyret;
+    size_t size;
+    int status;
+
+    if (!PyArg_ParseTuple(args, "n:random_id", &size)) {
+        return NULL;
+    }
+    if (size < 5 || size > MAX_BIN_LEN) {
+        PyErr_Format(PyExc_ValueError,
+            "size is %u, need 5 <= size <= %u", size, MAX_BIN_LEN
+        );
+        return NULL;
+    }
+    if (size % 5 != 0) {
+        PyErr_Format(PyExc_ValueError,
+            "size is %u, need size % 5 == 0", size
+        );
+        return NULL;
+    }
+
+    pyret = PyBytes_FromStringAndSize(NULL, size);
+    if (pyret == NULL) {
+        return NULL;
+    }
+
+    status = _PyOS_URandom(PyBytes_AS_STRING(pyret), size);
+    if (status == -1) {
+        Py_DECREF(pyret);
+        return NULL;
+    }
+
+    return pyret;
+}
+
+
 
 /* module init */
 static struct PyMethodDef dbase32_functions[] = {
@@ -369,6 +407,7 @@ static struct PyMethodDef dbase32_functions[] = {
     {"db32dec", dbase32_db32dec, METH_VARARGS, "db32dec(text)"},
     {"isdb32", dbase32_isdb32, METH_VARARGS, "isdb32(text)"},
     {"check_db32", dbase32_check_db32, METH_VARARGS, "check_db32(text)"},
+    {"random_id", dbase32_random_id, METH_VARARGS, "random_id(numbytes=15)"},
     {NULL, NULL, 0, NULL}
 };
 

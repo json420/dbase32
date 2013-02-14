@@ -695,3 +695,29 @@ class TestFunctions(TestCase):
         accum = set(dbase32.random_id() for i in range(count))
         self.assertEqual(len(accum), count)
 
+    def test_random_id_c(self):
+        self.skip_if_no_c_ext()
+        random_id = dbase32.random_id_c
+
+        with self.assertRaises(ValueError) as cm:
+            random_id(4)
+        self.assertEqual(
+            str(cm.exception),
+            'size is 4, need 5 <= size <= 60'
+        )
+        with self.assertRaises(ValueError) as cm:
+            random_id(29)
+        self.assertEqual(
+            str(cm.exception),
+            'size is 29, need size % 5 == 0'
+        )
+
+        for size in BIN_SIZES:
+            data = random_id(size)
+            self.assertIsInstance(data, bytes)
+            self.assertEqual(len(data), size)
+
+        # Sanity check on their randomness:
+        count = 5000
+        accum = set(random_id(15) for i in range(count))
+        self.assertEqual(len(accum), count)
