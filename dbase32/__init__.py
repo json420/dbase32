@@ -215,11 +215,11 @@ def check_db32_p(text):
 
 
 try:
-    from _dbase32 import db32enc_c, db32dec_c, isdb32_c, check_db32_c
-    db32enc = db32enc_c
-    db32dec = db32dec_c
-    isdb32 = isdb32_c
-    check_db32 = check_db32_c
+    from _dbase32 import db32enc, db32dec, isdb32, check_db32
+    db32enc_c = db32enc
+    db32dec_c = db32dec
+    isdb32_c = isdb32
+    check_db32_c = check_db32
 except ImportError:
     db32enc = db32enc_p
     db32dec = db32dec_p

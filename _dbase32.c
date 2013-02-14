@@ -365,10 +365,10 @@ dbase32_check_db32(PyObject *self, PyObject *args)
 
 /* module init */
 static struct PyMethodDef dbase32_functions[] = {
-    {"db32enc_c", dbase32_db32enc, METH_VARARGS, "db32enc(data)"},
-    {"db32dec_c", dbase32_db32dec, METH_VARARGS, "db32dec(text)"},
-    {"isdb32_c", dbase32_isdb32, METH_VARARGS, "isdb32(text)"},
-    {"check_db32_c", dbase32_check_db32, METH_VARARGS, "check_db32(text)"},
+    {"db32enc", dbase32_db32enc, METH_VARARGS, "db32enc(data)"},
+    {"db32dec", dbase32_db32dec, METH_VARARGS, "db32dec(text)"},
+    {"isdb32", dbase32_isdb32, METH_VARARGS, "isdb32(text)"},
+    {"check_db32", dbase32_check_db32, METH_VARARGS, "check_db32(text)"},
     {NULL, NULL, 0, NULL}
 };
 
