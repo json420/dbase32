@@ -215,12 +215,19 @@ class TestConstants(TestCase):
         else:
             self.assertIs(dbase32.check_db32, dbase32.check_db32_p)
 
+    def test_random_id_alias(self):
+        if C_EXT_AVAIL:
+            self.assertIs(dbase32.random_id, dbase32.random_id_c)
+            self.assertIsNot(dbase32.random_id, dbase32.random_id_p)
+        else:
+            self.assertIs(dbase32.random_id, dbase32.random_id_p)
+
 
 class TestFunctions(TestCase):
     def skip_if_no_c_ext(self):
         if not C_EXT_AVAIL:
             self.skipTest('cannot import `_dbase32` C extension')
- 
+
     def test_make_string(self):
         self.assertEqual(make_string(0, 8, 'A', 'B'), 'BAAAAAAA')
         self.assertEqual(make_string(4, 8, 'A', 'B'), 'AAAABAAA')
