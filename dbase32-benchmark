@@ -51,7 +51,7 @@ from base64 import b64encode, b64decode
 from dbase32 import db32enc, db32dec
 from dbase32 import isdb32_p, isdb32_c
 from dbase32 import check_db32_p, check_db32_c
-from dbase32 import random_id
+from dbase32 import random_id_p, random_id_c
 
 data = urandom({})
 text_b64 = b64encode(data)
@@ -101,7 +101,8 @@ run('check_db32_c(text_db32)')
 
 print('Random IDs/second:')
 run('urandom(15)', slow=True)
-run('random_id(15)', slow=True)
+run('random_id_p(15)', slow=True)
+run('random_id_c(15)', slow=True)
 
 print('')
 
