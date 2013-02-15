@@ -29,14 +29,12 @@ from unittest import TestCase
 from dbase32.misc import TYPE_ERROR
 from dbase32 import misc
 
-# Dmedia-Base32:
-DB32_FORWARD = '3456789ABCDEFGHIJKLMNOPQRSTUVWXY'
-
-# Standard RFC-3548 Base32:
-B32_FORWARD = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567'
-
 
 class TestFunctions(TestCase):
+    def test_possible(self):
+        self.assertEqual(''.join(sorted(set(misc.POSSIBLE))), misc.POSSIBLE)
+        self.assertEqual(len(misc.POSSIBLE), 36)
+
     def test_gen_forward(self):
         with self.assertRaises(TypeError) as cm:
             misc.gen_forward(b'0123')

@@ -42,16 +42,13 @@ except ImportError:
 
 
 random = SystemRandom()
-possible = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'
-assert ''.join(sorted(set(possible))) == possible
-assert len(possible) == 36
+
+# Used in test_sort_p()
+Tup = namedtuple('Tup', 'data b32 db32')
 
 BIN_SIZES = (5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60)
 TXT_SIZES = (8, 16, 24, 32, 40, 48, 56, 64, 72, 80, 88, 96)
 BAD_LETTERS = '\'"`~!#$%^&*()[]{}|+-_.,\/ 012:;<=>?@Zabcdefghijklmnopqrstuvwxyz'
-
-# Used in test_sort_p()
-Tup = namedtuple('Tup', 'data b32 db32')
 
 
 def string_iter(index, count, a, b, c):

@@ -22,6 +22,15 @@
 
 """
 `dbase32` - base32-encoding with a sorted-order alphabet (for databases).
+
+For example:
+
+>>> from dbase32 import db32enc, db32dec
+>>> db32enc(b'binary foo')
+'FCNPVRELI7J9FUUI'
+>>> db32dec('FCNPVRELI7J9FUUI')
+b'binary foo'
+
 """
 
 try:

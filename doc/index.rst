@@ -15,10 +15,10 @@ version is automatically selected when available.
 Example usage:
 
 >>> from dbase32 import db32enc, db32dec
->>> db32enc(b'Bytes')
-'BCVQBSEM'
->>> db32dec('BCVQBSEM')
-b'Bytes'
+>>> db32enc(b'binary foo')
+'FCNPVRELI7J9FUUI'
+>>> db32dec('FCNPVRELI7J9FUUI')
+b'binary foo'
 
 D-Base32 is being developed as part of the `Novacut`_ project.  D-Base32
 packages are available for Ubuntu in the `Novacut Stable Releases PPA`_ and the
