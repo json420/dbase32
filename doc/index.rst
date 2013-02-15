@@ -2,8 +2,8 @@ D-Base32
 ========
 
 The `D-Base32`_ encoding is a base-32 variant designed for document-oriented
-databases and applications, specifically for encoding document IDs.  D-Base32
-uses an alphabet whose symbols are in ASCII/UTF-8 sorted order::
+databases, specifically for encoding document IDs.  D-Base32 uses an alphabet
+whose symbols are in ASCII/UTF-8 sorted order::
 
     3456789ABCDEFGHIJKLMNOPQRSTUVWXY
 
