@@ -93,6 +93,12 @@ class TestConstants(TestCase):
         self.assertIsInstance(dbase32.DB32ALPHABET, str)
         self.assertEqual(dbase32.DB32ALPHABET, fallback.DB32_FORWARD)
 
+    def test_max(self):
+        self.assertIsInstance(dbase32.MAX_BIN_LEN, int)
+        self.assertEqual(dbase32.MAX_BIN_LEN, fallback.MAX_BIN_LEN)
+        self.assertIsInstance(dbase32.MAX_TXT_LEN, int)
+        self.assertEqual(dbase32.MAX_TXT_LEN, fallback.MAX_TXT_LEN)
+
     def test_random(self):
         self.assertIsInstance(dbase32.RANDOM_BITS, int)
         self.assertEqual(dbase32.RANDOM_BITS % 40, 0)
