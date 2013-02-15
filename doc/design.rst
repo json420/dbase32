@@ -314,6 +314,58 @@ And the same with uppercase IDs::
         }
     }
 
+Or consider this `Dmedia`_ file document with lowercase IDs::
+
+    {
+        "_id": "224zy4wmnxnkjpin6u5hmwimjigjm2hma5ioci3qgdiw2ldt",
+        "type": "dmedia/file",
+        "time": 1355254766.513135,
+        "atime": 1355388946,
+        "bytes": 25272864,
+        "origin": "user",
+        "stored": {
+            "btvd5cs2hm4obdlmac2l7wzm": {
+                "copies": 0,
+                "mtime": 1353160147
+            },
+            "dla4ndzrw2lxepf3rv7yhmon": {
+                "copies": 1,
+                "mtime": 1353160147
+            },
+            "papbeh4zvqv5upo3l3h4rtur": {
+                "copies": 1,
+                "mtime": 1353392010,
+                "verified": 1360256513
+            }
+        }
+    }
+
+And the same with uppercase IDs::
+
+    {
+        "_id": "224ZY4WMNXNKJPIN6U5HMWIMJIGJM2HMA5IOCI3QGDIW2LDT",
+        "type": "dmedia/file",
+        "time": 1355254766.513135,
+        "atime": 1355388946,
+        "bytes": 25272864,
+        "origin": "user",
+        "stored": {
+            "BTVD5CS2HM4OBDLMAC2L7WZM": {
+                "copies": 0,
+                "mtime": 1353160147
+            },
+            "DLA4NDZRW2LXEPF3RV7YHMON": {
+                "copies": 1,
+                "mtime": 1353160147
+            },
+            "PAPBEH4ZVQV5UPO3L3H4RTUR": {
+                "copies": 1,
+                "mtime": 1353392010,
+                "verified": 1360256513
+            }
+        }
+    }
+
 
 .. _`D-Base32`: https://launchpad.net/dbase32
 .. _`RFC-3548 Base32`: http://tools.ietf.org/html/rfc4648
