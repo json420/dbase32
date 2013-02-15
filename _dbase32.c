@@ -29,7 +29,7 @@ Authors:
 
 
 // Dmedia-Base32: non-standard 3-9, A-Y letters (sorted)
-static const uint8_t DB32_START = 51;
+// static const uint8_t DB32_START = 51;
 static const uint8_t DB32_END = 89;
 static const uint8_t DB32_FORWARD[32] = "3456789ABCDEFGHIJKLMNOPQRSTUVWXY";
 static const uint8_t DB32_REVERSE[256] = {
@@ -233,7 +233,8 @@ dbase32_db32enc(PyObject *self, PyObject *args)
 
     // Allocate destination buffer:
     txt_len = bin_len * 8 / 5;
-    if ((pyret=PyUnicode_New(txt_len, DB32_END)) == NULL ) {
+    pyret = PyUnicode_New(txt_len, DB32_END);
+    if (pyret == NULL ) {
         PyBuffer_Release(&pybuf);
         return NULL;
     }
@@ -280,7 +281,8 @@ dbase32_db32dec(PyObject *self, PyObject *args)
 
     // Allocate destination buffer:
     bin_len = txt_len * 5 / 8;
-    if ((pyret=PyBytes_FromStringAndSize(NULL, bin_len)) == NULL) {
+    pyret = PyBytes_FromStringAndSize(NULL, bin_len);
+    if (pyret == NULL) {
         return NULL;
     }
     bin_buf = (uint8_t *)PyBytes_AS_STRING(pyret);
@@ -391,7 +393,7 @@ dbase32_random_id(PyObject *self, PyObject *args, PyObject *kw)
 
     // Allocate temp buffer for binary ID:
     bin_buf = (uint8_t *)malloc(size);
-    if (!bin_buf) {
+    if (bin_buf == NULL) {
         return PyErr_NoMemory();
     }
 
