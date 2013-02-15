@@ -350,7 +350,8 @@ static PyObject *
 dbase32_check_db32(PyObject *self, PyObject *args)
 {
     const uint8_t *txt_buf;
-    size_t i, txt_len;
+    size_t txt_len, block, count, i;
+    uint8_t r;
 
     if (!PyArg_ParseTuple(args, "s:check_db32", &txt_buf)) {
         return NULL;
@@ -371,14 +372,35 @@ dbase32_check_db32(PyObject *self, PyObject *args)
         return NULL;
     }
 
-    // check that text only contains valid D-Base32 letters:
-    for (i=0; i < txt_len; i++) {
-        if (DB32_REVERSE[txt_buf[i]] & 224) {
-            PyErr_Format(PyExc_ValueError,
-                "invalid D-Base32 letter: %c", txt_buf[i]
-            );
+    count = txt_len / 8;
+    for (block=0; block < count; block++) {
+        r =  DB32_REVERSE[txt_buf[0]];
+        r |= DB32_REVERSE[txt_buf[1]];
+        r |= DB32_REVERSE[txt_buf[2]];
+        r |= DB32_REVERSE[txt_buf[3]];
+        r |= DB32_REVERSE[txt_buf[4]];
+        r |= DB32_REVERSE[txt_buf[5]];
+        r |= DB32_REVERSE[txt_buf[6]];
+        r |= DB32_REVERSE[txt_buf[7]];
+
+        // Only one error check (branch) per block:
+        if (r & 224) {
+            for (i=0; i < 8; i++) {
+                r = DB32_REVERSE[txt_buf[i]];
+                if (r & 224) {
+                    PyErr_Format(PyExc_ValueError,
+                        "invalid D-Base32 letter: %c", txt_buf[i]
+                    );
+                    return NULL;
+                }
+            }
+            // Whoa, we screwed up something!
+            PyErr_SetString(PyExc_RuntimeError, "something went very wrong");
             return NULL;
         }
+
+        // Move the pointer:
+        txt_buf += 8;
     }
 
     Py_RETURN_NONE;
