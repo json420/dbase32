@@ -31,7 +31,7 @@ sort order of the encoded data is different than the binary data, for example::
     15 ffffffffff  12 ZTGMZTGM
     =============  ===========
 
-This is because the symbols in the RFC-3548 base32 encoding table aren't in
+This is because the symbols in the RFC-3548 base32 alphabet aren't in
 ASCII/UTF-8 sorted order, they are in this order::
 
     ABCDEFGHIJKLMNOPQRSTUVWXYZ234567
@@ -61,7 +61,7 @@ translate into a nonsense query like::
     14 <= doc_N <= 3
 
 To be clear, I consider this a total deal-breaker for `Dmedia`_, and so we
-are *not* going to use RFC-3548 base32 encoding in the final version 1
+are *not* going to use RFC-3548 Base32 encoding in the final version 1
 hashing protocol.  It would be a nasty design wart that every implementation
 would have to battle.  And that does not an ecosystem make.
 
@@ -73,9 +73,9 @@ Simplest solution?
 ------------------
 
 Perhaps the simplest solution is to use the same set of symbols as RFC-3548,
-but with an encoding table in sorted order?  We might call it Sorted-Base32,
-and it indeed gives us a base32 sort order that matches the binary sort
-order, as you can see::
+but with the alphabet in sorted order?  We might call it Sorted-Base32, and it
+indeed gives us a base32 sort order that matches the binary sort order, as you
+can see::
 
     =============  ===========  ===========
        Binary         Base32       S-Base32
@@ -146,9 +146,11 @@ When it comes to end-chopping, there are five permutations::
     012 3456789ABCDEFGHIJKLMNOPQRSTUVWXY Z
     0123 456789ABCDEFGHIJKLMNOPQRSTUVWXYZ
 
-The topmost offers the max possible symbol difference from RFC-3548 (d=4), the
-2nd has (d=3), and the bottom three all have (d=2).  So any of them would
-work, as we only need d=1.
+The topmost is already used by `RFC-4648 base32hex`_, which we rule out below.
+
+After that, the 2nd from the top differs from RFC-3548 by three symbols, and
+the bottom three all differ by two symbols.  So any of the bottom four would
+work, as we only need our alphabet to differ by a single symbol.
 
 It may seem like splitting hairs, but I think even small improvements in how
 quickly one can understand a technology can have a big impact on its adoption
@@ -168,7 +170,7 @@ elegant than RFC-3548. Not the same, and certainly not worse.  Better, even
 if only by a smidge.
 
 So instead of opening Pandora's box in an epic search for the best 32 letters,
-which would mean a reverse table that is full of more dead spots than RFC-3548,
+which would mean a reverse-table that is full of more dead spots than RFC-3548,
 I think we should restrict ourselves to picking the best of the five above
 options.
 
@@ -181,13 +183,32 @@ depends so heavily on the font being used, and the people of the world of
 course aren't all using the same font.  Opinions are all over the map, for the
 most part.
 
-The once place where there seems to be near-consensus is around::
+The one place where there seems to be near-consensus is around::
 
     0O (zero and oh)
     1I (one and eye)
 
-At least there is agreement on them being a problem, not so much on the best
-way fix it (remove the number, remove the letter, or even remove both?).
+It is for this reason that I decided *not* to use `RFC-4648 base32hex`_, a
+base32 encoding with this sorted-order alphabet::
+
+    0123456789ABCDEFGHIJKLMNOPQRSTUV
+
+Although base32hex does have the desired property of preserving the sort-order,
+there aren't many implementations readily available (for example, the Python
+standard library lacks a base32hex implementation).  And as long as we need
+to implement our own, we might as well use an encoding that is as good as
+possible for our use case.
+
+There are also some advantages to using a unique encoding.  Our goal is not to
+encode arbitrary data, but only to encode well-formed IDs with very specific
+constraints.  A unique encoding can help convey the context and the intended
+use.  Think of it like branding.  Plus, we hope these IDs show up all over the
+place, especially on the web, so it would be very handy if web crawlers could
+usually distinguish our IDs from run-of-the-mill base32 data.
+
+Anyway, there is near-consensus on ``0O`` and ``1I`` being a problem, but less
+agreement on how to fix it.  Remove the number, remove the letter, or even
+remove both?
 
 Fortunately, our hands are tied and we can only remove the numbers, so lets do
 that.  Now we're down to three options, with two more symbols to remove::
@@ -201,6 +222,9 @@ look quite similar to each other, and I feel that probably provides the best
 overall signal-to-noise.  So that gives us this alphabet::
 
     3456789ABCDEFGHIJKLMNOPQRSTUVWXY
+
+As far as I know, this set of symbols (regardless of order) isn't used in any
+existing base32 encoding.
 
 
 Dmedia-Base32
@@ -231,14 +255,13 @@ It has the desired property of preserving the sort order, as you can see::
     =============  ===========  ===========  ===========
 
 Because D-Base32 is *not* designed to encode arbitrary data, but instead is
-designed only to encode our well-formed IDs, we're only supporting IDs that are
-multiples of 40-bits, and we're *not* supporting padding.
+designed only to encode our well-formed IDs, we're *not* supporting padding.
+Data to be encoded must be a multiple of 5 bytes in length, and text to be
+decoded must be a multiple of 8 characters in length.
 
-Data to be encoded must be a multiple of 5 bytes in length, and ASCII/UTF-8
-text to be decoded must be a multiple of 8 bytes in length.  This strict
-validation is good in terms of enforcing correctness at higher levels, and it
-makes the implementation easier, eliminates a lot of potential spots for
-security goofs.
+This strict validation is good in terms of enforcing correctness in higher-level
+code, and it makes the implementation easier, eliminates a lot of potential
+spots for security goofs.
 
 
 Note on lowercase
@@ -297,4 +320,5 @@ And the same with uppercase IDs::
 .. _`Novacut`: https://launchpad.net/novacut
 .. _`Dmedia`: https://launchpad.net/dmedia
 .. _`FileStore`: https://launchpad.net/filestore
+.. _`RFC-4648 base32hex`: http://tools.ietf.org/html/rfc4648#section-7
 .. _`z-base-32`: http://philzimmermann.com/docs/human-oriented-base-32-encoding.txt
