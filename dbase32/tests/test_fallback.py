@@ -21,7 +21,7 @@
 #
 
 """
-Unit tests for `dbase32.pure` module.
+Unit tests for `dbase32.fallback` module.
 """
 
 from unittest import TestCase
