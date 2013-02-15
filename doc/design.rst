@@ -146,7 +146,7 @@ When it comes to end-chopping, there are five permutations::
     012 3456789ABCDEFGHIJKLMNOPQRSTUVWXY Z
     0123 456789ABCDEFGHIJKLMNOPQRSTUVWXYZ
 
-The topmost is already used by `RFC-4648 base32hex`_, which we rule out below.
+The topmost is already used by `RFC-4648 base32hex`_, which I rule out below.
 
 After that, the 2nd from the top differs from RFC-3548 by three symbols, and
 the bottom three all differ by two symbols.  So any of the bottom four would
@@ -196,8 +196,8 @@ base32 encoding with this sorted-order alphabet::
 Although base32hex does have the desired property of preserving the sort-order,
 there aren't many implementations readily available (for example, the Python
 standard library lacks a base32hex implementation).  And as long as we need
-to implement our own, we might as well use an encoding that is as good as
-possible for our use case.
+to provide our own implementation, we might as well use an encoding that is
+as good as possible for our use case.
 
 There are also some advantages to using a unique encoding.  Our goal is not to
 encode arbitrary data, but only to encode well-formed IDs with very specific
