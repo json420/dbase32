@@ -1,16 +1,19 @@
 D-Base32
 ========
 
-The `D-Base32`_ encoding is a base-32 variant designed for document oriented
-databases and applications, specifically for encoding document IDs.
+The `D-Base32`_ encoding is a base-32 variant designed for document-oriented
+databases and applications, specifically for encoding document IDs.  D-Base32
+uses an alphabet whose symbols are in ASCII/UTF-8 sorted order::
 
-D-Base32 uses an encoding table whose symbols are in ASCII/UTF-8 sorted order.
+    3456789ABCDEFGHIJKLMNOPQRSTUVWXY
+
 This means that unlike `RFC-3548 Base32`_ encoding, the sort-order of the
-encoded data will match the sort-order of the binary data.
+encoded data will match the sort-order of the binary data.  For details on
+why this alphabet was chosen, please see the :doc:`design`.
 
-The :mod:`dbase32` package provides a Python3 implementation of the encoding,
-with both a high-performance C extension and a pure-Python fallback.  The C
-version is automatically selected when available.
+:mod:`dbase32` is a Python3 implementation of the encoding, with both a
+high-performance C extension and a pure-Python fallback.  The C extension is
+automatically selected when available.
 
 Example usage:
 
@@ -20,8 +23,8 @@ Example usage:
 >>> db32dec('FCNPVRELI7J9FUUI')
 b'binary foo'
 
-D-Base32 is being developed as part of the `Novacut`_ project.  D-Base32
-packages are available for Ubuntu in the `Novacut Stable Releases PPA`_ and the
+D-Base32 is being developed as part of the `Novacut`_ project. Packages are
+available for Ubuntu in the `Novacut Stable Releases PPA`_ and the
 `Novacut Daily Builds PPA`_.
 
 If you have questions or need help getting started with D-Base32, please stop
