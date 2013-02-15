@@ -1,7 +1,7 @@
-Install on Ubuntu
-=================
+Installing on Ubuntu
+====================
 
-D-Base32 packages are available for Ubuntu Raring in the
+D-Base32 packages are available for `Ubuntu`_ Raring in the
 `Novacut Stable Releases PPA`_ and the `Novacut Daily Builds PPA`_.
 
 Installation is easy. First add either the stable PPA::
@@ -30,6 +30,10 @@ After which the documentation can be browsed at:
 Note if you add both the stable and the daily PPA, the versions in the daily
 PPA will supersede the versions in the stable PPA.
 
+Also see :doc:`bugs`.
+
+
 .. _`Novacut Stable Releases PPA`: https://launchpad.net/~novacut/+archive/stable
 .. _`Novacut Daily Builds PPA`: https://launchpad.net/~novacut/+archive/daily
+.. _`Ubuntu`: http://www.ubuntu.com/
 

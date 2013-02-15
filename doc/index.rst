@@ -24,13 +24,13 @@ Example usage:
 b'binary foo'
 
 D-Base32 is being developed as part of the `Novacut`_ project. Packages are
-available for Ubuntu in the `Novacut Stable Releases PPA`_ and the
+available for `Ubuntu`_ in the `Novacut Stable Releases PPA`_ and the
 `Novacut Daily Builds PPA`_.
 
 If you have questions or need help getting started with D-Base32, please stop
 by the `#novacut`_ IRC channel on freenode.
 
-D-Base32 is licensed `LGPLv3+`_.
+D-Base32 is licensed `LGPLv3+`_, and requires `Python 3.3`_ or newer.
 
 Contents:
 
@@ -38,6 +38,7 @@ Contents:
     :maxdepth: 2
 
     install
+    bugs
     dbase32
     design
 
@@ -49,3 +50,5 @@ Contents:
 .. _`Novacut Stable Releases PPA`: https://launchpad.net/~novacut/+archive/stable
 .. _`Novacut Daily Builds PPA`: https://launchpad.net/~novacut/+archive/daily
 .. _`#novacut`: http://webchat.freenode.net/?channels=novacut
+.. _`Ubuntu`: http://www.ubuntu.com/
+.. _`Python 3.3`: http://docs.python.org/3.3/

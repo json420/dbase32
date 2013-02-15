@@ -365,12 +365,10 @@ dbase32_random_id(PyObject *self, PyObject *args, PyObject *kw)
 {
     static char *keys[] = {"size", NULL};
     size_t size = 15;
-
+    PyObject *pyret;
     uint8_t *bin_buf, *txt_buf;
     size_t txt_len;
     int status;
-
-    PyObject *pyret;
 
     if (!PyArg_ParseTupleAndKeywords(args, kw, "|n:random_id", keys, &size)) {
         return NULL;
