@@ -40,6 +40,8 @@ parser.add_argument('--bytes', metavar='N', type=int,
 )
 args = parser.parse_args()
 
+text_db32 = dbase32.random_id(args.bytes)
+
 
 setup = """
 import os
@@ -47,9 +49,9 @@ import base64
 import _dbase32
 from dbase32 import fallback
 
-data = os.urandom({})
+text_db32 = {!r}
+data = _dbase32.db32dec(text_db32)
 text_b64 = base64.b64encode(data)
-text_db32 = _dbase32.db32enc(data)
 not_db32 = text_db32[:-1] + 'Z'
 
 assert base64.b64decode(text_b64) == data
@@ -59,7 +61,7 @@ assert fallback.isdb32(text_db32) is True
 assert _dbase32.isdb32(text_db32) is True
 assert fallback.isdb32(not_db32) is False
 assert _dbase32.isdb32(not_db32) is False
-""".format(args.bytes)
+""".format(text_db32)
 
 
 def run(statement, k=2500):
