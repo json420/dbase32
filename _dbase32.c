@@ -363,44 +363,47 @@ dbase32_check_db32(PyObject *self, PyObject *args)
 
 
 static PyObject *
-dbase32_random_id(PyObject *self, PyObject *args)
+dbase32_random_id(PyObject *self, PyObject *args, PyObject *kw)
 {
     PyObject *pyret;
+    size_t size = 15;
     uint8_t *bin_buf, *txt_buf;
-    size_t bin_len, txt_len;
+    size_t txt_len;
     int status;
 
-    if (!PyArg_ParseTuple(args, "n:random_id", &bin_len)) {
+    static char *keys[] = {"size", NULL};
+
+    if (!PyArg_ParseTupleAndKeywords(args, kw, "|n:random_id", keys, &size)) {
         return NULL;
     }
-    if (bin_len < 5 || bin_len > MAX_BIN_LEN) {
+    if (size < 5 || size > MAX_BIN_LEN) {
         PyErr_Format(PyExc_ValueError,
-            "size is %u, need 5 <= size <= %u", bin_len, MAX_BIN_LEN
+            "size is %u, need 5 <= size <= %u", size, MAX_BIN_LEN
         );
         return NULL;
     }
-    if (bin_len % 5 != 0) {
+    if (size % 5 != 0) {
         PyErr_Format(PyExc_ValueError,
-            "size is %u, need size % 5 == 0", bin_len
+            "size is %u, need size % 5 == 0", size
         );
         return NULL;
     }
 
     // Allocate temp buffer for binary ID:
-    bin_buf = (uint8_t *)malloc(bin_len);
+    bin_buf = (uint8_t *)malloc(size);
     if (!bin_buf) {
         return PyErr_NoMemory();
     }
 
     // Get random bytes from /dev/urandom:
-    status = _PyOS_URandom(bin_buf, bin_len);
+    status = _PyOS_URandom(bin_buf, size);
     if (status == -1) {
         free(bin_buf);
         return NULL;
     }
 
     // Allocate destination buffer:
-    txt_len = bin_len * 8 / 5;
+    txt_len = size * 8 / 5;
     pyret = PyUnicode_New(txt_len, DB32_END);
     if (pyret == NULL ) {
         free(bin_buf);
@@ -409,7 +412,7 @@ dbase32_random_id(PyObject *self, PyObject *args)
     txt_buf = (uint8_t *)PyUnicode_1BYTE_DATA(pyret);
 
     // dbase32_encode() returns 0 on success:
-    status = dbase32_encode(bin_len, bin_buf, txt_len, txt_buf);
+    status = dbase32_encode(size, bin_buf, txt_len, txt_buf);
     free(bin_buf);
     if (status != 0) {
         PyErr_SetString(PyExc_RuntimeError, "something went very wrong");
@@ -427,7 +430,8 @@ static struct PyMethodDef dbase32_functions[] = {
     {"db32dec", dbase32_db32dec, METH_VARARGS, "db32dec(text)"},
     {"isdb32", dbase32_isdb32, METH_VARARGS, "isdb32(text)"},
     {"check_db32", dbase32_check_db32, METH_VARARGS, "check_db32(text)"},
-    {"random_id", dbase32_random_id, METH_VARARGS, "random_id(numbytes=15)"},
+    {"random_id", (PyCFunction)dbase32_random_id, METH_VARARGS | METH_KEYWORDS, 
+        "random_id(size=15)"},
     {NULL, NULL, 0, NULL}
 };
 
