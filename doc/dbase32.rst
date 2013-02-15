@@ -210,7 +210,7 @@ Functions
     >>> random_id(5)
     'V37E4B38'
 
-    The random data is from ``os.urandom()``.
+    The random data is from ``/dev/urandom``.
 
 
 
