@@ -619,18 +619,26 @@ class TestFunctions(TestCase):
 
         _id = random_id()
         self.assertIsInstance(_id, str)
-        self.assertEqual(len(_id), 24)
+        self.assertEqual(len(_id), dbase32.RANDOM_B32LEN)
         data = dbase32.db32dec(_id)
         self.assertIsInstance(data, bytes)
-        self.assertEqual(len(data), 15)
+        self.assertEqual(len(data), dbase32.RANDOM_BYTES)
         self.assertEqual(dbase32.db32enc(data), _id)
 
-        _id = random_id(size=15)
+        _id = random_id(dbase32.RANDOM_BYTES)
         self.assertIsInstance(_id, str)
-        self.assertEqual(len(_id), 24)
+        self.assertEqual(len(_id), dbase32.RANDOM_B32LEN)
         data = dbase32.db32dec(_id)
         self.assertIsInstance(data, bytes)
-        self.assertEqual(len(data), 15)
+        self.assertEqual(len(data), dbase32.RANDOM_BYTES)
+        self.assertEqual(dbase32.db32enc(data), _id)
+
+        _id = random_id(size=dbase32.RANDOM_BYTES)
+        self.assertIsInstance(_id, str)
+        self.assertEqual(len(_id), dbase32.RANDOM_B32LEN)
+        data = dbase32.db32dec(_id)
+        self.assertIsInstance(data, bytes)
+        self.assertEqual(len(data), dbase32.RANDOM_BYTES)
         self.assertEqual(dbase32.db32enc(data), _id)
 
         for size in BIN_SIZES:
