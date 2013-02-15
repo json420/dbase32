@@ -31,9 +31,9 @@ import base64
 from collections import Counter, namedtuple
 
 import dbase32
-from dbase32 import pure, misc
+from dbase32 import fallback, misc
 
-# True if the C extension is avialable
+# True if the C extension is available
 try:
     import _dbase32
     C_EXT_AVAIL = True
@@ -107,37 +107,37 @@ class TestConstants(TestCase):
     def test_db32enc_alias(self):
         if C_EXT_AVAIL:
             self.assertIs(dbase32.db32enc, _dbase32.db32enc)
-            self.assertIsNot(dbase32.db32enc, pure.db32enc)
+            self.assertIsNot(dbase32.db32enc, fallback.db32enc)
         else:
-            self.assertIs(dbase32.db32enc, pure.db32enc)
+            self.assertIs(dbase32.db32enc, fallback.db32enc)
 
     def test_db32dec_alias(self):
         if C_EXT_AVAIL:
             self.assertIs(dbase32.db32dec, _dbase32.db32dec)
-            self.assertIsNot(dbase32.db32dec, pure.db32dec)
+            self.assertIsNot(dbase32.db32dec, fallback.db32dec)
         else:
-            self.assertIs(dbase32.db32dec, pure.db32dec)
+            self.assertIs(dbase32.db32dec, fallback.db32dec)
 
     def test_isdb32_alias(self):
         if C_EXT_AVAIL:
             self.assertIs(dbase32.isdb32, _dbase32.isdb32)
-            self.assertIsNot(dbase32.isdb32, pure.isdb32)
+            self.assertIsNot(dbase32.isdb32, fallback.isdb32)
         else:
-            self.assertIs(dbase32.isdb32, pure.isdb32)
+            self.assertIs(dbase32.isdb32, fallback.isdb32)
 
     def test_check_db32_alias(self):
         if C_EXT_AVAIL:
             self.assertIs(dbase32.check_db32, _dbase32.check_db32)
-            self.assertIsNot(dbase32.check_db32, pure.check_db32)
+            self.assertIsNot(dbase32.check_db32, fallback.check_db32)
         else:
-            self.assertIs(dbase32.check_db32, pure.check_db32)
+            self.assertIs(dbase32.check_db32, fallback.check_db32)
 
     def test_random_id_alias(self):
         if C_EXT_AVAIL:
             self.assertIs(dbase32.random_id, _dbase32.random_id)
-            self.assertIsNot(dbase32.random_id, pure.random_id)
+            self.assertIsNot(dbase32.random_id, fallback.random_id)
         else:
-            self.assertIs(dbase32.random_id, pure.random_id)
+            self.assertIs(dbase32.random_id, fallback.random_id)
 
 
 class TestFunctions(TestCase):
@@ -220,7 +220,7 @@ class TestFunctions(TestCase):
         """
         Test the pure-Python implementation of db32enc().
         """
-        self.check_db32enc(pure.db32enc)
+        self.check_db32enc(fallback.db32enc)
 
     def test_db32enc_c(self):
         """
@@ -235,7 +235,7 @@ class TestFunctions(TestCase):
                 data = os.urandom(size)
                 self.assertEqual(
                     _dbase32.db32enc(data),
-                    pure.db32enc(data)
+                    fallback.db32enc(data)
                 )
 
     def check_db32dec(self, db32dec):
@@ -342,7 +342,7 @@ class TestFunctions(TestCase):
         """
         Test the pure-Python implementation of db32enc().
         """
-        self.check_db32dec(pure.db32dec)
+        self.check_db32dec(fallback.db32dec)
 
     def test_db32dec_c(self):
         """
@@ -351,17 +351,17 @@ class TestFunctions(TestCase):
         self.skip_if_no_c_ext()
         self.check_db32dec(_dbase32.db32dec)
 
-        # Compare against the pure.db32dec Python version:
+        # Compare against the fallback.db32dec Python version:
         for size in TXT_SIZES:
             for i in range(100):
                 text = ''.join(
-                    random.choice(pure.DB32_FORWARD)
+                    random.choice(fallback.DB32_FORWARD)
                     for n in range(size)
                 )
                 assert len(text) == size
                 self.assertEqual(
                     _dbase32.db32dec(text),
-                    pure.db32dec(text)
+                    fallback.db32dec(text)
                 )
 
     def test_sort_p(self):
@@ -375,7 +375,7 @@ class TestFunctions(TestCase):
             Tup(
                 data,
                 base64.b32encode(data).decode('utf-8'),
-                pure.db32enc(data)
+                fallback.db32enc(data)
             )
             for data in ids
         )
@@ -392,7 +392,7 @@ class TestFunctions(TestCase):
             self.assertNotEqual(t.b32, t.db32)
 
             self.assertEqual(t.b32, base64.b32encode(t.data).decode('utf-8'))
-            self.assertEqual(t.db32, pure.db32enc(t.data))
+            self.assertEqual(t.db32, fallback.db32enc(t.data))
 
         # Now sort and compare:
         sort_by_data = sorted(orig, key=lambda t: t.data)
@@ -429,7 +429,7 @@ class TestFunctions(TestCase):
             for i in range(1000):
                 data = os.urandom(size)
                 self.assertEqual(
-                    pure.db32dec(pure.db32enc(data)),
+                    fallback.db32dec(fallback.db32enc(data)),
                     data
                 )
 
@@ -454,7 +454,7 @@ class TestFunctions(TestCase):
             self.assertIs(isdb32('A' * (size + 1)), False)
             self.assertIs(isdb32('A' * size), True)
             good = ''.join(
-                random.choice(pure.DB32_FORWARD)
+                random.choice(fallback.DB32_FORWARD)
                 for n in range(size)
             )
             self.assertIs(isdb32(good), True)
@@ -483,7 +483,7 @@ class TestFunctions(TestCase):
         self.assertEqual(str(cm.exception), 'must be str, not bytes')
 
     def test_isdb32_p(self):
-        self.check_isdb32(pure.isdb32)
+        self.check_isdb32(fallback.isdb32)
 
     def test_isdb32_c(self):
         self.skip_if_no_c_ext()
@@ -590,7 +590,7 @@ class TestFunctions(TestCase):
             self.assertEqual(str(cm.exception), 'invalid D-Base32 letter: ' + L)
 
     def test_check_db32_p(self):
-        self.check_check_db32(pure.check_db32)
+        self.check_check_db32(fallback.check_db32)
 
     def test_check_db32_c(self):
         self.skip_if_no_c_ext()
@@ -648,7 +648,7 @@ class TestFunctions(TestCase):
         self.assertEqual(len(accum), count)
 
     def test_random_id_p(self):
-        self.check_random_id(pure.random_id)
+        self.check_random_id(fallback.random_id)
 
     def test_random_id_c(self):
         self.skip_if_no_c_ext()

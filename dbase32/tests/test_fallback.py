@@ -29,8 +29,7 @@ import os
 import base64
 from collections import Counter, namedtuple
 
-from dbase32 import misc
-from dbase32 import pure
+from dbase32 import fallback, misc
 
 possible = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'
 assert ''.join(sorted(set(possible))) == possible
@@ -39,65 +38,65 @@ assert len(possible) == 36
 
 class TestConstants(TestCase):
     def test_max(self):
-        self.assertIsInstance(pure.MAX_BIN_LEN, int)
-        self.assertIsInstance(pure.MAX_TXT_LEN, int)
-        self.assertEqual(pure.MAX_BIN_LEN % 5, 0)
-        self.assertEqual(pure.MAX_TXT_LEN % 8, 0)
-        self.assertEqual(pure.MAX_BIN_LEN, pure.MAX_TXT_LEN * 5 // 8)
+        self.assertIsInstance(fallback.MAX_BIN_LEN, int)
+        self.assertIsInstance(fallback.MAX_TXT_LEN, int)
+        self.assertEqual(fallback.MAX_BIN_LEN % 5, 0)
+        self.assertEqual(fallback.MAX_TXT_LEN % 8, 0)
+        self.assertEqual(fallback.MAX_BIN_LEN, fallback.MAX_TXT_LEN * 5 // 8)
 
     def test_start(self):
         self.assertEqual(
-            pure.DB32_START,
-            ord(min(pure.DB32_FORWARD))
+            fallback.DB32_START,
+            ord(min(fallback.DB32_FORWARD))
         )
         self.assertEqual(
-            pure.DB32_START,
-            ord(pure.DB32_FORWARD[0])
+            fallback.DB32_START,
+            ord(fallback.DB32_FORWARD[0])
         )
         self.assertEqual(
-            pure.DB32_START,
-            misc.get_start(pure.DB32_FORWARD)
+            fallback.DB32_START,
+            misc.get_start(fallback.DB32_FORWARD)
         )
 
     def test_end(self):
         self.assertEqual(
-            pure.DB32_END,
-            ord(max(pure.DB32_FORWARD))
+            fallback.DB32_END,
+            ord(max(fallback.DB32_FORWARD))
         )
         self.assertEqual(
-            pure.DB32_END,
-            ord(pure.DB32_FORWARD[-1])
+            fallback.DB32_END,
+            ord(fallback.DB32_FORWARD[-1])
         )
         self.assertEqual(
-            pure.DB32_END,
-            misc.get_end(pure.DB32_FORWARD)
+            fallback.DB32_END,
+            misc.get_end(fallback.DB32_FORWARD)
         )
 
     def test_forward(self):
         self.assertEqual(
-            ''.join(sorted(set(pure.DB32_FORWARD))),
-            pure.DB32_FORWARD
+            ''.join(sorted(set(fallback.DB32_FORWARD))),
+            fallback.DB32_FORWARD
         )
         self.assertEqual(
-            set(pure.DB32_FORWARD),
+            set(fallback.DB32_FORWARD),
             set(possible) - set('012Z')
         )
-        self.assertIsInstance(pure.DB32_FORWARD, str)
-        self.assertEqual(len(pure.DB32_FORWARD), 32)
-        self.assertEqual(pure.DB32_FORWARD, misc.gen_forward('012Z'))
-        misc.check_forward(pure.DB32_FORWARD)
+        self.assertIsInstance(fallback.DB32_FORWARD, str)
+        self.assertEqual(len(fallback.DB32_FORWARD), 32)
+        self.assertEqual(fallback.DB32_FORWARD, misc.gen_forward('012Z'))
+        misc.check_forward(fallback.DB32_FORWARD)
 
     def test_reverse(self):
-        self.assertIsInstance(pure.DB32_REVERSE, tuple)
-        self.assertEqual(len(pure.DB32_REVERSE), 256)
-        self.assertEqual(min(pure.DB32_REVERSE), 0)
-        self.assertEqual(max(pure.DB32_REVERSE), 255)
+        self.assertIsInstance(fallback.DB32_REVERSE, tuple)
+        self.assertEqual(len(fallback.DB32_REVERSE), 256)
+        self.assertEqual(min(fallback.DB32_REVERSE), 0)
+        self.assertEqual(max(fallback.DB32_REVERSE), 255)
         self.assertEqual(
-            pure.DB32_REVERSE,
-            tuple(r.value for r in misc.gen_reverse(pure.DB32_FORWARD))
+            fallback.DB32_REVERSE,
+            tuple(r.value for r in misc.gen_reverse(fallback.DB32_FORWARD))
         )
 
-        for (i, value) in enumerate(pure.DB32_REVERSE):
+        for (i, value) in enumerate(fallback.DB32_REVERSE):
             if i < 51:
                 self.assertEqual(value, 255)
             if 51 <= i <= 57:
@@ -111,13 +110,13 @@ class TestConstants(TestCase):
 
         expected = set(range(32))
         expected.add(255)
-        self.assertEqual(set(pure.DB32_REVERSE), expected)
+        self.assertEqual(set(fallback.DB32_REVERSE), expected)
 
-        counts = Counter(pure.DB32_REVERSE)
+        counts = Counter(fallback.DB32_REVERSE)
         self.assertEqual(counts[255], 256 - 32)
         for i in range(32):
             self.assertEqual(counts[i], 1)
 
     def test_alphabet(self):
-        self.assertIsInstance(pure.DB32ALPHABET, frozenset)
-        self.assertEqual(pure.DB32ALPHABET, frozenset(pure.DB32_FORWARD))
+        self.assertIsInstance(fallback.DB32ALPHABET, frozenset)
+        self.assertEqual(fallback.DB32ALPHABET, frozenset(fallback.DB32_FORWARD))
