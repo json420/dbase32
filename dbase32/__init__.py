@@ -39,7 +39,7 @@ except ImportError:
     from .fallback import db32enc, db32dec, isdb32, check_db32, random_id
 
 
-__version__ = '0.2.0'
+__version__ = '0.3.0'
 __all__ = ('db32enc', 'db32dec', 'isdb32', 'check_db32', 'random_id')
 
 DB32ALPHABET = '3456789ABCDEFGHIJKLMNOPQRSTUVWXY'
