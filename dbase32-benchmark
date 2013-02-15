@@ -93,7 +93,7 @@ run('_dbase32.db32dec(text_db32)')
 run('fallback.db32dec(text_db32)', 25)
 
 print('Validations/second:')
-run('_dbase32.isdb32(text_db32)')
+run('_dbase32.isdb32(text_db32)', 4000)
 run('fallback.isdb32(text_db32)', 250)
 run('_dbase32.check_db32(text_db32)')
 run('fallback.check_db32(text_db32)', 250)

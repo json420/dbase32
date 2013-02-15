@@ -303,7 +303,8 @@ static PyObject *
 dbase32_isdb32(PyObject *self, PyObject *args)
 {
     const uint8_t *txt_buf;
-    size_t i, txt_len;
+    size_t txt_len, block, count;
+    uint8_t r = 0;
 
     if (!PyArg_ParseTuple(args, "s:isdb32", &txt_buf)) {
         return NULL;
@@ -312,12 +313,36 @@ dbase32_isdb32(PyObject *self, PyObject *args)
     if (txt_len < 8 || txt_len > MAX_TXT_LEN || txt_len % 8 != 0) {
         Py_RETURN_FALSE;
     }
-    for (i=0; i < txt_len; i++) {
-        if (DB32_REVERSE[txt_buf[i]] & 224) {
-            Py_RETURN_FALSE;
-        }
+
+    // Scan entire txt_buf:
+    count = txt_len / 8;
+    for (block=0; block < count; block++) {
+        r |= DB32_REVERSE[txt_buf[0]];
+        r |= DB32_REVERSE[txt_buf[1]];
+        r |= DB32_REVERSE[txt_buf[2]];
+        r |= DB32_REVERSE[txt_buf[3]];
+        r |= DB32_REVERSE[txt_buf[4]];
+        r |= DB32_REVERSE[txt_buf[5]];
+        r |= DB32_REVERSE[txt_buf[6]];
+        r |= DB32_REVERSE[txt_buf[7]];
+
+        // Move the pointer:
+        txt_buf += 8;
     }
-    Py_RETURN_TRUE;
+
+    /* Now do a single error check:
+
+        31: 00011111  <= bits set in reverse-table for valid characters
+       224: 11100000  <= bits set in reverse-table for invalid characters
+
+    This unrolled approach is much faster.  ~4.5 million/second up from
+    ~3.2 million/second for the fully rolled loop that does an error check
+    at each character.  */
+    if (r & 224) {
+        Py_RETURN_FALSE;
+    } else {
+        Py_RETURN_TRUE;
+    }
 }
 
 
