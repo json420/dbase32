@@ -80,9 +80,11 @@ class Test(Command):
         # First run the tests in the source tree
         pynames = [
             'dbase32',
+            'dbase32.pure',
             'dbase32.rfc3548',
             'dbase32.misc',
             'dbase32.tests',
+            'dbase32.tests.test_pure',
             'dbase32.tests.test_rfc3548',
             'dbase32.tests.test_misc',
         ]

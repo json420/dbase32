@@ -189,35 +189,35 @@ class TestConstants(TestCase):
 
     def test_db32enc_alias(self):
         if C_EXT_AVAIL:
-            self.assertIs(dbase32.db32enc, dbase32.db32enc_c)
+            self.assertIs(dbase32.db32enc, _dbase32.db32enc)
             self.assertIsNot(dbase32.db32enc, dbase32.db32enc_p)
         else:
             self.assertIs(dbase32.db32enc, dbase32.db32enc_p)
 
     def test_db32dec_alias(self):
         if C_EXT_AVAIL:
-            self.assertIs(dbase32.db32dec, dbase32.db32dec_c)
+            self.assertIs(dbase32.db32dec, _dbase32.db32dec)
             self.assertIsNot(dbase32.db32dec, dbase32.db32dec_p)
         else:
             self.assertIs(dbase32.db32dec, dbase32.db32dec_p)
 
     def test_isdb32_alias(self):
         if C_EXT_AVAIL:
-            self.assertIs(dbase32.isdb32, dbase32.isdb32_c)
+            self.assertIs(dbase32.isdb32, _dbase32.isdb32)
             self.assertIsNot(dbase32.isdb32, dbase32.isdb32_p)
         else:
             self.assertIs(dbase32.isdb32, dbase32.isdb32_p)
 
     def test_check_db32_alias(self):
         if C_EXT_AVAIL:
-            self.assertIs(dbase32.check_db32, dbase32.check_db32_c)
+            self.assertIs(dbase32.check_db32, _dbase32.check_db32)
             self.assertIsNot(dbase32.check_db32, dbase32.check_db32_p)
         else:
             self.assertIs(dbase32.check_db32, dbase32.check_db32_p)
 
     def test_random_id_alias(self):
         if C_EXT_AVAIL:
-            self.assertIs(dbase32.random_id, dbase32.random_id_c)
+            self.assertIs(dbase32.random_id, _dbase32.random_id)
             self.assertIsNot(dbase32.random_id, dbase32.random_id_p)
         else:
             self.assertIs(dbase32.random_id, dbase32.random_id_p)
@@ -310,14 +310,14 @@ class TestFunctions(TestCase):
         Test the C implementation of db32enc().
         """
         self.skip_if_no_c_ext()
-        self.check_db32enc_common(dbase32.db32enc_c)
+        self.check_db32enc_common(_dbase32.db32enc)
 
         # Compare against the Python version db32enc_p
         for size in BIN_SIZES:
             for i in range(1000):
                 data = os.urandom(size)
                 self.assertEqual(
-                    dbase32.db32enc_c(data),
+                    _dbase32.db32enc(data),
                     dbase32.db32enc_p(data)
                 )
 
@@ -432,7 +432,7 @@ class TestFunctions(TestCase):
         Test the C implementation of db32enc().
         """
         self.skip_if_no_c_ext()
-        self.check_db32dec_common(dbase32.db32dec_c)
+        self.check_db32dec_common(_dbase32.db32dec)
 
         # Compare against the dbase32.db32dec_p pure-Python version:
         for size in TXT_SIZES:
@@ -443,7 +443,7 @@ class TestFunctions(TestCase):
                 )
                 assert len(text) == size
                 self.assertEqual(
-                    dbase32.db32dec_c(text),
+                    _dbase32.db32dec(text),
                     dbase32.db32dec_p(text)
                 )
 
@@ -498,7 +498,7 @@ class TestFunctions(TestCase):
         ids = [os.urandom(30) for i in range(20 * 1000)]
         ids.extend(os.urandom(15) for i in range(30 * 1000))
         pairs = tuple(
-            (data, dbase32.db32enc_c(data)) for data in ids
+            (data, _dbase32.db32enc(data)) for data in ids
         )
         sort_by_bin = sorted(pairs, key=lambda t: t[0])
         sort_by_txt = sorted(pairs, key=lambda t: t[1])
@@ -527,7 +527,7 @@ class TestFunctions(TestCase):
             for i in range(50 * 1000):
                 data = os.urandom(size)
                 self.assertEqual(
-                    dbase32.db32dec_c(dbase32.db32enc_c(data)),
+                    _dbase32.db32dec(_dbase32.db32enc(data)),
                     data
                 )
 
@@ -570,7 +570,7 @@ class TestFunctions(TestCase):
 
     def test_isdb32_c(self):
         self.skip_if_no_c_ext()
-        self.check_isdb32_common(dbase32.isdb32_c)
+        self.check_isdb32_common(_dbase32.isdb32)
 
     def check_check_db32_common(self, check_db32):
         """
@@ -677,7 +677,7 @@ class TestFunctions(TestCase):
 
     def test_check_db32_c(self):
         self.skip_if_no_c_ext()
-        self.check_check_db32_common(dbase32.check_db32_c)
+        self.check_check_db32_common(_dbase32.check_db32)
 
     def check_random_id(self, random_id):
         with self.assertRaises(TypeError) as cm:        
@@ -735,4 +735,4 @@ class TestFunctions(TestCase):
 
     def test_random_id_c(self):
         self.skip_if_no_c_ext()
-        self.check_random_id(dbase32.random_id_c)
+        self.check_random_id(_dbase32.random_id)

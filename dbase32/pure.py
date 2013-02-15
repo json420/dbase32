@@ -21,21 +21,14 @@
 #
 
 """
-`dbase32` - base32-encoding with a sorted-order alphabet (for databases).
+Pure-Python implementation of D-Base32 encoding.
 """
 
 from os import urandom
 
 
-__version__ = '0.2.0'
-__all__ = ('db32enc', 'db32dec', 'isdb32', 'check_db32', 'random_id')
-
 MAX_BIN_LEN = 60  # 480 bits
 MAX_TXT_LEN = 96
-
-RANDOM_BITS = 120
-RANDOM_BYTES = 15
-RANDOM_B32LEN = 24
 
 # DB32: Dmedia-Base32: non-standard 3-9, A-Y letters (sorted)
 # [removes 0, 1, 2, Z]
@@ -159,33 +152,33 @@ def decode_x(text, x_reverse):
     return bytes(_decode_x_iter(text, x_reverse))
 
 
-def db32enc_p(data):
+def db32enc(data):
     """
     Encode *data* into a D-Base32 string.
 
     For exmple:
 
-    >>> db32enc_p(b'binary foo')
+    >>> db32enc(b'binary foo')
     'FCNPVRELI7J9FUUI'
 
     """
     return encode_x(data, DB32_FORWARD)
 
 
-def db32dec_p(text):
+def db32dec(text):
     """
     Decode D-Base32 encoded *text*.
 
     For exmple:
 
-    >>> db32dec_p('FCNPVRELI7J9FUUI')
+    >>> db32dec('FCNPVRELI7J9FUUI')
     b'binary foo'
 
     """
     return decode_x(text, DB32_REVERSE)
 
 
-def isdb32_p(text):
+def isdb32(text):
     if not isinstance(text, str):
         raise TypeError('must be str, not bytes')
     if not (8 <= len(text) <= MAX_TXT_LEN):
@@ -195,7 +188,7 @@ def isdb32_p(text):
     return DB32ALPHABET.issuperset(text)
 
 
-def check_db32_p(text):
+def check_db32(text):
     if not isinstance(text, str):
         raise TypeError('must be str, not bytes')
     if not (8 <= len(text) <= MAX_TXT_LEN):
@@ -214,7 +207,7 @@ def check_db32_p(text):
                 raise ValueError('invalid D-Base32 letter: {}'.format(t))
 
 
-def random_id_p(size=RANDOM_BYTES):
+def random_id(size=15):
     """
     Returns a 120-bit DBase32-encoded random ID.
 
@@ -229,13 +222,3 @@ def random_id_p(size=RANDOM_BYTES):
     if size % 5 != 0:
         raise ValueError('size is {}, need size % 5 == 0'.format(size))
     return db32enc(urandom(size))
-
-
-try:
-    from _dbase32 import db32enc, db32dec, isdb32, check_db32, random_id
-except ImportError:
-    db32enc = db32enc_p
-    db32dec = db32dec_p
-    isdb32 = isdb32_p
-    check_db32 = check_db32_p
-    random_id = random_id_p
