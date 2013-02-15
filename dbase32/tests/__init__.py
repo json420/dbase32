@@ -30,8 +30,15 @@ from random import SystemRandom
 import base64
 from collections import Counter, namedtuple
 
-from dbase32 import misc
 import dbase32
+from dbase32 import pure, misc
+
+# True if the C extension is avialable
+try:
+    import _dbase32
+    C_EXT_AVAIL = True
+except ImportError:
+    C_EXT_AVAIL = False
 
 
 random = SystemRandom()
@@ -42,13 +49,6 @@ assert len(possible) == 36
 BIN_SIZES = (5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60)
 TXT_SIZES = (8, 16, 24, 32, 40, 48, 56, 64, 72, 80, 88, 96)
 BAD_LETTERS = '\'"`~!#$%^&*()[]{}|+-_.,\/ 012:;<=>?@Zabcdefghijklmnopqrstuvwxyz'
-
-# True if the C extension is avialable
-try:
-    import _dbase32
-    C_EXT_AVAIL = True
-except ImportError:
-    C_EXT_AVAIL = False
 
 # Used in test_sort_p()
 Tup = namedtuple('Tup', 'data b32 db32')
@@ -92,13 +92,6 @@ def make_bytes(ints):
 
 
 class TestConstants(TestCase):
-    def test_max(self):
-        self.assertIsInstance(dbase32.MAX_BIN_LEN, int)
-        self.assertIsInstance(dbase32.MAX_TXT_LEN, int)
-        self.assertEqual(dbase32.MAX_BIN_LEN % 5, 0)
-        self.assertEqual(dbase32.MAX_TXT_LEN % 8, 0)
-        self.assertEqual(dbase32.MAX_BIN_LEN, dbase32.MAX_TXT_LEN * 5 // 8)
-
     def test_random(self):
         self.assertIsInstance(dbase32.RANDOM_BITS, int)
         self.assertEqual(dbase32.RANDOM_BITS % 40, 0)
@@ -111,116 +104,40 @@ class TestConstants(TestCase):
         self.assertEqual(dbase32.RANDOM_B32LEN, dbase32.RANDOM_BITS // 5)
         self.assertEqual(dbase32.RANDOM_B32LEN % 8, 0)
 
-    def test_start(self):
-        self.assertEqual(
-            dbase32.DB32_START,
-            ord(min(dbase32.DB32_FORWARD))
-        )
-        self.assertEqual(
-            dbase32.DB32_START,
-            ord(dbase32.DB32_FORWARD[0])
-        )
-        self.assertEqual(
-            dbase32.DB32_START,
-            misc.get_start(dbase32.DB32_FORWARD)
-        )
-
-    def test_end(self):
-        self.assertEqual(
-            dbase32.DB32_END,
-            ord(max(dbase32.DB32_FORWARD))
-        )
-        self.assertEqual(
-            dbase32.DB32_END,
-            ord(dbase32.DB32_FORWARD[-1])
-        )
-        self.assertEqual(
-            dbase32.DB32_END,
-            misc.get_end(dbase32.DB32_FORWARD)
-        )
-
-    def test_forward(self):
-        self.assertEqual(
-            ''.join(sorted(set(dbase32.DB32_FORWARD))),
-            dbase32.DB32_FORWARD
-        )
-        self.assertEqual(
-            set(dbase32.DB32_FORWARD),
-            set(possible) - set('012Z')
-        )
-        self.assertIsInstance(dbase32.DB32_FORWARD, str)
-        self.assertEqual(len(dbase32.DB32_FORWARD), 32)
-        self.assertEqual(dbase32.DB32_FORWARD, misc.gen_forward('012Z'))
-
-    def test_reverse(self):
-        self.assertIsInstance(dbase32.DB32_REVERSE, tuple)
-        self.assertEqual(len(dbase32.DB32_REVERSE), 256)
-        self.assertEqual(min(dbase32.DB32_REVERSE), 0)
-        self.assertEqual(max(dbase32.DB32_REVERSE), 255)
-        self.assertEqual(
-            dbase32.DB32_REVERSE,
-            tuple(r.value for r in misc.gen_reverse(dbase32.DB32_FORWARD))
-        )
-
-        for (i, value) in enumerate(dbase32.DB32_REVERSE):
-            if i < 51:
-                self.assertEqual(value, 255)
-            if 51 <= i <= 57:
-                self.assertEqual(value, i - 51)
-            if 58 <= i <= 64:
-                self.assertEqual(value, 255)
-            if 65 <= i <= 89:
-                self.assertEqual(value, i - 58)
-            if i > 89:
-                self.assertEqual(value, 255)
-
-        expected = set(range(32))
-        expected.add(255)
-        self.assertEqual(set(dbase32.DB32_REVERSE), expected)
-
-        counts = Counter(dbase32.DB32_REVERSE)
-        self.assertEqual(counts[255], 256 - 32)
-        for i in range(32):
-            self.assertEqual(counts[i], 1)
-
-    def test_alphabet(self):
-        self.assertIsInstance(dbase32.DB32ALPHABET, frozenset)
-        self.assertEqual(dbase32.DB32ALPHABET, frozenset(dbase32.DB32_FORWARD))
-
     def test_db32enc_alias(self):
         if C_EXT_AVAIL:
             self.assertIs(dbase32.db32enc, _dbase32.db32enc)
-            self.assertIsNot(dbase32.db32enc, dbase32.db32enc_p)
+            self.assertIsNot(dbase32.db32enc, pure.db32enc)
         else:
-            self.assertIs(dbase32.db32enc, dbase32.db32enc_p)
+            self.assertIs(dbase32.db32enc, pure.db32enc)
 
     def test_db32dec_alias(self):
         if C_EXT_AVAIL:
             self.assertIs(dbase32.db32dec, _dbase32.db32dec)
-            self.assertIsNot(dbase32.db32dec, dbase32.db32dec_p)
+            self.assertIsNot(dbase32.db32dec, pure.db32dec)
         else:
-            self.assertIs(dbase32.db32dec, dbase32.db32dec_p)
+            self.assertIs(dbase32.db32dec, pure.db32dec)
 
     def test_isdb32_alias(self):
         if C_EXT_AVAIL:
             self.assertIs(dbase32.isdb32, _dbase32.isdb32)
-            self.assertIsNot(dbase32.isdb32, dbase32.isdb32_p)
+            self.assertIsNot(dbase32.isdb32, pure.isdb32)
         else:
-            self.assertIs(dbase32.isdb32, dbase32.isdb32_p)
+            self.assertIs(dbase32.isdb32, pure.isdb32)
 
     def test_check_db32_alias(self):
         if C_EXT_AVAIL:
             self.assertIs(dbase32.check_db32, _dbase32.check_db32)
-            self.assertIsNot(dbase32.check_db32, dbase32.check_db32_p)
+            self.assertIsNot(dbase32.check_db32, pure.check_db32)
         else:
-            self.assertIs(dbase32.check_db32, dbase32.check_db32_p)
+            self.assertIs(dbase32.check_db32, pure.check_db32)
 
     def test_random_id_alias(self):
         if C_EXT_AVAIL:
             self.assertIs(dbase32.random_id, _dbase32.random_id)
-            self.assertIsNot(dbase32.random_id, dbase32.random_id_p)
+            self.assertIsNot(dbase32.random_id, pure.random_id)
         else:
-            self.assertIs(dbase32.random_id, dbase32.random_id_p)
+            self.assertIs(dbase32.random_id, pure.random_id)
 
 
 class TestFunctions(TestCase):
@@ -236,7 +153,7 @@ class TestFunctions(TestCase):
         self.assertEqual(make_string(4, 8, 'A', 'B', 'C'), 'AAAABCCC')
         self.assertEqual(make_string(7, 8, 'A', 'B', 'C'), 'AAAAAAAB')
 
-    def check_db32enc_common(self, db32enc):
+    def check_db32enc(self, db32enc):
         """
         Encoder tests both the Python and the C implementations must pass.
         """ 
@@ -303,25 +220,25 @@ class TestFunctions(TestCase):
         """
         Test the pure-Python implementation of db32enc().
         """
-        self.check_db32enc_common(dbase32.db32enc_p)
+        self.check_db32enc(pure.db32enc)
 
     def test_db32enc_c(self):
         """
         Test the C implementation of db32enc().
         """
         self.skip_if_no_c_ext()
-        self.check_db32enc_common(_dbase32.db32enc)
+        self.check_db32enc(_dbase32.db32enc)
 
-        # Compare against the Python version db32enc_p
+        # Compare against the Python version of db32enc
         for size in BIN_SIZES:
             for i in range(1000):
                 data = os.urandom(size)
                 self.assertEqual(
                     _dbase32.db32enc(data),
-                    dbase32.db32enc_p(data)
+                    pure.db32enc(data)
                 )
 
-    def check_db32dec_common(self, db32dec):
+    def check_db32dec(self, db32dec):
         """
         Decoder tests both the Python and the C implementations must pass.
         """    
@@ -425,26 +342,26 @@ class TestFunctions(TestCase):
         """
         Test the pure-Python implementation of db32enc().
         """
-        self.check_db32dec_common(dbase32.db32dec_p)
+        self.check_db32dec(pure.db32dec)
 
     def test_db32dec_c(self):
         """
         Test the C implementation of db32enc().
         """
         self.skip_if_no_c_ext()
-        self.check_db32dec_common(_dbase32.db32dec)
+        self.check_db32dec(_dbase32.db32dec)
 
-        # Compare against the dbase32.db32dec_p pure-Python version:
+        # Compare against the pure.db32dec Python version:
         for size in TXT_SIZES:
             for i in range(100):
                 text = ''.join(
-                    random.choice(dbase32.DB32_FORWARD)
+                    random.choice(pure.DB32_FORWARD)
                     for n in range(size)
                 )
                 assert len(text) == size
                 self.assertEqual(
                     _dbase32.db32dec(text),
-                    dbase32.db32dec_p(text)
+                    pure.db32dec(text)
                 )
 
     def test_sort_p(self):
@@ -458,7 +375,7 @@ class TestFunctions(TestCase):
             Tup(
                 data,
                 base64.b32encode(data).decode('utf-8'),
-                dbase32.db32enc_p(data)
+                pure.db32enc(data)
             )
             for data in ids
         )
@@ -475,7 +392,7 @@ class TestFunctions(TestCase):
             self.assertNotEqual(t.b32, t.db32)
 
             self.assertEqual(t.b32, base64.b32encode(t.data).decode('utf-8'))
-            self.assertEqual(t.db32, dbase32.db32enc_p(t.data))
+            self.assertEqual(t.db32, pure.db32enc(t.data))
 
         # Now sort and compare:
         sort_by_data = sorted(orig, key=lambda t: t.data)
@@ -512,7 +429,7 @@ class TestFunctions(TestCase):
             for i in range(1000):
                 data = os.urandom(size)
                 self.assertEqual(
-                    dbase32.db32dec_p(dbase32.db32enc_p(data)),
+                    pure.db32dec(pure.db32enc(data)),
                     data
                 )
 
@@ -531,13 +448,13 @@ class TestFunctions(TestCase):
                     data
                 )
 
-    def check_isdb32_common(self, isdb32):
+    def check_isdb32(self, isdb32):
         for size in TXT_SIZES:
             self.assertIs(isdb32('A' * (size - 1)), False)
             self.assertIs(isdb32('A' * (size + 1)), False)
             self.assertIs(isdb32('A' * size), True)
             good = ''.join(
-                random.choice(dbase32.DB32_FORWARD)
+                random.choice(pure.DB32_FORWARD)
                 for n in range(size)
             )
             self.assertIs(isdb32(good), True)
@@ -566,13 +483,13 @@ class TestFunctions(TestCase):
         self.assertEqual(str(cm.exception), 'must be str, not bytes')
 
     def test_isdb32_p(self):
-        self.check_isdb32_common(dbase32.isdb32_p)
+        self.check_isdb32(pure.isdb32)
 
     def test_isdb32_c(self):
         self.skip_if_no_c_ext()
-        self.check_isdb32_common(_dbase32.isdb32)
+        self.check_isdb32(_dbase32.isdb32)
 
-    def check_check_db32_common(self, check_db32):
+    def check_check_db32(self, check_db32):
         """
         Tests both Python and C versions of `check_db32()` must pass.
         """
@@ -673,11 +590,11 @@ class TestFunctions(TestCase):
             self.assertEqual(str(cm.exception), 'invalid D-Base32 letter: ' + L)
 
     def test_check_db32_p(self):
-        self.check_check_db32_common(dbase32.check_db32_p)
+        self.check_check_db32(pure.check_db32)
 
     def test_check_db32_c(self):
         self.skip_if_no_c_ext()
-        self.check_check_db32_common(_dbase32.check_db32)
+        self.check_check_db32(_dbase32.check_db32)
 
     def check_random_id(self, random_id):
         with self.assertRaises(TypeError) as cm:        
@@ -731,7 +648,7 @@ class TestFunctions(TestCase):
         self.assertEqual(len(accum), count)
 
     def test_random_id_p(self):
-        self.check_random_id(dbase32.random_id_p)
+        self.check_random_id(pure.random_id)
 
     def test_random_id_c(self):
         self.skip_if_no_c_ext()

@@ -24,7 +24,7 @@
 Validate encode_x(), decode_x() against known good RFC-3548 encode/decode.
 """
 
-from . import encode_x, decode_x
+from .pure import encode_x, decode_x
 
 
 __all__ = ('b32enc', 'b32dec')

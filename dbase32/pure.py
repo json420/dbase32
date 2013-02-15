@@ -30,6 +30,7 @@ from os import urandom
 MAX_BIN_LEN = 60  # 480 bits
 MAX_TXT_LEN = 96
 
+
 # DB32: Dmedia-Base32: non-standard 3-9, A-Y letters (sorted)
 # [removes 0, 1, 2, Z]
 DB32_START = 51

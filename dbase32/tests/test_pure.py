@@ -85,6 +85,7 @@ class TestConstants(TestCase):
         self.assertIsInstance(pure.DB32_FORWARD, str)
         self.assertEqual(len(pure.DB32_FORWARD), 32)
         self.assertEqual(pure.DB32_FORWARD, misc.gen_forward('012Z'))
+        misc.check_forward(pure.DB32_FORWARD)
 
     def test_reverse(self):
         self.assertIsInstance(pure.DB32_REVERSE, tuple)
