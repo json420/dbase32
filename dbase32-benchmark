@@ -45,26 +45,23 @@ args = parser.parse_args()
 
 
 setup = """
-from os import urandom
-from base64 import b64encode, b64decode
+import os
+import base64
+import _dbase32
+from dbase32 import fallback
 
-from dbase32 import db32enc, db32dec
-from dbase32 import isdb32_p, isdb32_c
-from dbase32 import check_db32_p, check_db32_c
-from dbase32 import random_id_p, random_id_c
-
-data = urandom({})
-text_b64 = b64encode(data)
-text_db32 = db32enc(data)
+data = os.urandom({})
+text_b64 = base64.b64encode(data)
+text_db32 = _dbase32.db32enc(data)
 not_db32 = text_db32[:-1] + 'Z'
 
-assert b64decode(text_b64) == data
-assert db32dec(text_db32) == data
+assert base64.b64decode(text_b64) == data
+assert _dbase32.db32dec(text_db32) == data
 
-assert isdb32_p(text_db32) is True
-assert isdb32_c(text_db32) is True
-assert isdb32_p(not_db32) is False
-assert isdb32_c(not_db32) is False
+assert fallback.isdb32(text_db32) is True
+assert _dbase32.isdb32(text_db32) is True
+assert fallback.isdb32(not_db32) is False
+assert _dbase32.isdb32(not_db32) is False
 """.format(args.bytes)
 
 
@@ -76,7 +73,6 @@ def run(statement, slow=False):
     print('{:>14,}: {}'.format(rate, statement))
 
 print('')
-
 print('dbase32: {} ({} {})'.format(
     dbase32.__version__, platform.dist()[0], platform.dist()[1])
 )
@@ -84,25 +80,26 @@ print('Python: {}, {}, {}'.format(
     platform.python_version(), platform.machine(), platform.system())
 )
 print('data size: {} bytes'.format(args.bytes))
+print('')
 
 print('Encodes/second:')
-run('b64encode(data)')
-run('db32enc(data)')
+run('base64.b64encode(data)')
+run('_dbase32.db32enc(data)')
 
 print('Decodes/second:')
-run('b64decode(text_b64)')
-run('db32dec(text_db32)')
+run('base64.b64decode(text_b64)')
+run('_dbase32.db32dec(text_db32)')
 
 print('Validations/second:')
-run('isdb32_p(text_db32)', slow=True)
-run('isdb32_c(text_db32)')
-run('check_db32_p(text_db32)', slow=True)
-run('check_db32_c(text_db32)')
+run('fallback.isdb32(text_db32)', slow=True)
+run('_dbase32.isdb32(text_db32)')
+run('fallback.check_db32(text_db32)', slow=True)
+run('_dbase32.check_db32(text_db32)')
 
 print('Random IDs/second:')
-run('urandom(15)', slow=True)
-run('random_id_p(15)', slow=True)
-run('random_id_c(15)', slow=True)
+run('os.urandom(15)', slow=True)
+run('_dbase32.random_id(15)', slow=True)
+run('fallback.random_id(15)', slow=True)
 
 print('')
 
