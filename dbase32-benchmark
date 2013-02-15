@@ -103,7 +103,7 @@ run('fallback.check_db32(text_db32)', 250)
 print('Random IDs/second:')
 run('os.urandom(15)', 300)
 run('_dbase32.random_id(15)', 300)
-run('fallback.random_id(15)', 50)
+run('fallback.random_id(15)', 150)
 
 print('')
 

@@ -103,7 +103,9 @@ class Test(Command):
             raise SystemExit('Tests failed in virtual environment!')
 
 
-_dbase32 = Extension('_dbase32', sources=['_dbase32.c'])
+_dbase32 = Extension('_dbase32', sources=['_dbase32.c'],
+    #extra_compile_args=['-O3']
+)
 
 setup(
     name='dbase32',
