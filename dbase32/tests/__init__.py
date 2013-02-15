@@ -89,6 +89,10 @@ def make_bytes(ints):
 
 
 class TestConstants(TestCase):
+    def test_db32alphabet(self):
+        self.assertIsInstance(dbase32.DB32ALPHABET, str)
+        self.assertEqual(dbase32.DB32ALPHABET, fallback.DB32_FORWARD)
+
     def test_random(self):
         self.assertIsInstance(dbase32.RANDOM_BITS, int)
         self.assertEqual(dbase32.RANDOM_BITS % 40, 0)

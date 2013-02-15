@@ -30,9 +30,6 @@ from os import urandom
 MAX_BIN_LEN = 60  # 480 bits
 MAX_TXT_LEN = 96
 
-
-# DB32: Dmedia-Base32: non-standard 3-9, A-Y letters (sorted)
-# [removes 0, 1, 2, Z]
 DB32_START = 51
 DB32_END = 89
 DB32_FORWARD = '3456789ABCDEFGHIJKLMNOPQRSTUVWXY'
@@ -90,8 +87,7 @@ DB32_REVERSE = (
     255,255,255,255,255,255,255,255,255,255,255,255,255,255,
 )
 
-# Equivalent of filestore.B32ALPHABET:
-DB32ALPHABET = frozenset(DB32_FORWARD)
+DB32_SET = frozenset(DB32_FORWARD)
 
 
 def _encode_x_iter(data, x_forward):
@@ -186,7 +182,7 @@ def isdb32(text):
         return False
     if len(text) % 8 != 0:
         return False
-    return DB32ALPHABET.issuperset(text)
+    return DB32_SET.issuperset(text)
 
 
 def check_db32(text):
@@ -202,9 +198,9 @@ def check_db32(text):
         raise ValueError(
             'len(text) is {}, need len(text) % 8 == 0'.format(len(text))
         )
-    if not DB32ALPHABET.issuperset(text):
+    if not DB32_SET.issuperset(text):
         for t in text:
-            if t not in DB32ALPHABET:    
+            if t not in DB32_SET:    
                 raise ValueError('invalid D-Base32 letter: {}'.format(t))
 
 
