@@ -27,9 +27,6 @@ Authors:
 #define MAX_BIN_LEN 60
 #define MAX_TXT_LEN 96
 
-
-// Dmedia-Base32: non-standard 3-9, A-Y letters (sorted)
-// static const uint8_t DB32_START = 51;
 static const uint8_t DB32_END = 89;
 static const uint8_t DB32_FORWARD[32] = "3456789ABCDEFGHIJKLMNOPQRSTUVWXY";
 static const uint8_t DB32_REVERSE[256] = {
@@ -92,8 +89,7 @@ static const uint8_t DB32_REVERSE[256] = {
 Return value is the status:
     status == 0 means success
     status == 1 means invalid bin_len
-    status == 2 means invalid txt_len
-    status == 3 means internal error  */
+    status == 2 means invalid txt_len */
 static uint8_t
 dbase32_encode(const size_t bin_len, const uint8_t *bin_buf,
                const size_t txt_len,       uint8_t *txt_buf)
@@ -178,7 +174,7 @@ dbase32_decode(const size_t txt_len, const uint8_t *txt_buf,
         if (r & 224) {
             for (i=0; i < 8; i++) {
                 r = DB32_REVERSE[txt_buf[i]];
-                if (r > 31) {
+                if (r & 224) {
                     return txt_buf[i];
                 }
             }
@@ -317,7 +313,7 @@ dbase32_isdb32(PyObject *self, PyObject *args)
         Py_RETURN_FALSE;
     }
     for (i=0; i < txt_len; i++) {
-        if (DB32_REVERSE[txt_buf[i]] > 31) {
+        if (DB32_REVERSE[txt_buf[i]] & 224) {
             Py_RETURN_FALSE;
         }
     }
@@ -352,7 +348,7 @@ dbase32_check_db32(PyObject *self, PyObject *args)
 
     // check that text only contains valid D-Base32 letters:
     for (i=0; i < txt_len; i++) {
-        if (DB32_REVERSE[txt_buf[i]] > 31) {
+        if (DB32_REVERSE[txt_buf[i]] & 224) {
             PyErr_Format(PyExc_ValueError,
                 "invalid D-Base32 letter: %c", txt_buf[i]
             );
@@ -367,13 +363,14 @@ dbase32_check_db32(PyObject *self, PyObject *args)
 static PyObject *
 dbase32_random_id(PyObject *self, PyObject *args, PyObject *kw)
 {
-    PyObject *pyret;
+    static char *keys[] = {"size", NULL};
     size_t size = 15;
+
     uint8_t *bin_buf, *txt_buf;
     size_t txt_len;
     int status;
 
-    static char *keys[] = {"size", NULL};
+    PyObject *pyret;
 
     if (!PyArg_ParseTupleAndKeywords(args, kw, "|n:random_id", keys, &size)) {
         return NULL;

@@ -102,7 +102,7 @@ A few handy constants:
 
     Max length of binary data that :func:`db32enc()` accepts for encoding.
 
-    >>> MAX_BIN_LEN = 60  # 480-bits
+    >>> MAX_BIN_LEN = 60  # 480 bits
 
 
 .. data:: MAX_TXT_LEN
