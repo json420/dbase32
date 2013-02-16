@@ -120,7 +120,7 @@ following condition::
 
 If this condition isn't met, :func:`db32enc()` will raise a ``ValueError``.
 
-In addition to only containing characters in :data:`DB32ALPHABET`, well-formed
+In addition to only containing letters in :data:`DB32ALPHABET`, well-formed
 *text* to be decoded must be an ``str`` instance that meets the following
 condition::
 
