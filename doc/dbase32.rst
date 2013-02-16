@@ -4,13 +4,14 @@
 .. py:module:: dbase32
     :synopsis: base32-encoding with a sorted-order alphabet (for databases)
 
-The `D-Base32`_ encoding is a base-32 variant designed for document-oriented
-databases, specifically for encoding document IDs.
 
-D-Base32 uses an alphabet whose symbols are in ASCII/UTF-8 sorted order. This
-means that unlike standard `RFC-3548 Base32`_ encoding, the sort-order of the
-encoded data will match the sort-order of the binary data.  For details, please
-see the see the :doc:`design`.
+The :mod:`dbase32` API consists of just five functions:
+
+    * For encoding and decoding, there is :func:`db32enc()` and :func:`db32dec()`
+
+    * For validation, there is :func:`isdb32()` and :func:`check_db32()`
+
+    * Lastly, :func:`random_id()` generates D-Base32 encoded random IDs
 
 
 
@@ -65,7 +66,7 @@ Traceback (most recent call last):
   ...
 ValueError: len(text) is 7, need 8 <= len(text) <= 96
 
-When you don't actually want the decoded ID, it's much faster to validate with
+When you don't actually want the decoded ID, it's faster to validate with
 :func:`isdb32()` or :func:`check_db32()` than to validate with :func:`db32dec()`
 and throw away the needlessly decoded value.
 
@@ -147,6 +148,8 @@ Functions
 
         5 <= len(data) <= 60 and len(data) % 5 == 0
 
+    If the above condition is not met, a ``ValueError`` is raised.
+
 
 .. function:: db32dec(text)
 
@@ -157,12 +160,12 @@ Functions
     >>> db32dec('BCVQBSEM')
     b'Bytes'
 
-    *text* must be an ``str`` instance meets the following condition::
+    *text* must be an ``str`` instance that meets the following condition::
 
         8 <= len(text) <= 96 and len(text) % 8 == 0
 
-    A ``ValueError`` is raised if the above condition is not met, or if *text*
-    contains any letters not in the D-Base32 alphabet.
+    If the above condition is not met, or if *text* contains any letters not
+    in :data:`DB32ALPHABET`, a ``ValueError`` is raised.
 
 
 .. function:: isdb32(text)
@@ -174,10 +177,12 @@ Functions
     >>> isdb32('27AZ27AZ')
     False
 
-    This function will only return ``True`` if *text* contains only valid
-    D-Base32 letters, and if *text* meets following condition::
+    This function will only return ``True`` if *text* contains only letters
+    in :data:`DB32ALPHABET`, and if *text* meets following condition::
 
         8 <= len(text) <= 96 and len(text) % 8 == 0
+
+    Otherwise, ``False`` is returned.
 
 
 .. function:: check_db32(text)
@@ -185,7 +190,7 @@ Functions
     Raise a ``ValueError`` if *text* is not a valid D-Base32 encoded ID.
 
     This function will raise a ``ValueError`` if *text* contains any letters
-    that aren't part of the D-Base32 alphabet.  For example:
+    that are not in :data:`DB32ALPHABET`.  For example:
 
     >>> check_db32('39AYA9AY')
     >>> check_db32('39AY27AZ')
@@ -198,17 +203,18 @@ Functions
 
         8 <= len(text) <= 96 and len(text) % 8 == 0
 
+    If *text* is a valid D-Base32 ID, this function returns ``None``.
+
 
 .. function:: random_id(numbytes=15)
 
-    Return a random ID built from *numbytes* worth of entropy.
+    Return a D-Base32 encoded random ID.
 
-    The ID is returned as an ``str`` containing the D-Base32 encoded version:
+    By default, a 120-bit (15-byte) ID is returned, which will be 24
+    characters in length when D-Base32 encoded:
 
     >>> random_id()
     'XM4OINLIPO6VVF549TWYNK89'
-    >>> random_id(5)
-    'V37E4B38'
 
     If provided, *numbytes* must be an ``int`` such that::
 
