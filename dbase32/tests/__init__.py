@@ -615,13 +615,13 @@ class TestFunctions(TestCase):
             random_id(4)
         self.assertEqual(
             str(cm.exception),
-            'size is 4, need 5 <= size <= 60'
+            'numbytes is 4, need 5 <= numbytes <= 60'
         )
         with self.assertRaises(ValueError) as cm:
             random_id(29)
         self.assertEqual(
             str(cm.exception),
-            'size is 29, need size % 5 == 0'
+            'numbytes is 29, need numbytes % 5 == 0'
         )
 
         _id = random_id()
@@ -640,7 +640,7 @@ class TestFunctions(TestCase):
         self.assertEqual(len(data), dbase32.RANDOM_BYTES)
         self.assertEqual(dbase32.db32enc(data), _id)
 
-        _id = random_id(size=dbase32.RANDOM_BYTES)
+        _id = random_id(numbytes=dbase32.RANDOM_BYTES)
         self.assertIsInstance(_id, str)
         self.assertEqual(len(_id), dbase32.RANDOM_B32LEN)
         data = dbase32.db32dec(_id)
@@ -658,8 +658,8 @@ class TestFunctions(TestCase):
             self.assertEqual(dbase32.db32enc(data), _id)
 
         # Sanity check on their randomness:
-        count = 5000
-        accum = set(random_id(15) for i in range(count))
+        count = 25000
+        accum = set(random_id() for i in range(count))
         self.assertEqual(len(accum), count)
 
     def test_random_id_p(self):

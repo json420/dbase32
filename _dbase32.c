@@ -410,44 +410,44 @@ dbase32_check_db32(PyObject *self, PyObject *args)
 static PyObject *
 dbase32_random_id(PyObject *self, PyObject *args, PyObject *kw)
 {
-    static char *keys[] = {"size", NULL};
-    size_t size = 15;
+    static char *keys[] = {"numbytes", NULL};
+    size_t numbytes = 15;
     PyObject *pyret;
     uint8_t *bin_buf, *txt_buf;
     size_t txt_len;
     int status;
 
-    if (!PyArg_ParseTupleAndKeywords(args, kw, "|n:random_id", keys, &size)) {
+    if (!PyArg_ParseTupleAndKeywords(args, kw, "|n:random_id", keys, &numbytes)) {
         return NULL;
     }
-    if (size < 5 || size > MAX_BIN_LEN) {
+    if (numbytes < 5 || numbytes > MAX_BIN_LEN) {
         PyErr_Format(PyExc_ValueError,
-            "size is %u, need 5 <= size <= %u", size, MAX_BIN_LEN
+            "numbytes is %u, need 5 <= numbytes <= %u", numbytes, MAX_BIN_LEN
         );
         return NULL;
     }
-    if (size % 5 != 0) {
+    if (numbytes % 5 != 0) {
         PyErr_Format(PyExc_ValueError,
-            "size is %u, need size % 5 == 0", size
+            "numbytes is %u, need numbytes % 5 == 0", numbytes
         );
         return NULL;
     }
 
     // Allocate temp buffer for binary ID:
-    bin_buf = (uint8_t *)malloc(size);
+    bin_buf = (uint8_t *)malloc(numbytes);
     if (bin_buf == NULL) {
         return PyErr_NoMemory();
     }
 
     // Get random bytes from /dev/urandom:
-    status = _PyOS_URandom(bin_buf, size);
+    status = _PyOS_URandom(bin_buf, numbytes);
     if (status == -1) {
         free(bin_buf);
         return NULL;
     }
 
     // Allocate destination buffer:
-    txt_len = size * 8 / 5;
+    txt_len = numbytes * 8 / 5;
     pyret = PyUnicode_New(txt_len, DB32_END);
     if (pyret == NULL ) {
         free(bin_buf);
@@ -456,7 +456,7 @@ dbase32_random_id(PyObject *self, PyObject *args, PyObject *kw)
     txt_buf = (uint8_t *)PyUnicode_1BYTE_DATA(pyret);
 
     // dbase32_encode() returns 0 on success:
-    status = dbase32_encode(size, bin_buf, txt_len, txt_buf);
+    status = dbase32_encode(numbytes, bin_buf, txt_len, txt_buf);
     free(bin_buf);
     if (status != 0) {
         PyErr_SetString(PyExc_RuntimeError, "something went very wrong");

@@ -204,18 +204,20 @@ def check_db32(text):
                 raise ValueError('invalid D-Base32 letter: {}'.format(t))
 
 
-def random_id(size=15):
+def random_id(numbytes=15):
     """
     Returns a 120-bit DBase32-encoded random ID.
 
     The ID will be 24-characters long, URL and filesystem safe.
     """
-    if not isinstance(size, int):
+    if not isinstance(numbytes, int):
         raise TypeError('integer argument expected, got float')
-    if not (5 <= size <= MAX_BIN_LEN):
-        raise ValueError(
-            'size is {}, need 5 <= size <= {}'.format(size, MAX_BIN_LEN)
+    if not (5 <= numbytes <= MAX_BIN_LEN):
+        raise ValueError('numbytes is {}, need 5 <= numbytes <= {}'.format(
+                numbytes, MAX_BIN_LEN)
         )
-    if size % 5 != 0:
-        raise ValueError('size is {}, need size % 5 == 0'.format(size))
-    return db32enc(urandom(size))
+    if numbytes % 5 != 0:
+        raise ValueError(
+            'numbytes is {}, need numbytes % 5 == 0'.format(numbytes)
+        )
+    return db32enc(urandom(numbytes))
