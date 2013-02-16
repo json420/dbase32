@@ -90,7 +90,7 @@ ID, which will be 48 characters in length when D-Base32 encoded:
 
 >>> _id = random_id(15)
 
-Is the equivalent of this:
+Is equivalent to this:
 
 >>> _id = db32enc(os.urandom(15))
 
@@ -98,9 +98,10 @@ Although note that the C implementation of :func:`random_id()` is faster than
 the above because it does everything internally with no back-and-forth between
 Python and C.
 
-If for any reason you want to start with the binary ID, simply use
+If for any reason you want to start with a binary ID, simply use
 ``os.urandom()`` directly, and then encode it with :func:`db32enc()` when
 needed.
+
 
 
 Well-formed IDs
