@@ -69,9 +69,9 @@ When you don't actually want the decoded ID, it's much faster to validate with
 :func:`isdb32()` or :func:`check_db32()` than to validate with :func:`db32dec()`
 and throw away the needlessly decoded value.
 
-Lastly, use :func:`random_id()` to generate a D-Base32 encoded ID with entropy
-from ``/dev/urandom``.  By default it will return a 120-bit (15-byte) ID, which
-will be 24 characters in length when D-Base32 encoded:
+Lastly, use :func:`random_id()` to generate a D-Base32 encoded random ID.  By
+default it will return a 120-bit (15-byte) ID, which will be 24 characters in
+length when D-Base32 encoded:
 
 >>> from dbase32 import random_id
 >>> random_id()
@@ -85,7 +85,7 @@ ID, which will be 48 characters in length when D-Base32 encoded:
 >>> random_id(30)
 'AU8HC68B9IC6AY6B3NHWOGCI9VK4MTOUSFLWRD7TLQBC56MN'
 
-This:
+:func:`random_id()` gets its random data from ``os.random()``.  This:
 
 >>> _id = random_id(15)
 
@@ -210,7 +210,11 @@ Functions
     >>> random_id(5)
     'V37E4B38'
 
-    The random data is from ``/dev/urandom``.
+    If provided, *numbytes* must be an ``int`` such that::
+
+        5 <= numbytes <= 60 and numbytes % 5 == 0
+
+    The random data is from ``os.urandom()``.
 
 
 
