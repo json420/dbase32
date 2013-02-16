@@ -33,7 +33,7 @@ PPA will supersede the versions in the stable PPA.
 Also see :doc:`bugs`.
 
 
-.. _`Novacut Stable Releases PPA`: https://launchpad.net/~novacut/+archive/stable
-.. _`Novacut Daily Builds PPA`: https://launchpad.net/~novacut/+archive/daily
+.. _`Novacut Stable Releases PPA`: https://launchpad.net/~novacut/+archive/stable?field.series_filter=raring
+.. _`Novacut Daily Builds PPA`: https://launchpad.net/~novacut/+archive/daily?field.series_filter=raring
 .. _`Ubuntu`: http://www.ubuntu.com/
 
