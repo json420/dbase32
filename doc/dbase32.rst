@@ -85,7 +85,7 @@ ID, which will be 48 characters in length when D-Base32 encoded:
 >>> random_id(30)
 'AU8HC68B9IC6AY6B3NHWOGCI9VK4MTOUSFLWRD7TLQBC56MN'
 
-:func:`random_id()` gets its random data from ``os.random()``.  This:
+:func:`random_id()` gets its random data from ``os.urandom()``.  This:
 
 >>> _id = random_id(15)
 
