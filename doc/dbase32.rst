@@ -1,5 +1,5 @@
-:mod:`dbase32` Reference
-========================
+:mod:`dbase32` API
+==================
 
 .. py:module:: dbase32
     :synopsis: base32-encoding with a sorted-order alphabet (for databases)
