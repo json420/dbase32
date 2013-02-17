@@ -79,7 +79,7 @@ length when D-Base32 encoded:
 'UGT6U75VTJL8IRBBPRFONKOQ'
 
 The *numbytes* keyword argument defaults to ``15``, but you can override this
-to get an ID with a different length.  Typically you would only use this for
+to get an ID with a different length.  Typically you would only do this for
 unit testing, for example to create a well-formed 240-bit (30-byte) Dmedia file
 ID, which will be 48 characters in length when D-Base32 encoded:
 
@@ -232,6 +232,8 @@ A few handy constants:
 
 
 .. data:: DB32ALPHABET
+
+    An ``str`` with the D-Base32 alphabet.
 
     >>> DB32ALPHABET = '3456789ABCDEFGHIJKLMNOPQRSTUVWXY'
 
