@@ -460,34 +460,41 @@ class TestFunctions(TestCase):
             self.assertIs(isdb32('A' * (size - 1)), False)
             self.assertIs(isdb32('A' * (size + 1)), False)
             self.assertIs(isdb32('A' * size), True)
+            self.assertIs(isdb32('Z' * size), False)
+
+            self.assertIs(isdb32(b'A' * (size - 1)), False)
+            self.assertIs(isdb32(b'A' * (size + 1)), False)
+            self.assertIs(isdb32(b'A' * size), True)
+            self.assertIs(isdb32(b'Z' * size), False)
+
             good = ''.join(
                 random.choice(fallback.DB32_FORWARD)
                 for n in range(size)
             )
             self.assertIs(isdb32(good), True)
+            self.assertIs(isdb32(good.encode('utf-8')), True)
+
             for L in BAD_LETTERS:
                 bad = good[:-1] + L
-                self.assertEqual(len(bad), size)
-                self.assertIs(isdb32(bad), False)
+                for value in [bad, bad.encode('utf-8')]:
+                    self.assertEqual(len(value), size)
+                    self.assertIs(isdb32(value), False)
+
             for i in range(size):
                 bad = make_string(i, size, 'A', '/')
-                self.assertEqual(len(bad), size)
-                self.assertIs(isdb32(bad), False)
+                for value in [bad, bad.encode('utf-8')]:
+                    self.assertEqual(len(value), size)
+                    self.assertIs(isdb32(value), False)
                 g = make_string(i, size, 'A', 'B')
                 self.assertIs(isdb32(g), True)
+                self.assertIs(isdb32(g.encode('utf-8')), True)
+
             for i in range(size):
                 for L in BAD_LETTERS:
                     bad = make_string(i, size, 'A', L)
-                    self.assertEqual(len(bad), size)
-                    self.assertIs(isdb32(bad), False)
-
-        # Test with wrong type:
-        good = '3' * 8
-        self.assertIs(isdb32(good), True)
-        bad = good.encode('utf-8')
-        with self.assertRaises(TypeError) as cm:
-            isdb32(bad)
-        self.assertEqual(str(cm.exception), 'must be str, not bytes')
+                    for value in [bad, bad.encode('utf-8')]:
+                        self.assertEqual(len(value), size)
+                        self.assertIs(isdb32(value), False)
 
     def test_isdb32_p(self):
         self.check_isdb32(fallback.isdb32)
@@ -685,3 +692,6 @@ class TestFunctions(TestCase):
         self.assertEqual(func(b'A' * 95), 'mod')
         self.assertEqual(func(b'A' * 96), 96)
         self.assertEqual(func(b'A' * 97), 'more')
+
+        tm = '™'
+        self.assertEqual(func(tm * 8), 24)

@@ -303,13 +303,13 @@ static PyObject *
 dbase32_isdb32(PyObject *self, PyObject *args)
 {
     const uint8_t *txt_buf;
-    size_t txt_len, block, count;
+    size_t txt_len = 0;  // FIXME: Is something wrong with the s# format?
+    size_t block, count;
     uint8_t r = 0;
 
-    if (!PyArg_ParseTuple(args, "s:isdb32", &txt_buf)) {
+    if (!PyArg_ParseTuple(args, "s#:isdb32", &txt_buf, &txt_len)) {
         return NULL;
     }
-    txt_len = strlen(txt_buf);
     if (txt_len < 8 || txt_len > MAX_TXT_LEN || txt_len % 8 != 0) {
         Py_RETURN_FALSE;
     }

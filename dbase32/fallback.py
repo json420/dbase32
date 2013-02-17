@@ -176,8 +176,12 @@ def db32dec(text):
 
 
 def isdb32(text):
-    if not isinstance(text, str):
-        raise TypeError('must be str, not bytes')
+    if isinstance(text, bytes):
+        text = text.decode('utf-8')
+    elif not isinstance(text, str):
+        raise TypeError(
+            'text: must be str or bytes; got {!r}'.format(type(text))
+        )
     if not (8 <= len(text) <= MAX_TXT_LEN):
         return False
     if len(text) % 8 != 0:
