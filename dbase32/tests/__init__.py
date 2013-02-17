@@ -245,19 +245,19 @@ class TestFunctions(TestCase):
                     fallback.db32enc(data)
                 )
 
-    def check_db32dec(self, db32dec):
+    def check_value_error(self, func):
         """
-        Decoder tests both the Python and the C implementations must pass.
-        """    
+        Common value error tests for `db32dec()` and `check_db32()`.
+        """  
         # Test when len(text) is too small:
         with self.assertRaises(ValueError) as cm:
-            db32dec('')
+            func('')
         self.assertEqual(
             str(cm.exception),
             'len(text) is 0, need 8 <= len(text) <= 96'
         )
         with self.assertRaises(ValueError) as cm:
-            db32dec('-seven-')
+            func('-seven-')
         self.assertEqual(
             str(cm.exception),
             'len(text) is 7, need 8 <= len(text) <= 96'
@@ -265,7 +265,7 @@ class TestFunctions(TestCase):
 
         # Test when len(text) is too big:
         with self.assertRaises(ValueError) as cm:
-            db32dec('A' * 97)
+            func('A' * 97)
         self.assertEqual(
             str(cm.exception),
             'len(text) is 97, need 8 <= len(text) <= 96'
@@ -273,7 +273,7 @@ class TestFunctions(TestCase):
 
         # Test when len(text) % 8 != 0:
         with self.assertRaises(ValueError) as cm:
-            db32dec('A' * 65)
+            func('A' * 65)
         self.assertEqual(
             str(cm.exception),
             'len(text) is 65, need len(text) % 8 == 0'
@@ -281,31 +281,25 @@ class TestFunctions(TestCase):
 
         # Test with invalid base32 characters:
         with self.assertRaises(ValueError) as cm:
-            db32dec('CDEFCDE2')
+            func('CDEFCDE2')
         self.assertEqual(str(cm.exception), 'invalid D-Base32 letter: 2')
         with self.assertRaises(ValueError) as cm:
-            db32dec('CDEFCDE=')
+            func('CDEFCDE=')
         self.assertEqual(str(cm.exception), 'invalid D-Base32 letter: =')
         with self.assertRaises(ValueError) as cm:
-            db32dec('CDEFCDEZ')
+            func('CDEFCDEZ')
         self.assertEqual(str(cm.exception), 'invalid D-Base32 letter: Z')
 
         # Test that it stops at the first invalid letter:
         with self.assertRaises(ValueError) as cm:
-            db32dec('2ZZZZZZZ')
+            func('2ZZZZZZZ')
         self.assertEqual(str(cm.exception), 'invalid D-Base32 letter: 2')
         with self.assertRaises(ValueError) as cm:
-            db32dec('AAAAAA=Z')
+            func('AAAAAA=Z')
         self.assertEqual(str(cm.exception), 'invalid D-Base32 letter: =')
         with self.assertRaises(ValueError) as cm:
-            db32dec('CDEZ=2=2')
+            func('CDEZ=2=2')
         self.assertEqual(str(cm.exception), 'invalid D-Base32 letter: Z')
-
-        # Test a few handy static values:
-        self.assertEqual(db32dec('33333333'), b'\x00\x00\x00\x00\x00')
-        self.assertEqual(db32dec('YYYYYYYY'), b'\xff\xff\xff\xff\xff')
-        self.assertEqual(db32dec('3' * 96), b'\x00' * 60)
-        self.assertEqual(db32dec('Y' * 96), b'\xff' * 60)
 
         # Test invalid letter at each possible position in the string
         for size in TXT_SIZES:
@@ -313,29 +307,41 @@ class TestFunctions(TestCase):
                 # Test when there is a single invalid letter:
                 txt = make_string(i, size, 'A', '/')
                 with self.assertRaises(ValueError) as cm:
-                    db32dec(txt)
+                    func(txt)
                 self.assertEqual(str(cm.exception), 'invalid D-Base32 letter: /')
                 txt = make_string(i, size, 'A', '.')
                 with self.assertRaises(ValueError) as cm:
-                    db32dec(txt)
+                    func(txt)
                 self.assertEqual(str(cm.exception), 'invalid D-Base32 letter: .')
 
                 # Test that it stops at the *first* invalid letter:
                 txt = make_string(i, size, 'A', '/', '.')
                 with self.assertRaises(ValueError) as cm:
-                    db32dec(txt)
+                    func(txt)
                 self.assertEqual(str(cm.exception), 'invalid D-Base32 letter: /')
                 txt = make_string(i, size, 'A', '.', '/')
                 with self.assertRaises(ValueError) as cm:
-                    db32dec(txt)
+                    func(txt)
                 self.assertEqual(str(cm.exception), 'invalid D-Base32 letter: .')
 
         # Test a slew of no-no letters:
         for L in BAD_LETTERS:
             txt = ('A' * 7) + L
             with self.assertRaises(ValueError) as cm:
-                db32dec(txt)
+                func(txt)
             self.assertEqual(str(cm.exception), 'invalid D-Base32 letter: ' + L)
+
+    def check_db32dec(self, db32dec):
+        """
+        Decoder tests both the Python and the C implementations must pass.
+        """    
+        self.check_value_error(db32dec)
+
+        # Test a few handy static values:
+        self.assertEqual(db32dec('33333333'), b'\x00\x00\x00\x00\x00')
+        self.assertEqual(db32dec('YYYYYYYY'), b'\xff\xff\xff\xff\xff')
+        self.assertEqual(db32dec('3' * 96), b'\x00' * 60)
+        self.assertEqual(db32dec('Y' * 96), b'\xff' * 60)
 
         # Test with wrong type:
         good = '3' * 8
@@ -507,101 +513,13 @@ class TestFunctions(TestCase):
         """
         Tests both Python and C versions of `check_db32()` must pass.
         """
-        # Test with wrong type:
-        good = '3' * 8
-        self.assertIsNone(check_db32(good))
-        bad = good.encode('utf-8')
-        with self.assertRaises(TypeError) as cm:
-            check_db32(bad)
-        self.assertEqual(str(cm.exception), 'must be str, not bytes')
-  
-        # Test when len(text) is too small:
-        with self.assertRaises(ValueError) as cm:
-            check_db32('')
-        self.assertEqual(
-            str(cm.exception),
-            'len(text) is 0, need 8 <= len(text) <= 96'
-        )
-        with self.assertRaises(ValueError) as cm:
-            check_db32('-seven-')
-        self.assertEqual(
-            str(cm.exception),
-            'len(text) is 7, need 8 <= len(text) <= 96'
-        )
-
-        # Test when len(text) is too big:
-        with self.assertRaises(ValueError) as cm:
-            check_db32('A' * 97)
-        self.assertEqual(
-            str(cm.exception),
-            'len(text) is 97, need 8 <= len(text) <= 96'
-        )
-
-        # Test when len(text) % 8 != 0:
-        with self.assertRaises(ValueError) as cm:
-            check_db32('A' * 65)
-        self.assertEqual(
-            str(cm.exception),
-            'len(text) is 65, need len(text) % 8 == 0'
-        )
-
-        # Test with invalid base32 characters:
-        with self.assertRaises(ValueError) as cm:
-            check_db32('CDEFCDE2')
-        self.assertEqual(str(cm.exception), 'invalid D-Base32 letter: 2')
-        with self.assertRaises(ValueError) as cm:
-            check_db32('CDEFCDE=')
-        self.assertEqual(str(cm.exception), 'invalid D-Base32 letter: =')
-        with self.assertRaises(ValueError) as cm:
-            check_db32('CDEFCDEZ')
-        self.assertEqual(str(cm.exception), 'invalid D-Base32 letter: Z')
-
-        # Test that it stops at the first invalid letter:
-        with self.assertRaises(ValueError) as cm:
-            check_db32('2ZZZZZZZ')
-        self.assertEqual(str(cm.exception), 'invalid D-Base32 letter: 2')
-        with self.assertRaises(ValueError) as cm:
-            check_db32('AAAAAA=Z')
-        self.assertEqual(str(cm.exception), 'invalid D-Base32 letter: =')
-        with self.assertRaises(ValueError) as cm:
-            check_db32('CDEZ=2=2')
-        self.assertEqual(str(cm.exception), 'invalid D-Base32 letter: Z')
+        self.check_value_error(check_db32)
 
         # Test a few handy static values:
         self.assertIsNone(check_db32('33333333'))
         self.assertIsNone(check_db32('YYYYYYYY'))
         self.assertIsNone(check_db32('3' * 96))
         self.assertIsNone(check_db32('Y' * 96))
-
-        # Test invalid letter at each possible position in the string
-        for size in TXT_SIZES:
-            for i in range(size):
-                # Test when there is a single invalid letter:
-                txt = make_string(i, size, 'A', '/')
-                with self.assertRaises(ValueError) as cm:
-                    check_db32(txt)
-                self.assertEqual(str(cm.exception), 'invalid D-Base32 letter: /')
-                txt = make_string(i, size, 'A', '.')
-                with self.assertRaises(ValueError) as cm:
-                    check_db32(txt)
-                self.assertEqual(str(cm.exception), 'invalid D-Base32 letter: .')
-
-                # Test that it stops at the *first* invalid letter:
-                txt = make_string(i, size, 'A', '/', '.')
-                with self.assertRaises(ValueError) as cm:
-                    check_db32(txt)
-                self.assertEqual(str(cm.exception), 'invalid D-Base32 letter: /')
-                txt = make_string(i, size, 'A', '.', '/')
-                with self.assertRaises(ValueError) as cm:
-                    check_db32(txt)
-                self.assertEqual(str(cm.exception), 'invalid D-Base32 letter: .')
-
-        # Test a slew of no-no letters:
-        for L in BAD_LETTERS:
-            txt = ('A' * 7) + L
-            with self.assertRaises(ValueError) as cm:
-                check_db32(txt)
-            self.assertEqual(str(cm.exception), 'invalid D-Base32 letter: ' + L)
 
     def test_check_db32_p(self):
         self.check_check_db32(fallback.check_db32)
