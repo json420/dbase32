@@ -475,7 +475,7 @@ static struct PyMethodDef dbase32_functions[] = {
     {"isdb32", dbase32_isdb32, METH_VARARGS, "isdb32(text)"},
     {"check_db32", dbase32_check_db32, METH_VARARGS, "check_db32(text)"},
     {"random_id", (PyCFunction)dbase32_random_id, METH_VARARGS | METH_KEYWORDS, 
-        "random_id(size=15)"},
+        "random_id(numbytes=15)"},
     {NULL, NULL, 0, NULL}
 };
 
