@@ -238,7 +238,7 @@ class TestFunctions(TestCase):
 
         # Compare against the Python version of db32enc
         for size in BIN_SIZES:
-            for i in range(1000):
+            for i in range(5000):
                 data = os.urandom(size)
                 self.assertEqual(
                     _dbase32.db32enc(data),
@@ -419,100 +419,19 @@ class TestFunctions(TestCase):
 
         # Compare against the fallback.db32dec Python version:
         for size in TXT_SIZES:
-            for i in range(100):
-                text = ''.join(
+            for i in range(1000):
+                text_s = ''.join(
                     random.choice(fallback.DB32_FORWARD)
                     for n in range(size)
                 )
-                assert len(text) == size
-                self.assertEqual(
-                    _dbase32.db32dec(text),
-                    fallback.db32dec(text)
-                )
-
-    def test_sort_p(self):
-        """
-        Confirm assumptions about RFC-3548 sort-order, test D-Base32 sort-order.
-        """
-        ids = [os.urandom(30) for i in range(1000)]
-        ids.extend(os.urandom(15) for i in range(1500))
-
-        orig = tuple(
-            Tup(
-                data,
-                base64.b32encode(data).decode('utf-8'),
-                fallback.db32enc(data)
-            )
-            for data in ids
-        )
-
-        # Be really careful that we set things up correctly:
-        for t in orig:
-            self.assertIsInstance(t.data, bytes)
-            self.assertIn(len(t.data), (30, 15))
-
-            self.assertIsInstance(t.b32, str)
-            self.assertIsInstance(t.db32, str)
-            self.assertIn(len(t.b32), (24, 48))
-            self.assertEqual(len(t.b32), len(t.db32))
-            self.assertNotEqual(t.b32, t.db32)
-
-            self.assertEqual(t.b32, base64.b32encode(t.data).decode('utf-8'))
-            self.assertEqual(t.db32, fallback.db32enc(t.data))
-
-        # Now sort and compare:
-        sort_by_data = sorted(orig, key=lambda t: t.data)
-        sort_by_b32 = sorted(orig, key=lambda t: t.b32)
-        sort_by_db32 = sorted(orig, key=lambda t: t.db32)
-        self.assertNotEqual(sort_by_data, sort_by_b32)
-        self.assertEqual(sort_by_data, sort_by_db32)
-
-        # Extra safety that we didn't goof:
-        sort_by_db32 = None
-        sort_by_data.sort(key=lambda t: t.db32)  # Now sort by db32
-        sort_by_b32.sort(key=lambda t: t.data)  # Now sort by data
-        self.assertEqual(sort_by_data, sort_by_b32)
-
-    def test_sort_c(self):
-        """
-        Test binary vs D-Base32 sort order, with a *lot* of values.
-        """
-        self.skip_if_no_c_ext()
-        ids = [os.urandom(30) for i in range(20 * 1000)]
-        ids.extend(os.urandom(15) for i in range(30 * 1000))
-        pairs = tuple(
-            (data, _dbase32.db32enc(data)) for data in ids
-        )
-        sort_by_bin = sorted(pairs, key=lambda t: t[0])
-        sort_by_txt = sorted(pairs, key=lambda t: t[1])
-        self.assertEqual(sort_by_bin, sort_by_txt)
-
-    def test_roundtrip_p(self):
-        """
-        Test encode/decode round-trip with Python implementation.
-        """
-        for size in BIN_SIZES:
-            for i in range(1000):
-                data = os.urandom(size)
-                self.assertEqual(
-                    fallback.db32dec(fallback.db32enc(data)),
-                    data
-                )
-
-    def test_roundtrip_c(self):
-        """
-        Test encode/decode round-trip with C implementation.
-        """
-        self.skip_if_no_c_ext()
-
-        # The C implementation is wicked fast, so let's test a *lot* of values:
-        for size in BIN_SIZES:
-            for i in range(50 * 1000):
-                data = os.urandom(size)
-                self.assertEqual(
-                    _dbase32.db32dec(_dbase32.db32enc(data)),
-                    data
-                )
+                text_b = text_s.encode('utf-8')
+                self.assertEqual(len(text_s), size)
+                self.assertEqual(len(text_b), size)
+                data = fallback.db32dec(text_s)
+                self.assertEqual(len(data), size * 5 // 8)
+                self.assertEqual(fallback.db32dec(text_b), data)
+                self.assertEqual(_dbase32.db32dec(text_s), data)
+                self.assertEqual(_dbase32.db32dec(text_b), data)
 
     def check_isdb32(self, isdb32):
         self.check_text_type(isdb32)
@@ -677,4 +596,86 @@ class TestFunctions(TestCase):
     def test_random_id_c(self):
         self.skip_if_no_c_ext()
         self.check_random_id(_dbase32.random_id)
+
+    def test_sort_p(self):
+        """
+        Confirm assumptions about RFC-3548 sort-order, test D-Base32 sort-order.
+        """
+        ids = [os.urandom(30) for i in range(1000)]
+        ids.extend(os.urandom(15) for i in range(1500))
+
+        orig = tuple(
+            Tup(
+                data,
+                base64.b32encode(data).decode('utf-8'),
+                fallback.db32enc(data)
+            )
+            for data in ids
+        )
+
+        # Be really careful that we set things up correctly:
+        for t in orig:
+            self.assertIsInstance(t.data, bytes)
+            self.assertIn(len(t.data), (30, 15))
+
+            self.assertIsInstance(t.b32, str)
+            self.assertIsInstance(t.db32, str)
+            self.assertIn(len(t.b32), (24, 48))
+            self.assertEqual(len(t.b32), len(t.db32))
+            self.assertNotEqual(t.b32, t.db32)
+
+            self.assertEqual(t.b32, base64.b32encode(t.data).decode('utf-8'))
+            self.assertEqual(t.db32, fallback.db32enc(t.data))
+
+        # Now sort and compare:
+        sort_by_data = sorted(orig, key=lambda t: t.data)
+        sort_by_b32 = sorted(orig, key=lambda t: t.b32)
+        sort_by_db32 = sorted(orig, key=lambda t: t.db32)
+        self.assertNotEqual(sort_by_data, sort_by_b32)
+        self.assertEqual(sort_by_data, sort_by_db32)
+
+        # Extra safety that we didn't goof:
+        sort_by_db32 = None
+        sort_by_data.sort(key=lambda t: t.db32)  # Now sort by db32
+        sort_by_b32.sort(key=lambda t: t.data)  # Now sort by data
+        self.assertEqual(sort_by_data, sort_by_b32)
+
+    def test_sort_c(self):
+        """
+        Test binary vs D-Base32 sort order, with a *lot* of values.
+        """
+        self.skip_if_no_c_ext()
+        ids = [os.urandom(30) for i in range(20 * 1000)]
+        ids.extend(os.urandom(15) for i in range(30 * 1000))
+        pairs = tuple(
+            (data, _dbase32.db32enc(data)) for data in ids
+        )
+        sort_by_bin = sorted(pairs, key=lambda t: t[0])
+        sort_by_txt = sorted(pairs, key=lambda t: t[1])
+        self.assertEqual(sort_by_bin, sort_by_txt)
+
+    def test_roundtrip_p(self):
+        """
+        Test encode/decode round-trip with Python implementation.
+        """
+        for size in BIN_SIZES:
+            for i in range(1000):
+                data = os.urandom(size)
+                db32 = fallback.db32enc(data)
+                self.assertEqual(fallback.db32dec(db32), data)
+                self.assertEqual(fallback.db32dec(db32.encode('utf-8')), data)
+
+    def test_roundtrip_c(self):
+        """
+        Test encode/decode round-trip with C implementation.
+        """
+        self.skip_if_no_c_ext()
+
+        # The C implementation is wicked fast, so let's test a *lot* of values:
+        for size in BIN_SIZES:
+            for i in range(50 * 1000):
+                data = os.urandom(size)
+                db32 = _dbase32.db32enc(data)
+                self.assertEqual(_dbase32.db32dec(db32), data)
+                self.assertEqual(_dbase32.db32dec(db32.encode('utf-8')), data)
 
