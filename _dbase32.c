@@ -466,28 +466,6 @@ dbase32_random_id(PyObject *self, PyObject *args, PyObject *kw)
 }
 
 
-static PyObject *
-dbase32_spound(PyObject *self, PyObject *args)
-{
-    const uint8_t *txt_buf;
-    size_t txt_len = 0;
-
-    if (!PyArg_ParseTuple(args, "s#:spound", &txt_buf, &txt_len)) {
-        return NULL;
-    }
-    if (txt_len < 8) {
-        return Py_BuildValue("s", "less");
-    }
-    if (txt_len > MAX_TXT_LEN) {
-        return Py_BuildValue("s", "more");
-    }
-    if (txt_len % 8 != 0) {
-        return Py_BuildValue("s", "mod");
-    }
-    return Py_BuildValue("i", txt_len);
-}
-
-
 
 /* module init */
 static struct PyMethodDef dbase32_functions[] = {
@@ -497,7 +475,6 @@ static struct PyMethodDef dbase32_functions[] = {
     {"check_db32", dbase32_check_db32, METH_VARARGS, "check_db32(text)"},
     {"random_id", (PyCFunction)dbase32_random_id, METH_VARARGS | METH_KEYWORDS, 
         "random_id(numbytes=15)"},
-    {"spound", dbase32_spound, METH_VARARGS, "spound(text)"},
     {NULL, NULL, 0, NULL}
 };
 

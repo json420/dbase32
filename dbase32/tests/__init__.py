@@ -678,22 +678,3 @@ class TestFunctions(TestCase):
         self.skip_if_no_c_ext()
         self.check_random_id(_dbase32.random_id)
 
-    def test_spound(self):
-        self.skip_if_no_c_ext()
-        func = _dbase32.spound
-        self.assertEqual(func('A' * 8), 8)
-        self.assertEqual(func('A' * 7), 'less')
-        self.assertEqual(func('A' * 9), 'mod')
-        self.assertEqual(func('A' * 95), 'mod')
-        self.assertEqual(func('A' * 96), 96)
-        self.assertEqual(func('A' * 97), 'more')
-
-        self.assertEqual(func(b'A' * 8), 8)
-        self.assertEqual(func(b'A' * 7), 'less')
-        self.assertEqual(func(b'A' * 9), 'mod')
-        self.assertEqual(func(b'A' * 95), 'mod')
-        self.assertEqual(func(b'A' * 96), 96)
-        self.assertEqual(func(b'A' * 97), 'more')
-
-        tm = '™'
-        self.assertEqual(func(tm * 8), 24)
