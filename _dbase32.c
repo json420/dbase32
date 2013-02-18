@@ -22,7 +22,6 @@ Authors:
 */
 
 #include <Python.h>
-#include <string.h>
 
 #define MAX_BIN_LEN 60
 #define MAX_TXT_LEN 96
@@ -254,14 +253,14 @@ dbase32_db32dec(PyObject *self, PyObject *args)
     PyObject *pyret;
     const uint8_t *txt_buf;
     uint8_t *bin_buf;
-    size_t txt_len, bin_len;
+    size_t txt_len = 0;  // FIXME: Is something wrong with the s# format?
+    size_t bin_len;
     int status;
 
     // Strictly validate, we only accept well-formed IDs:
-    if (!PyArg_ParseTuple(args, "s:db32dec", &txt_buf)) {
+    if (!PyArg_ParseTuple(args, "s#:db32dec", &txt_buf, &txt_len)) {
         return NULL;
     }
-    txt_len = strlen(txt_buf);
     if (txt_len < 8 || txt_len > MAX_TXT_LEN) {
         PyErr_Format(PyExc_ValueError,
             "len(text) is %u, need 8 <= len(text) <= %u", txt_len, MAX_TXT_LEN

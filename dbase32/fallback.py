@@ -119,12 +119,13 @@ def encode_x(data, x_forward):
 
 
 def _decode_x_iter(text, x_reverse):
+    assert isinstance(text, bytes)
     taxi = 0
     bits = 0
-    for t in text:
-        r = x_reverse[ord(t)]
+    for i in text:
+        r = x_reverse[i]
         if r > 31:
-            raise ValueError('invalid D-Base32 letter: {}'.format(t))
+            raise ValueError('invalid D-Base32 letter: {}'.format(chr(i)))
         taxi = (taxi << 5) | r
         bits += 5
         while bits >= 8:
@@ -133,9 +134,10 @@ def _decode_x_iter(text, x_reverse):
     assert bits == 0
 
 
-def decode_x(text, x_reverse):
-    if not isinstance(text, str):
-        raise TypeError('must be str, not bytes')
+def _check_text_len(text):
+    """
+    Common text length check for `db32dec()` and `check_db32()`.
+    """
     if not (8 <= len(text) <= MAX_TXT_LEN):
         raise ValueError(
             'len(text) is {}, need 8 <= len(text) <= {}'.format(
@@ -146,6 +148,19 @@ def decode_x(text, x_reverse):
         raise ValueError(
             'len(text) is {}, need len(text) % 8 == 0'.format(len(text))
         )
+
+
+def decode_x(text, x_reverse):
+    if isinstance(text, bytearray):
+        raise TypeError('must be read-only pinned buffer, not bytearray')
+    if isinstance(text, str):
+        text = text.encode('utf-8')
+    elif not isinstance(text, bytes):
+        name = type(text).__name__
+        raise TypeError(
+            '{!r} does not support the buffer interface'.format(name)
+        )
+    _check_text_len(text)
     return bytes(_decode_x_iter(text, x_reverse))
 
 
@@ -202,16 +217,7 @@ def isdb32(text):
 
 def check_db32(text):
     text = _text_to_str(text)
-    if not (8 <= len(text) <= MAX_TXT_LEN):
-        raise ValueError(
-            'len(text) is {}, need 8 <= len(text) <= {}'.format(
-                len(text), MAX_TXT_LEN
-            )
-        )
-    if len(text) % 8 != 0:
-        raise ValueError(
-            'len(text) is {}, need len(text) % 8 == 0'.format(len(text))
-        )
+    _check_text_len(text)
     if not DB32_SET.issuperset(text):
         for t in text:
             if t not in DB32_SET:    

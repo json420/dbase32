@@ -359,7 +359,8 @@ class TestFunctions(TestCase):
     def check_db32dec(self, db32dec):
         """
         Decoder tests both the Python and the C implementations must pass.
-        """    
+        """
+        self.check_text_type(db32dec)
         self.check_text_value(db32dec)
 
         # Test a few handy static values:
@@ -367,14 +368,6 @@ class TestFunctions(TestCase):
         self.assertEqual(db32dec('YYYYYYYY'), b'\xff\xff\xff\xff\xff')
         self.assertEqual(db32dec('3' * 96), b'\x00' * 60)
         self.assertEqual(db32dec('Y' * 96), b'\xff' * 60)
-
-        # Test with wrong type:
-        good = '3' * 8
-        self.assertEqual(db32dec(good), b'\x00\x00\x00\x00\x00')
-        bad = good.encode('utf-8')
-        with self.assertRaises(TypeError) as cm:
-            db32dec(bad)
-        self.assertEqual(str(cm.exception), 'must be str, not bytes')
 
     def test_db32dec_p(self):
         """
@@ -487,6 +480,8 @@ class TestFunctions(TestCase):
                 )
 
     def check_isdb32(self, isdb32):
+        self.check_text_type(isdb32)
+
         for size in TXT_SIZES:
             self.assertIs(isdb32('A' * (size - 1)), False)
             self.assertIs(isdb32('A' * (size + 1)), False)
@@ -526,13 +521,6 @@ class TestFunctions(TestCase):
                     for value in [bad, bad.encode('utf-8')]:
                         self.assertEqual(len(value), size)
                         self.assertIs(isdb32(value), False)
-
-        with self.assertRaises(TypeError) as cm:
-            isdb32(17)
-        self.assertEqual(
-            str(cm.exception), 
-            "'int' does not support the buffer interface"
-        )
 
     def test_isdb32_p(self):
         self.check_isdb32(fallback.isdb32)
