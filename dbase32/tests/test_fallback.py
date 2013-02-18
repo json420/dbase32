@@ -152,3 +152,46 @@ class TestFunctions(TestCase):
 
         self.assertEqual(fallback._text_to_bytes('four'), b'four')
         self.assertEqual(fallback._text_to_bytes(b'four'), b'four')
+
+    def test_check_length(self):
+        # Test when len(text) is too small:
+        with self.assertRaises(ValueError) as cm:
+            fallback._check_length(b'')
+        self.assertEqual(
+            str(cm.exception),
+            'len(text) is 0, need 8 <= len(text) <= 96'
+        )
+        with self.assertRaises(ValueError) as cm:
+            fallback._check_length(b'-seven-')
+        self.assertEqual(
+            str(cm.exception),
+            'len(text) is 7, need 8 <= len(text) <= 96'
+        )
+
+        # Test when len(text) is too big:
+        with self.assertRaises(ValueError) as cm:
+            fallback._check_length(b'A' * 97)
+        self.assertEqual(
+            str(cm.exception),
+            'len(text) is 97, need 8 <= len(text) <= 96'
+        )
+
+        # Test when len(text) % 8 != 0:
+        with self.assertRaises(ValueError) as cm:
+            fallback._check_length(b'A' * 65)
+        self.assertEqual(
+            str(cm.exception),
+            'len(text) is 65, need len(text) % 8 == 0'
+        )
+
+        text = b'12345678'
+        self.assertIs(fallback._check_length(text), text)
+
+        text = b'Z' * 96
+        self.assertIs(fallback._check_length(text), text)
+
+        text = b'R' * 24
+        self.assertIs(fallback._check_length(text), text)
+
+        text = b'F' * 48
+        self.assertIs(fallback._check_length(text), text)
