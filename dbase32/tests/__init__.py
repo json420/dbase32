@@ -245,9 +245,28 @@ class TestFunctions(TestCase):
                     fallback.db32enc(data)
                 )
 
-    def check_value_error(self, func):
+    def check_text_type(self, func):
         """
-        Common value error tests for `db32dec()` and `check_db32()`.
+        Common TypeError tests for `db32dec()`, `check_db32()`, and `isdb32()`.
+        """         
+        with self.assertRaises(TypeError) as cm:
+            func(17)
+        self.assertEqual(
+            str(cm.exception), 
+            "'int' does not support the buffer interface"
+        )
+        with self.assertRaises(TypeError) as cm:
+            func(18.5)
+        self.assertEqual(
+            str(cm.exception), 
+            "'float' does not support the buffer interface"
+        )
+        func('3399AAYY')
+        func(b'3399AAYY')
+
+    def check_text_value(self, func):
+        """
+        Common ValueError tests for `db32dec()` and `check_db32()`.
         """  
         # Test when len(text) is too small:
         with self.assertRaises(ValueError) as cm:
@@ -335,7 +354,7 @@ class TestFunctions(TestCase):
         """
         Decoder tests both the Python and the C implementations must pass.
         """    
-        self.check_value_error(db32dec)
+        self.check_text_value(db32dec)
 
         # Test a few handy static values:
         self.assertEqual(db32dec('33333333'), b'\x00\x00\x00\x00\x00')
@@ -502,6 +521,13 @@ class TestFunctions(TestCase):
                         self.assertEqual(len(value), size)
                         self.assertIs(isdb32(value), False)
 
+        with self.assertRaises(TypeError) as cm:
+            isdb32(17)
+        self.assertEqual(
+            str(cm.exception), 
+            "'int' does not support the buffer interface"
+        )
+
     def test_isdb32_p(self):
         self.check_isdb32(fallback.isdb32)
 
@@ -513,13 +539,20 @@ class TestFunctions(TestCase):
         """
         Tests both Python and C versions of `check_db32()` must pass.
         """
-        self.check_value_error(check_db32)
+        self.check_text_type(check_db32)
+        self.check_text_value(check_db32)
 
         # Test a few handy static values:
         self.assertIsNone(check_db32('33333333'))
         self.assertIsNone(check_db32('YYYYYYYY'))
         self.assertIsNone(check_db32('3' * 96))
         self.assertIsNone(check_db32('Y' * 96))
+
+        # Same, but bytes this time:
+        self.assertIsNone(check_db32(b'33333333'))
+        self.assertIsNone(check_db32(b'YYYYYYYY'))
+        self.assertIsNone(check_db32(b'3' * 96))
+        self.assertIsNone(check_db32(b'Y' * 96))
 
     def test_check_db32_p(self):
         self.check_check_db32(fallback.check_db32)

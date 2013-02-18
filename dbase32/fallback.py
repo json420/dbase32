@@ -179,8 +179,9 @@ def isdb32(text):
     if isinstance(text, bytes):
         text = text.decode('utf-8')
     elif not isinstance(text, str):
+        name = type(text).__name__
         raise TypeError(
-            'text: must be str or bytes; got {!r}'.format(type(text))
+            '{!r} does not support the buffer interface'.format(name)
         )
     if not (8 <= len(text) <= MAX_TXT_LEN):
         return False
@@ -190,8 +191,13 @@ def isdb32(text):
 
 
 def check_db32(text):
-    if not isinstance(text, str):
-        raise TypeError('must be str, not bytes')
+    if isinstance(text, bytes):
+        text = text.decode('utf-8')
+    elif not isinstance(text, str):
+        name = type(text).__name__
+        raise TypeError(
+            '{!r} does not support the buffer interface'.format(name)
+        )
     if not (8 <= len(text) <= MAX_TXT_LEN):
         raise ValueError(
             'len(text) is {}, need 8 <= len(text) <= {}'.format(

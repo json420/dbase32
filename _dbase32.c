@@ -350,13 +350,13 @@ static PyObject *
 dbase32_check_db32(PyObject *self, PyObject *args)
 {
     const uint8_t *txt_buf;
-    size_t txt_len, block, count, i;
+    size_t txt_len = 0;  // FIXME: Is something wrong with the s# format?
+    size_t block, count, i;
     uint8_t r;
 
-    if (!PyArg_ParseTuple(args, "s:check_db32", &txt_buf)) {
+    if (!PyArg_ParseTuple(args, "s#:check_db32", &txt_buf, &txt_len)) {
         return NULL;
     }
-    txt_len = strlen(txt_buf);
 
     // check len(text)
     if (txt_len < 8 || txt_len > MAX_TXT_LEN) {
