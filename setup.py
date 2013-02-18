@@ -32,35 +32,9 @@ if sys.version_info < (3, 3):
 
 from distutils.core import setup, Extension
 from distutils.cmd import Command
-from venv import EnvBuilder
-from os import path
-import tempfile
-import shutil
-from subprocess import check_call, call
 
 import dbase32
 from dbase32.tests.run import run_tests
-
-
-class TestEnvBuilder(EnvBuilder):
-    def __init__(self):
-        self.tmpdir = tempfile.mkdtemp(prefix='venv.')
-        super().__init__(system_site_packages=True, symlinks=True)
-        self.create(path.join(self.tmpdir, 'tests'))
-
-    def __del__(self):
-        if path.isdir(self.tmpdir):
-            print('Removing {!r}'.format(self.tmpdir))
-            shutil.rmtree(self.tmpdir)
-
-    def post_setup(self, context):
-        self.python = context.env_exe
-        setup = path.abspath(__file__)
-        check_call([self.python, setup, 'install'])
-
-    def run_tests(self):
-        cmd = [self.python, '-m', 'dbase32.tests.run']
-        return call(cmd) == 0
 
 
 class Test(Command):
@@ -75,14 +49,8 @@ class Test(Command):
         pass
 
     def run(self):
-        # First run the tests in the source tree
         if not run_tests():
-            raise SystemExit('Tests failed in source tree!')
-
-        # Now run the tests in a virtual environment:
-        testenv = TestEnvBuilder()
-        if not testenv.run_tests():
-            raise SystemExit('Tests failed in virtual environment!')
+            raise SystemExit(2)
 
 
 _dbase32 = Extension('_dbase32', sources=['_dbase32.c'],
