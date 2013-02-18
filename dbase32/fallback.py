@@ -175,14 +175,24 @@ def db32dec(text):
     return decode_x(text, DB32_REVERSE)
 
 
-def isdb32(text):
+def _text_to_str(text):
+    """
+    Common type checking and conversion for `isdb32()` and `check_db32()`.
+    """
+    if isinstance(text, bytearray):
+        raise TypeError('must be read-only pinned buffer, not bytearray')
     if isinstance(text, bytes):
-        text = text.decode('utf-8')
-    elif not isinstance(text, str):
+        return text.decode('utf-8')
+    if not isinstance(text, str):
         name = type(text).__name__
         raise TypeError(
             '{!r} does not support the buffer interface'.format(name)
         )
+    return text
+
+
+def isdb32(text):
+    text = _text_to_str(text)
     if not (8 <= len(text) <= MAX_TXT_LEN):
         return False
     if len(text) % 8 != 0:
@@ -191,13 +201,7 @@ def isdb32(text):
 
 
 def check_db32(text):
-    if isinstance(text, bytes):
-        text = text.decode('utf-8')
-    elif not isinstance(text, str):
-        name = type(text).__name__
-        raise TypeError(
-            '{!r} does not support the buffer interface'.format(name)
-        )
+    text = _text_to_str(text)
     if not (8 <= len(text) <= MAX_TXT_LEN):
         raise ValueError(
             'len(text) is {}, need 8 <= len(text) <= {}'.format(

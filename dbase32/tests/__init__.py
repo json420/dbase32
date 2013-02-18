@@ -261,6 +261,12 @@ class TestFunctions(TestCase):
             str(cm.exception), 
             "'float' does not support the buffer interface"
         )
+        with self.assertRaises(TypeError) as cm:
+            func(bytearray(b'3399AAYY'))
+        self.assertEqual(
+            str(cm.exception), 
+            'must be read-only pinned buffer, not bytearray'
+        )
         func('3399AAYY')
         func(b'3399AAYY')
 
