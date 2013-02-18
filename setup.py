@@ -32,8 +32,6 @@ if sys.version_info < (3, 3):
 
 from distutils.core import setup, Extension
 from distutils.cmd import Command
-from unittest import TestLoader, TextTestRunner
-from doctest import DocTestSuite
 from venv import EnvBuilder
 from os import path
 import tempfile
@@ -41,6 +39,7 @@ import shutil
 from subprocess import check_call, call
 
 import dbase32
+import dbase32test
 
 
 class TestEnvBuilder(EnvBuilder):
@@ -57,9 +56,9 @@ class TestEnvBuilder(EnvBuilder):
     def post_setup(self, context):
         setup = path.abspath(__file__)
         check_call([context.env_exe, setup, 'install'])
-        run_tests = path.join(context.env_dir, 'local', 'bin', 'dbase32-run-tests')
-        assert path.isfile(run_tests)
-        self.run_tests_cmd = [context.env_exe, run_tests]
+        #run_tests = path.join(context.env_dir, 'local', 'bin', 'dbase32-run-tests')
+        #assert path.isfile(run_tests)
+        self.run_tests_cmd = [context.env_exe, '-m', 'dbase32test']
 
     def run_tests(self):
         return call(self.run_tests_cmd) == 0
@@ -78,23 +77,7 @@ class Test(Command):
 
     def run(self):
         # First run the tests in the source tree
-        pynames = [
-            'dbase32',
-            'dbase32.fallback',
-            'dbase32.rfc3548',
-            'dbase32.misc',
-            'dbase32.tests',
-            'dbase32.tests.test_fallback',
-            'dbase32.tests.test_rfc3548',
-            'dbase32.tests.test_misc',
-        ]
-        loader = TestLoader()
-        suite = loader.loadTestsFromNames(pynames)
-        for name in pynames:
-            suite.addTest(DocTestSuite(name))
-        runner = TextTestRunner(verbosity=2)
-        result = runner.run(suite)
-        if not result.wasSuccessful():
+        if not dbase32test.run_tests():
             raise SystemExit('Tests failed in source tree!')
 
         # Now run the tests in a virtual environment:
@@ -119,11 +102,7 @@ setup(
         'dbase32',
         'dbase32.tests',
     ],
-    scripts=[
-        'dbase32-gen-tables',
-        'dbase32-benchmark',
-        'dbase32-run-tests',
-    ],
+    py_modules=['dbase32test'],
     ext_modules=[_dbase32],
     cmdclass={'test': Test},
 )

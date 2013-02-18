@@ -32,7 +32,7 @@ from doctest import DocTestSuite
 
 import dbase32
 
-pynames = [
+pynames = (
     'dbase32',
     'dbase32.fallback',
     'dbase32.rfc3548',
@@ -41,21 +41,27 @@ pynames = [
     'dbase32.tests.test_fallback',
     'dbase32.tests.test_rfc3548',
     'dbase32.tests.test_misc',
-]
+)
 
-# Add unit-tests:
-loader = TestLoader()
-suite = loader.loadTestsFromNames(pynames)
 
-# Add doc-tests:
-for name in pynames:
-    suite.addTest(DocTestSuite(name))
+def run_tests():
+    # Add unit-tests:
+    loader = TestLoader()
+    suite = loader.loadTestsFromNames(pynames)
 
-# Run the tests:
-runner = TextTestRunner(verbosity=2)
-result = runner.run(suite)
-print('script: {!r}'.format(path.abspath(__file__)))
-print('dbase32: {!r}'.format(path.abspath(dbase32.__file__)))
-if not result.wasSuccessful():
-    raise SystemExit(2)
+    # Add doc-tests:
+    for name in pynames:
+        suite.addTest(DocTestSuite(name))
 
+    # Run the tests:
+    runner = TextTestRunner(verbosity=2)
+    result = runner.run(suite)
+    print('dbase32test: {!r}'.format(path.abspath(__file__)))
+    print('dbase32: {!r}'.format(path.abspath(dbase32.__file__)))
+    return result.wasSuccessful()
+
+
+if __name__ == '__main__':
+    success = run_tests()
+    if not success:
+        raise SystemExit(2)
