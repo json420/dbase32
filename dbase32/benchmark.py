@@ -34,8 +34,6 @@ import dbase32
 
 
 SETUP = """
-gc.enable()
-
 import os
 import base64
 import _dbase32

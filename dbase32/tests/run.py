@@ -60,5 +60,5 @@ def run_tests():
 if __name__ == '__main__':
     success = run_tests()
     print('dbase32: {!r}'.format(path.abspath(dbase32.__file__)))
-    if success:
+    if not success:
         raise SystemExit('Tests failed!')
