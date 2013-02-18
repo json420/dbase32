@@ -50,7 +50,9 @@ class Test(Command):
 
     def run(self):
         if not run_tests():
-            raise SystemExit(2)
+            print('Tests FAILED!', file=sys.stderr)
+            raise SystemExit('2')
+        print('Tests passed.', file=sys.stderr)
 
 
 _dbase32 = Extension('_dbase32', sources=['_dbase32.c'],

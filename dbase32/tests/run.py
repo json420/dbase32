@@ -24,6 +24,7 @@
 Run `dbase32` unit tests.
 """
 
+import sys
 from os import path
 from unittest import TestLoader, TextTestRunner
 from doctest import DocTestSuite
@@ -54,11 +55,16 @@ def run_tests():
     # Run the tests:
     runner = TextTestRunner(verbosity=2)
     result = runner.run(suite)
+    print(
+        'dbase32: {!r}'.format(path.abspath(dbase32.__file__)),
+        file=sys.stderr
+    )
     return result.wasSuccessful()
 
 
 if __name__ == '__main__':
-    success = run_tests()
-    print('dbase32: {!r}'.format(path.abspath(dbase32.__file__)))
-    if not success:
-        raise SystemExit('Tests failed!')
+    if not run_tests():
+        print('Tests FAILED!', file=sys.stderr)
+        raise SystemExit('2')
+    print('Tests passed.', file=sys.stderr)
+

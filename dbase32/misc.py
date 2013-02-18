@@ -25,6 +25,7 @@ Helper functions for generating and validating base-32 encoding tables.
 """
 
 from collections import namedtuple
+import optparse
 
 
 POSSIBLE = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'
@@ -33,6 +34,10 @@ Reverse = namedtuple('Reverse', 'i key value')
 
 # Standard RFC-3548 Base32:
 B32_FORWARD = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567'
+
+# Defaults when running as a script:
+REMOVE = '012Z'
+NAME = 'db32'
 
 
 def gen_forward(remove):
@@ -180,4 +185,47 @@ def iter_python(name, forward, reverse, start, end):
             yield '    {:>3},  # {!r} [{:>2}]'.format(r.value, r.key, r.i)
 
     yield ')'
+
+
+if __name__ == '__main__':
+
+    parser = optparse.OptionParser()
+    parser.add_option('--rfc',
+        help='generate standard RFC-3548 base32 tables',
+        action='store_true',
+        default=False,
+    )
+    parser.add_option('-r',
+        dest='remove',
+        help='symbols to remove; default is {!r}'.format(REMOVE),
+        default=REMOVE,
+    )
+    parser.add_option('-n',
+        dest='name',
+        help='encoding name; default is {!r}'.format(NAME),
+        default=NAME,
+    )
+    parser.add_option('-p',
+        dest='python',
+        help='generate Python tables (instead of C)',
+        action='store_true',
+        default=False,
+    )
+    (options, args) = parser.parse_args()
+
+    if options.rfc:
+        forward = B32_FORWARD
+        name = 'b32'
+    else:
+        forward = gen_forward(options.remove)
+        name = options.name
+    reverse = gen_reverse(forward)
+    start = get_start(forward)
+    end = get_end(forward)
+    line_iter = (iter_python if options.python else iter_c)
+
+    print('')
+    for line in line_iter(name.upper(), forward, reverse, start, end):
+        print(line)
+    print('')
 
