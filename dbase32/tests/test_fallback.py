@@ -122,3 +122,33 @@ class TestConstants(TestCase):
         self.assertEqual(fallback.DB32_SET,
             frozenset(fallback.DB32_FORWARD.encode('utf-8'))
         )
+
+
+class TestFunctions(TestCase):
+    def test_text_to_bytes(self):
+        with self.assertRaises(TypeError) as cm:
+            fallback._text_to_bytes(17)
+        self.assertEqual(
+            str(cm.exception), 
+            "'int' does not support the buffer interface"
+        )
+
+        with self.assertRaises(TypeError) as cm:
+            fallback._text_to_bytes(18.5)
+        self.assertEqual(
+            str(cm.exception), 
+            "'float' does not support the buffer interface"
+        )
+
+        with self.assertRaises(TypeError) as cm:
+            fallback._text_to_bytes(bytearray(b'3399AAYY'))
+        self.assertEqual(
+            str(cm.exception), 
+            'must be read-only pinned buffer, not bytearray'
+        )
+
+        self.assertEqual(fallback._text_to_bytes('3399AAYY'), b'3399AAYY')
+        self.assertEqual(fallback._text_to_bytes(b'3399AAYY'), b'3399AAYY')
+
+        self.assertEqual(fallback._text_to_bytes('four'), b'four')
+        self.assertEqual(fallback._text_to_bytes(b'four'), b'four')
