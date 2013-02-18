@@ -30,6 +30,11 @@ Decode the resulting ``str`` instance with :func:`db32dec()`:
 >>> db32dec('FCNPVRELI7J9FUUI')
 b'binary foo'
 
+:func:`db32dec()` can also directly decode UTF-8 ``bytes``:
+
+>>> db32dec(b'FCNPVRELI7J9FUUI')
+b'binary foo'
+
 Use :func:`isdb32()` to test whether you have a valid D-Base32 encoded ID.  It
 will return ``True`` if the ID is valid:
 
@@ -114,16 +119,14 @@ Unlike standard `RFC-3548 Base32`_ encoding, D-Base32 does *not* support
 padding.  The binary data must always be a multiple of 40 bits (5 bytes) in
 length.
 
-Well-formed *data* to be encoded must be a ``bytes`` instance that meets the
-following condition::
+Well-formed *data* to be encoded must meet the following condition::
 
     5 <= len(data) <= 60 and len(data) % 5 == 0
 
 If this condition isn't met, :func:`db32enc()` will raise a ``ValueError``.
 
 In addition to only containing letters in :data:`DB32ALPHABET`, well-formed
-*text* to be decoded must be an ``str`` instance that meets the following
-condition::
+*text* to be decoded must meet the following condition::
 
     8 <= len(text) <= 96 and len(text) % 8 == 0
 
