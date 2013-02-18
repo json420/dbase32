@@ -117,6 +117,8 @@ class TestConstants(TestCase):
         for i in range(32):
             self.assertEqual(counts[i], 1)
 
-    def test_alphabet(self):
+    def test_set(self):
         self.assertIsInstance(fallback.DB32_SET, frozenset)
-        self.assertEqual(fallback.DB32_SET, frozenset(fallback.DB32_FORWARD))
+        self.assertEqual(fallback.DB32_SET,
+            frozenset(fallback.DB32_FORWARD.encode('utf-8'))
+        )
