@@ -356,6 +356,41 @@ class TestFunctions(TestCase):
                 func(txt)
             self.assertEqual(str(cm.exception), 'invalid D-Base32 letter: ' + L)
 
+        # Test with multi-byte UTF-8 characters:
+        bad_s = '™' * 8
+        bad_b = bad_s.encode('utf-8')
+        self.assertEqual(len(bad_s), 8)
+        self.assertEqual(len(bad_b), 24)
+        for value in [bad_s, bad_b]:
+            with self.assertRaises(ValueError) as cm:        
+                func(value)
+            self.assertEqual(
+                str(cm.exception),
+                'invalid D-Base32 letter: â'
+            )
+        bad_s = 'AABBCCD™'
+        bad_b = bad_s.encode('utf-8')
+        self.assertEqual(len(bad_s), 8)
+        self.assertEqual(len(bad_b), 10)
+        for value in [bad_s, bad_b]:
+            with self.assertRaises(ValueError) as cm:        
+                func(value)
+            self.assertEqual(
+                str(cm.exception),
+                'len(text) is 10, need len(text) % 8 == 0'
+            )
+        bad_s = 'AABBC™'
+        bad_b = bad_s.encode('utf-8')
+        self.assertEqual(len(bad_s), 6)
+        self.assertEqual(len(bad_b), 8)
+        for value in [bad_s, bad_b]:
+            with self.assertRaises(ValueError) as cm:        
+                func(value)
+            self.assertEqual(
+                str(cm.exception),
+                'invalid D-Base32 letter: â'
+            )
+
     def check_db32dec(self, db32dec):
         """
         Decoder tests both the Python and the C implementations must pass.
@@ -521,6 +556,28 @@ class TestFunctions(TestCase):
                     for value in [bad, bad.encode('utf-8')]:
                         self.assertEqual(len(value), size)
                         self.assertIs(isdb32(value), False)
+
+            # Multi-byte UTF-8 characters:
+            bad_s = '™' * size
+            bad_b = bad_s.encode('utf-8')
+            self.assertEqual(len(bad_s), size)
+            self.assertEqual(len(bad_b), size * 3)
+            self.assertIs(isdb32(bad_s), False)
+            self.assertIs(isdb32(bad_b), False)
+            for i in range(size):
+                bad_s = make_string(i, size, 'A', '™')
+                bad_b = bad_s.encode('utf-8')
+                self.assertEqual(len(bad_s), size)
+                self.assertEqual(len(bad_b), size + 2)
+                self.assertIs(isdb32(bad_s), False)
+                self.assertIs(isdb32(bad_b), False)
+            for i in range(size - 2):
+                bad_s = make_string(i, size - 2, 'A', '™')
+                bad_b = bad_s.encode('utf-8')
+                self.assertEqual(len(bad_s), size - 2)
+                self.assertEqual(len(bad_b), size)
+                self.assertIs(isdb32(bad_s), False)
+                self.assertIs(isdb32(bad_b), False)
 
     def test_isdb32_p(self):
         self.check_isdb32(fallback.isdb32)
