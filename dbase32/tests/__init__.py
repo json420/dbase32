@@ -31,7 +31,7 @@ import base64
 from collections import Counter, namedtuple
 
 import dbase32
-from dbase32 import fallback, misc
+from dbase32 import fallback
 
 # True if the C extension is available
 try:

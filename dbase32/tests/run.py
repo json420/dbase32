@@ -35,11 +35,11 @@ pynames = (
     'dbase32',
     'dbase32.fallback',
     'dbase32.rfc3548',
-    'dbase32.misc',
+    'dbase32.gen',
     'dbase32.tests',
     'dbase32.tests.test_fallback',
     'dbase32.tests.test_rfc3548',
-    'dbase32.tests.test_misc',
+    'dbase32.tests.test_gen',
 )
 
 

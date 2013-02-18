@@ -29,7 +29,7 @@ import os
 import base64
 from collections import Counter, namedtuple
 
-from dbase32 import fallback, misc
+from dbase32 import fallback, gen
 
 possible = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'
 assert ''.join(sorted(set(possible))) == possible
@@ -55,7 +55,7 @@ class TestConstants(TestCase):
         )
         self.assertEqual(
             fallback.DB32_START,
-            misc.get_start(fallback.DB32_FORWARD)
+            gen.get_start(fallback.DB32_FORWARD)
         )
 
     def test_end(self):
@@ -69,7 +69,7 @@ class TestConstants(TestCase):
         )
         self.assertEqual(
             fallback.DB32_END,
-            misc.get_end(fallback.DB32_FORWARD)
+            gen.get_end(fallback.DB32_FORWARD)
         )
 
     def test_forward(self):
@@ -83,8 +83,8 @@ class TestConstants(TestCase):
         )
         self.assertIsInstance(fallback.DB32_FORWARD, str)
         self.assertEqual(len(fallback.DB32_FORWARD), 32)
-        self.assertEqual(fallback.DB32_FORWARD, misc.gen_forward('012Z'))
-        misc.check_forward(fallback.DB32_FORWARD)
+        self.assertEqual(fallback.DB32_FORWARD, gen.gen_forward('012Z'))
+        gen.check_forward(fallback.DB32_FORWARD)
 
     def test_reverse(self):
         self.assertIsInstance(fallback.DB32_REVERSE, tuple)
@@ -93,7 +93,7 @@ class TestConstants(TestCase):
         self.assertEqual(max(fallback.DB32_REVERSE), 255)
         self.assertEqual(
             fallback.DB32_REVERSE,
-            tuple(r.value for r in misc.gen_reverse(fallback.DB32_FORWARD))
+            tuple(r.value for r in gen.gen_reverse(fallback.DB32_FORWARD))
         )
 
         for (i, value) in enumerate(fallback.DB32_REVERSE):

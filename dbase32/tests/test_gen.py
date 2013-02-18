@@ -21,73 +21,73 @@
 #
 
 """
-Unit tests for `dbase32.misc` module.
+Unit tests for `dbase32.gen` module.
 """
 
 from unittest import TestCase
 
-from dbase32.misc import TYPE_ERROR
-from dbase32 import misc
+from dbase32.gen import TYPE_ERROR
+from dbase32 import gen
 
 
 class TestFunctions(TestCase):
     def test_possible(self):
-        self.assertEqual(''.join(sorted(set(misc.POSSIBLE))), misc.POSSIBLE)
-        self.assertEqual(len(misc.POSSIBLE), 36)
+        self.assertEqual(''.join(sorted(set(gen.POSSIBLE))), gen.POSSIBLE)
+        self.assertEqual(len(gen.POSSIBLE), 36)
 
     def test_gen_forward(self):
         with self.assertRaises(TypeError) as cm:
-            misc.gen_forward(b'0123')
+            gen.gen_forward(b'0123')
         self.assertEqual(
             str(cm.exception),
             TYPE_ERROR.format('remove', str, bytes, b'0123')
         )
 
         with self.assertRaises(ValueError) as cm:
-            misc.gen_forward('ABC')
+            gen.gen_forward('ABC')
         self.assertEqual(
             str(cm.exception),
             "len(remove) != 4: [3] 'ABC'"
         )
 
         with self.assertRaises(ValueError) as cm:
-            misc.gen_forward('ABCDE')
+            gen.gen_forward('ABCDE')
         self.assertEqual(
             str(cm.exception),
             "len(remove) != 4: [5] 'ABCDE'"
         )
 
         with self.assertRaises(ValueError) as cm:
-            misc.gen_forward('ABCA')
+            gen.gen_forward('ABCA')
         self.assertEqual(
             str(cm.exception),
             "len(set(remove)) != 4: [3] 'ABCA'"
         )
 
         with self.assertRaises(ValueError) as cm:
-            misc.gen_forward('012z')
+            gen.gen_forward('012z')
         self.assertEqual(
             str(cm.exception),
             "remove: '012z' not a subset of '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'"
         )
 
         self.assertEqual(
-            misc.gen_forward('4IOU'),
+            gen.gen_forward('4IOU'),
             '012356789ABCDEFGHJKLMNPQRSTVWXYZ'
         )
         self.assertEqual(
-            misc.gen_forward('PONM'),
+            gen.gen_forward('PONM'),
             '0123456789ABCDEFGHIJKLQRSTUVWXYZ'
         )
         self.assertEqual(
-            misc.gen_forward('8967'),
+            gen.gen_forward('8967'),
             '012345ABCDEFGHIJKLMNOPQRSTUVWXYZ'
         )
 
     def test_check_forward(self):
         bad = b'0123456789ABCDEFGHIJKLMNOPQRSTUV'
         with self.assertRaises(TypeError) as cm:
-            misc.check_forward(bad)
+            gen.check_forward(bad)
         self.assertEqual(
             str(cm.exception),
             TYPE_ERROR.format('forward', str, bytes, bad)
@@ -95,7 +95,7 @@ class TestFunctions(TestCase):
 
         bad = '3456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'
         with self.assertRaises(ValueError) as cm:
-            misc.check_forward(bad)
+            gen.check_forward(bad)
         self.assertEqual(
             str(cm.exception),
             'len(forward) != 32: [33] {!r}'.format(bad)
@@ -103,7 +103,7 @@ class TestFunctions(TestCase):
 
         bad = '56789ABCDEFGHIJKLMNOPQRSTUVWXYZ'
         with self.assertRaises(ValueError) as cm:
-            misc.check_forward(bad)
+            gen.check_forward(bad)
         self.assertEqual(
             str(cm.exception),
             'len(forward) != 32: [31] {!r}'.format(bad)
@@ -111,7 +111,7 @@ class TestFunctions(TestCase):
 
         bad = '45678ZABCDEFGHIJKLMNOPQRSTUVWXYZ'
         with self.assertRaises(ValueError) as cm:
-            misc.check_forward(bad)
+            gen.check_forward(bad)
         self.assertEqual(
             str(cm.exception),
             'len(set(forward)) != 32: [31] {!r}'.format(bad)
@@ -119,55 +119,55 @@ class TestFunctions(TestCase):
 
         bad = '456789abcDEFGHIJKLMNOPQRSTUVWXYZ'
         with self.assertRaises(ValueError) as cm:
-            misc.check_forward(bad)
+            gen.check_forward(bad)
         self.assertEqual(
             str(cm.exception),
-            'forward: {!r} not a subset of {!r}'.format(bad, misc.POSSIBLE)
+            'forward: {!r} not a subset of {!r}'.format(bad, gen.POSSIBLE)
         )
 
         good = '012356789ABCDEFGHJKLMNPQRSTVWXYZ'
-        self.assertIs(misc.check_forward(good), good)
+        self.assertIs(gen.check_forward(good), good)
 
     def test_get_start(self):
         self.assertEqual(
-            misc.get_start('3456789ABCDEFGHIJKLMNOPQRSTUVWXY'), 51
+            gen.get_start('3456789ABCDEFGHIJKLMNOPQRSTUVWXY'), 51
         )
         self.assertEqual(
-            misc.get_start('NOPQRSTUVWXY3456789ABCDEFGHIJKLM'), 51
+            gen.get_start('NOPQRSTUVWXY3456789ABCDEFGHIJKLM'), 51
         )
         self.assertEqual(chr(51), '3')
         self.assertEqual(
-            misc.get_start('ABCDEFGHIJKLMNOPQRSTUVWXYZ234567'), 50
+            gen.get_start('ABCDEFGHIJKLMNOPQRSTUVWXYZ234567'), 50
         )
         self.assertEqual(
-            misc.get_start('234567ABCDEFGHIJKLMNOPQRSTUVWXYZ'), 50
+            gen.get_start('234567ABCDEFGHIJKLMNOPQRSTUVWXYZ'), 50
         )
         self.assertEqual(chr(50), '2')
 
     def test_get_end(self):
         self.assertEqual(
-            misc.get_end('3456789ABCDEFGHIJKLMNOPQRSTUVWXY'), 89
+            gen.get_end('3456789ABCDEFGHIJKLMNOPQRSTUVWXY'), 89
         )
         self.assertEqual(
-            misc.get_end('NOPQRSTUVWXY3456789ABCDEFGHIJKLM'), 89
+            gen.get_end('NOPQRSTUVWXY3456789ABCDEFGHIJKLM'), 89
         )
         self.assertEqual(chr(89), 'Y')
         self.assertEqual(
-            misc.get_end('ABCDEFGHIJKLMNOPQRSTUVWXYZ234567'), 90
+            gen.get_end('ABCDEFGHIJKLMNOPQRSTUVWXYZ234567'), 90
         )
         self.assertEqual(
-            misc.get_end('234567ABCDEFGHIJKLMNOPQRSTUVWXYZ'), 90
+            gen.get_end('234567ABCDEFGHIJKLMNOPQRSTUVWXYZ'), 90
         )
         self.assertEqual(chr(90), 'Z')
 
     def test_gen_reverse(self):
         # Dmedia-Base32:
         forward = '3456789ABCDEFGHIJKLMNOPQRSTUVWXY'
-        reverse = misc.gen_reverse(forward)
+        reverse = gen.gen_reverse(forward)
         self.assertIsInstance(reverse, tuple)
         self.assertEqual(len(reverse), 256)
         for (i, r) in enumerate(reverse):
-            self.assertIsInstance(r, misc.Reverse)
+            self.assertIsInstance(r, gen.Reverse)
             self.assertEqual(r.i, i)
         count = 0
         for (i, r) in enumerate(reverse[0:51]):
@@ -229,11 +229,11 @@ class TestFunctions(TestCase):
 
         # Standard RFC-3548 Base32:
         forward = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567'
-        reverse = misc.gen_reverse(forward)
+        reverse = gen.gen_reverse(forward)
         self.assertIsInstance(reverse, tuple)
         self.assertEqual(len(reverse), 256)
         for (i, r) in enumerate(reverse):
-            self.assertIsInstance(r, misc.Reverse)
+            self.assertIsInstance(r, gen.Reverse)
             self.assertEqual(r.i, i)
         count = 0
         for (i, r) in enumerate(reverse[0:50]):

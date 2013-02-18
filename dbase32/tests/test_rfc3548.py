@@ -34,7 +34,7 @@ import base64
 from random import SystemRandom
 from collections import Counter
 
-from dbase32 import rfc3548, misc
+from dbase32 import rfc3548, gen
 
 
 random = SystemRandom()
@@ -64,7 +64,7 @@ class TestConstants(TestCase):
     def test_forward(self):
         self.assertIsInstance(rfc3548.B32_FORWARD, str)
         self.assertEqual(len(rfc3548.B32_FORWARD), 32)
-        sb32 = misc.gen_forward('0189')
+        sb32 = gen.gen_forward('0189')
         self.assertEqual(set(rfc3548.B32_FORWARD), set(sb32))
         self.assertNotEqual(rfc3548.B32_FORWARD, sb32)
 
@@ -75,7 +75,7 @@ class TestConstants(TestCase):
         self.assertEqual(max(rfc3548.B32_REVERSE), 255)
         self.assertEqual(
             rfc3548.B32_REVERSE,
-            tuple(r.value for r in misc.gen_reverse(rfc3548.B32_FORWARD))
+            tuple(r.value for r in gen.gen_reverse(rfc3548.B32_FORWARD))
         )
 
         for (i, value) in enumerate(rfc3548.B32_REVERSE):
