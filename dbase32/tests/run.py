@@ -1,5 +1,3 @@
-#!/usr/bin/python3
-
 # dbase32: base32-encoding with a sorted-order alphabet (for databases)
 # Copyright (C) 2013 Novacut Inc
 #
@@ -23,7 +21,7 @@
 #
 
 """
-Run unit tests against installed `dbase32` package (possibly in an venv).
+Run `dbase32` unit tests.
 """
 
 from os import path

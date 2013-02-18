@@ -39,7 +39,7 @@ import shutil
 from subprocess import check_call, call
 
 import dbase32
-import dbase32test
+from dbase32.tests.run import run_tests
 
 
 class TestEnvBuilder(EnvBuilder):
@@ -54,14 +54,13 @@ class TestEnvBuilder(EnvBuilder):
             shutil.rmtree(self.tmpdir)
 
     def post_setup(self, context):
+        self.python = context.env_exe
         setup = path.abspath(__file__)
-        check_call([context.env_exe, setup, 'install'])
-        #run_tests = path.join(context.env_dir, 'local', 'bin', 'dbase32-run-tests')
-        #assert path.isfile(run_tests)
-        self.run_tests_cmd = [context.env_exe, '-m', 'dbase32test']
+        check_call([self.python, setup, 'install'])
 
     def run_tests(self):
-        return call(self.run_tests_cmd) == 0
+        cmd = [self.python, '-m', 'dbase32.tests.run']
+        return call(cmd) == 0
 
 
 class Test(Command):
@@ -77,7 +76,7 @@ class Test(Command):
 
     def run(self):
         # First run the tests in the source tree
-        if not dbase32test.run_tests():
+        if not run_tests():
             raise SystemExit('Tests failed in source tree!')
 
         # Now run the tests in a virtual environment:
@@ -102,7 +101,6 @@ setup(
         'dbase32',
         'dbase32.tests',
     ],
-    py_modules=['dbase32test'],
     ext_modules=[_dbase32],
     cmdclass={'test': Test},
 )
