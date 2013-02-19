@@ -226,7 +226,13 @@ def random_id(numbytes=15):
     The ID will be 24-characters long, URL and filesystem safe.
     """
     if not isinstance(numbytes, int):
-        raise TypeError('integer argument expected, got float')
+        if isinstance(numbytes, float):
+            raise TypeError('integer argument expected, got float')
+        if isinstance(numbytes, str):
+            raise TypeError("'str' object cannot be interpreted as an integer")
+        raise TypeError(
+            'numbytes must be an int; got {!r}'.format(type(numbytes))
+        )
     if not (5 <= numbytes <= MAX_BIN_LEN):
         raise ValueError('numbytes is {}, need 5 <= numbytes <= {}'.format(
                 numbytes, MAX_BIN_LEN)

@@ -538,6 +538,12 @@ class TestFunctions(TestCase):
             str(cm.exception),
             'integer argument expected, got float'
         )
+        with self.assertRaises(TypeError) as cm:        
+            random_id('15')
+        self.assertEqual(
+            str(cm.exception),
+            "'str' object cannot be interpreted as an integer"
+        )
 
         with self.assertRaises(ValueError) as cm:
             random_id(4)
@@ -592,6 +598,12 @@ class TestFunctions(TestCase):
 
     def test_random_id_p(self):
         self.check_random_id(fallback.random_id)
+        with self.assertRaises(TypeError) as cm:        
+            fallback.random_id([])
+        self.assertEqual(
+            str(cm.exception),
+            "numbytes must be an int; got <class 'list'>"
+        )
 
     def test_random_id_c(self):
         self.skip_if_no_c_ext()
