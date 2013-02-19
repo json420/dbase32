@@ -24,10 +24,13 @@
 Validate encode_x(), decode_x() against known good RFC-3548 encode/decode.
 """
 
-from .fallback import encode_x, decode_x
+from os import urandom
+
+from .fallback import encode_x, decode_x, _text_to_bytes, _check_length
+from .fallback import MAX_BIN_LEN, MAX_TXT_LEN
 
 
-__all__ = ('b32enc', 'b32dec')
+__all__ = ('b32enc', 'b32dec', 'isb32', 'check_b32', 'random_id')
 
 # B32: RFC-3548 Base32: different binary vs encoded sort order (deal breaker!)
 # [removes 0, 1, 8, 9]
@@ -91,10 +94,57 @@ B32_REVERSE = (
 )
 
 
+B32_SET = frozenset(B32_FORWARD.encode('utf-8'))
+
+
 def b32enc(data):
     return encode_x(data, B32_FORWARD)
 
 
 def b32dec(text):
     return decode_x(text, B32_REVERSE)
+
+
+def isb32(text):
+    text = _text_to_bytes(text)
+    if not (8 <= len(text) <= MAX_TXT_LEN):
+        return False
+    if len(text) % 8 != 0:
+        return False
+    return B32_SET.issuperset(text)
+
+
+def check_b32(text):
+    utf8 = _check_length(_text_to_bytes(text))
+    if not B32_SET.issuperset(utf8):
+        for i in utf8:
+            if i not in B32_SET:
+                raise ValueError(
+                    'invalid D-Base32 letter: {}'.format(chr(i))
+                )
+
+
+def random_id(numbytes=15):
+    """
+    Returns a 120-bit DBase32-encoded random ID.
+
+    The ID will be 24-characters long, URL and filesystem safe.
+    """
+    if not isinstance(numbytes, int):
+        if isinstance(numbytes, float):
+            raise TypeError('integer argument expected, got float')
+        if isinstance(numbytes, str):
+            raise TypeError("'str' object cannot be interpreted as an integer")
+        raise TypeError(
+            'numbytes must be an int; got {!r}'.format(type(numbytes))
+        )
+    if not (5 <= numbytes <= MAX_BIN_LEN):
+        raise ValueError('numbytes is {}, need 5 <= numbytes <= {}'.format(
+                numbytes, MAX_BIN_LEN)
+        )
+    if numbytes % 5 != 0:
+        raise ValueError(
+            'numbytes is {}, need numbytes % 5 == 0'.format(numbytes)
+        )
+    return b32enc(urandom(numbytes))
 
