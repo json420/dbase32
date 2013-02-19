@@ -1,7 +1,7 @@
 Reporting Bugs
 ==============
 
-The `dbase32 Launchpad project`_ is where all D-Base32 development is
+The `dbase32 Launchpad project`_ is where all Dbase32 development is
 coordinated, including bug tracking.
 
 If you're using `Ubuntu`_ and have the ``python3-dbase32`` package installed,

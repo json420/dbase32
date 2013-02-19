@@ -1,7 +1,7 @@
 Installing on Ubuntu
 ====================
 
-D-Base32 packages are available for `Ubuntu`_ Raring in the
+Dbase32 packages are available for `Ubuntu`_ Raring in the
 `Novacut Stable Releases PPA`_ and the `Novacut Daily Builds PPA`_.
 
 Installation is easy. First add either the stable PPA::

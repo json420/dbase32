@@ -1,10 +1,10 @@
-D-Base32
-========
+Dbase32
+=======
 
-The `D-Base32`_ encoding is a base-32 variant designed for document-oriented
+The `Dbase32`_ encoding is a base32 variant designed for document-oriented
 databases, specifically for encoding document IDs.
 
-D-Base32 uses an alphabet whose symbols are in ASCII/UTF-8 sorted order::
+Dbase32 uses an alphabet whose symbols are in ASCII/UTF-8 sorted order::
 
     3456789ABCDEFGHIJKLMNOPQRSTUVWXY
 
@@ -24,14 +24,14 @@ Example usage:
 >>> db32dec('FCNPVRELI7J9FUUI')
 b'binary foo'
 
-D-Base32 is being developed as part of the `Novacut`_ project. Packages are
+Dbase32 is being developed as part of the `Novacut`_ project. Packages are
 available for `Ubuntu`_ in the `Novacut Stable Releases PPA`_ and the
 `Novacut Daily Builds PPA`_.
 
-If you have questions or need help getting started with D-Base32, please stop
+If you have questions or need help getting started with Dbase32, please stop
 by the `#novacut`_ IRC channel on freenode.
 
-D-Base32 is licensed `LGPLv3+`_, and requires `Python 3.3`_ or newer.
+Dbase32 is licensed `LGPLv3+`_, and requires `Python 3.3`_ or newer.
 
 Contents:
 
@@ -44,7 +44,7 @@ Contents:
     design
 
 
-.. _`D-Base32`: https://launchpad.net/dbase32
+.. _`Dbase32`: https://launchpad.net/dbase32
 .. _`RFC-3548 Base32`: http://tools.ietf.org/html/rfc4648
 .. _`LGPLv3+`: http://www.gnu.org/licenses/lgpl-3.0.html
 .. _`Novacut`: https://wiki.ubuntu.com/Novacut

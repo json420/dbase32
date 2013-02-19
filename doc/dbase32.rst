@@ -11,7 +11,7 @@ The :mod:`dbase32` API consists of just five functions:
 
     * For validation, there is :func:`isdb32()` and :func:`check_db32()`
 
-    * Lastly, :func:`random_id()` generates D-Base32 encoded random IDs
+    * Lastly, :func:`random_id()` generates Dbase32 encoded random IDs
 
 
 
@@ -35,7 +35,7 @@ b'binary foo'
 >>> db32dec(b'FCNPVRELI7J9FUUI')
 b'binary foo'
 
-Use :func:`isdb32()` to test whether you have a valid D-Base32 encoded ID.  It
+Use :func:`isdb32()` to test whether you have a valid Dbase32 encoded ID.  It
 will return ``True`` if the ID is valid:
 
 >>> from dbase32 import isdb32
@@ -65,7 +65,7 @@ wrong length:
 >>> check_db32('AAAAAAAZ')
 Traceback (most recent call last):
   ...
-ValueError: invalid D-Base32 letter: Z
+ValueError: invalid Dbase32 letter: Z
 >>> check_db32('AAAAAAA')
 Traceback (most recent call last):
   ...
@@ -75,9 +75,9 @@ When you don't actually want the decoded ID, it's faster to validate with
 :func:`isdb32()` or :func:`check_db32()` than to validate with :func:`db32dec()`
 and throw away the needlessly decoded value.
 
-Lastly, use :func:`random_id()` to generate a D-Base32 encoded random ID.  By
+Lastly, use :func:`random_id()` to generate a Dbase32 encoded random ID.  By
 default it will return a 120-bit (15-byte) ID, which will be 24 characters in
-length when D-Base32 encoded:
+length when Dbase32 encoded:
 
 >>> from dbase32 import random_id
 >>> random_id()
@@ -86,7 +86,7 @@ length when D-Base32 encoded:
 The *numbytes* keyword argument defaults to ``15``, but you can override this
 to get an ID with a different length.  Typically you would only do this for
 unit testing, for example to create a well-formed 240-bit (30-byte) Dmedia file
-ID, which will be 48 characters in length when D-Base32 encoded:
+ID, which will be 48 characters in length when Dbase32 encoded:
 
 >>> random_id(30)
 'AU8HC68B9IC6AY6B3NHWOGCI9VK4MTOUSFLWRD7TLQBC56MN'
@@ -112,10 +112,10 @@ needed.
 Well-formed IDs
 ---------------
 
-D-Base32 is not designed to encode arbitrary data.  Instead, it's designed only
+Dbase32 is not designed to encode arbitrary data.  Instead, it's designed only
 to encode well-formed IDs like those used in `Dmedia`_ and `Novacut`_.
 
-Unlike standard `RFC-3548 Base32`_ encoding, D-Base32 does *not* support
+Unlike standard `RFC-3548 Base32`_ encoding, Dbase32 does *not* support
 padding.  The binary data must always be a multiple of 40 bits (5 bytes) in
 length.
 
@@ -141,7 +141,7 @@ Functions
 
 .. function:: db32enc(data)
 
-    Encode *data* as D-Base32 text.
+    Encode *data* as Dbase32 text.
 
     An ``str`` instance is returned:
 
@@ -157,7 +157,7 @@ Functions
 
 .. function:: db32dec(text)
 
-    Decode D-Base32 *text*.
+    Decode Dbase32 *text*.
 
     A ``bytes`` instance is returned:
 
@@ -174,7 +174,7 @@ Functions
 
 .. function:: isdb32(text)
 
-    Return ``True`` if *text* contains a valid D-Base32 encoded ID.
+    Return ``True`` if *text* contains a valid Dbase32 encoded ID.
 
     >>> isdb32('39AYA9AY')
     True
@@ -191,7 +191,7 @@ Functions
 
 .. function:: check_db32(text)
 
-    Raise a ``ValueError`` if *text* is not a valid D-Base32 encoded ID.
+    Raise a ``ValueError`` if *text* is not a valid Dbase32 encoded ID.
 
     This function will raise a ``ValueError`` if *text* contains any letters
     that are not in :data:`DB32ALPHABET`.  For example:
@@ -200,22 +200,22 @@ Functions
     >>> check_db32('39AY27AZ')
     Traceback (most recent call last):
       ...
-    ValueError: invalid D-Base32 letter: 2
+    ValueError: invalid Dbase32 letter: 2
 
     This function will likewise raise a ``ValueError`` if *text* doesn't meet
     the following condition::
 
         8 <= len(text) <= 96 and len(text) % 8 == 0
 
-    If *text* is a valid D-Base32 ID, this function returns ``None``.
+    If *text* is a valid Dbase32 ID, this function returns ``None``.
 
 
 .. function:: random_id(numbytes=15)
 
-    Return a D-Base32 encoded random ID.
+    Return a Dbase32 encoded random ID.
 
     By default, a 120-bit (15-byte) ID is returned, which will be 24
-    characters in length when D-Base32 encoded:
+    characters in length when Dbase32 encoded:
 
     >>> random_id()
     'XM4OINLIPO6VVF549TWYNK89'
@@ -236,7 +236,7 @@ A few handy constants:
 
 .. data:: DB32ALPHABET
 
-    An ``str`` with the D-Base32 alphabet.
+    An ``str`` with the Dbase32 alphabet.
 
     >>> DB32ALPHABET = '3456789ABCDEFGHIJKLMNOPQRSTUVWXY'
 
@@ -276,7 +276,7 @@ A few handy constants:
     >>> RANDOM_B32LEN = 24
 
 
-.. _`D-Base32`: https://launchpad.net/dbase32
+.. _`Dbase32`: https://launchpad.net/dbase32
 .. _`RFC-3548 Base32`: http://tools.ietf.org/html/rfc4648
 .. _`Novacut`: https://launchpad.net/novacut
 .. _`Dmedia`: https://launchpad.net/dmedia

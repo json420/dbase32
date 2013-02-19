@@ -1,7 +1,7 @@
 Design Rationale
 ================
 
-This is the rationale for why `D-Base32`_ is designed the way it is.
+This is the rationale for why `Dbase32`_ is designed the way it is.
 
 
 Sort order problem
@@ -227,14 +227,14 @@ As far as I know, this set of symbols (regardless of order) isn't used in any
 existing base32 encoding.
 
 
-Dmedia-Base32
+Dmedia Base32
 -------------
 
-I'm calling our encoding D-Base32 (D is for `Dmedia`_, and D is for Database).
+I'm calling our encoding Dbase32 (D is for `Dmedia`_, and D is for Database).
 It has the desired property of preserving the sort order, as you can see::
 
     =============  ===========  ===========  ===========
-       Binary         Base32       S-Base32     D-Base32
+       Binary         Base32       S-Base32      Dbase32
     =============  ===========  ===========  ===========
      0 0000000000  13 3XO53XO5   0 22222222   0 33333333
      1 1111111111  14 53XO53XO   1 46CL46CL   1 57BK57BK
@@ -254,7 +254,7 @@ It has the desired property of preserving the sort order, as you can see::
     15 ffffffffff  12 ZTGMZTGM  15 ZZZZZZZZ  15 YYYYYYYY
     =============  ===========  ===========  ===========
 
-Because D-Base32 is *not* designed to encode arbitrary data, but instead is
+Because Dbase32 is *not* designed to encode arbitrary data, but instead is
 designed only to encode our well-formed IDs, we're *not* supporting padding.
 Data to be encoded must be a multiple of 5 bytes in length, and text to be
 decoded must be a multiple of 8 characters in length.
@@ -367,7 +367,7 @@ And the same with uppercase IDs::
     }
 
 
-.. _`D-Base32`: https://launchpad.net/dbase32
+.. _`Dbase32`: https://launchpad.net/dbase32
 .. _`RFC-3548 Base32`: http://tools.ietf.org/html/rfc4648
 .. _`Novacut`: https://launchpad.net/novacut
 .. _`Dmedia`: https://launchpad.net/dmedia
