@@ -54,58 +54,56 @@ assert _dbase32.isdb32(not_db32) is False
 """
 
 
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--bytes', metavar='N', type=int,
-        default=60,
-        help='length of binary ID in bytes',
-    )
-    args = parser.parse_args()
-
-    text_db32 = dbase32.random_id(args.bytes)
+def run_benchmark(numbytes=30):
+    text_db32 = dbase32.random_id(numbytes)
     setup = SETUP.format(text_db32)
 
-
-    def run(statement, k=2500):
+    def run(statement, k=750):
         count = k * 1000
         t = timeit.Timer(statement, setup)
         elapsed = t.timeit(count)
         rate = int(count / elapsed)
-        print('{:>14,}: {}'.format(rate, statement))
+        return '{:>12,}: {}'.format(rate, statement)
 
-
-    print('dbase32: {}'.format(dbase32.__version__))
-    print('Python: {}, {}, {} ({} {})'.format(
-            platform.python_version(),
-            platform.machine(),
-            platform.system(),
-            platform.dist()[0],
-            platform.dist()[1],
-        )
+    yield 'dbase32: {}'.format(dbase32.__version__)
+    yield 'Python: {}, {}, {} ({} {})'.format(
+        platform.python_version(),
+        platform.machine(),
+        platform.system(),
+        platform.dist()[0],
+        platform.dist()[1],
     )
-    print('data size: {} bytes'.format(args.bytes))
-    print('')
+    yield 'data size: {} bytes'.format(numbytes)
 
-    print('Encodes/second:')
-    run('base64.b64encode(data)')
-    run('_dbase32.db32enc(data)')
-    run('fallback.db32enc(data)', 25)
+    yield 'Encodes/second:'
+    yield run('base64.b64encode(data)')
+    yield run('_dbase32.db32enc(data)')
+    yield run('fallback.db32enc(data)', 25)
 
-    print('Decodes/second:')
-    run('base64.b64decode(text_b64)')
-    run('_dbase32.db32dec(text_db32)')
-    run('fallback.db32dec(text_db32)', 25)
+    yield 'Decodes/second:'
+    yield run('base64.b64decode(text_b64)')
+    yield run('_dbase32.db32dec(text_db32)')
+    yield run('fallback.db32dec(text_db32)', 25)
 
-    print('Validations/second:')
-    run('_dbase32.isdb32(text_db32)')
-    run('fallback.isdb32(text_db32)', 250)
-    run('_dbase32.check_db32(text_db32)')
-    run('fallback.check_db32(text_db32)', 250)
+    yield 'Validations/second:'
+    yield run('_dbase32.isdb32(text_db32)')
+    yield run('fallback.isdb32(text_db32)', 100)
+    yield run('_dbase32.check_db32(text_db32)')
+    yield run('fallback.check_db32(text_db32)', 100)
 
-    print('Random IDs/second:')
-    run('os.urandom(15)', 300)
-    run('_dbase32.random_id(15)', 300)
-    run('fallback.random_id(15)', 150)
+    yield 'Random IDs/second:'
+    yield run('os.urandom(15)', 100)
+    yield run('_dbase32.random_id(15)', 100)
+    yield run('fallback.random_id(15)', 25)
 
-    print('')
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--bytes', metavar='N', type=int,
+        default=30,
+        help='length of binary ID in bytes',
+    )
+    args = parser.parse_args()
+    for line in run_benchmark(args.bytes):
+        print(line)
 

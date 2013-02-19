@@ -26,6 +26,8 @@
 Install `dbase32`.
 """
 
+from __future__ import print_function
+
 import sys
 if sys.version_info < (3, 3):
     sys.exit('dbase32 requires Python 3.3 or newer')
@@ -53,6 +55,23 @@ class Test(Command):
             raise SystemExit('2')
 
 
+class Benchmark(Command):
+    description = 'run dbase32 benchmark'
+
+    user_options = []
+
+    def initialize_options(self):
+        pass
+
+    def finalize_options(self):
+        pass
+
+    def run(self):
+        from dbase32.benchmark import run_benchmark
+        for line in run_benchmark():
+            print(line)
+
+
 _dbase32 = Extension('_dbase32', sources=['_dbase32.c'],
     #extra_compile_args=['-O3']
 )
@@ -70,5 +89,8 @@ setup(
         'dbase32.tests',
     ],
     ext_modules=[_dbase32],
-    cmdclass={'test': Test},
+    cmdclass={
+        'test': Test,
+        'benchmark': Benchmark,
+    },
 )
