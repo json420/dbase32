@@ -55,16 +55,19 @@ def run_tests():
     # Run the tests:
     runner = TextTestRunner(verbosity=2)
     result = runner.run(suite)
+    success =  result.wasSuccessful()
     print(
         'dbase32: {!r}'.format(path.abspath(dbase32.__file__)),
         file=sys.stderr
     )
-    return result.wasSuccessful()
+    if success:
+        print('Tests passed.', file=sys.stderr)
+    else:
+        print('Tests FAILED!', file=sys.stderr)
+    return success
 
 
 if __name__ == '__main__':
     if not run_tests():
-        print('Tests FAILED!', file=sys.stderr)
         raise SystemExit('2')
-    print('Tests passed.', file=sys.stderr)
 
