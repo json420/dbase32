@@ -132,7 +132,7 @@ dbase32_encode(const size_t bin_len, const uint8_t *bin_buf,
 /* dbase32_decode()
 
 Return value is the status:
-    status >=  0 means invalid D-Base32 letter (char is returned)
+    status >=  0 means invalid Dbase32 letter (char is returned)
     status == -1 means success
     status == -2 means invalid txt_len
     status == -3 means invalid bin_len
@@ -286,7 +286,7 @@ dbase32_db32dec(PyObject *self, PyObject *args)
     status = dbase32_decode(txt_len, txt_buf, bin_len, bin_buf);
     if (status != -1) {
         if (status >= 0) {
-            PyErr_Format(PyExc_ValueError, "invalid D-Base32 letter: %c", status);
+            PyErr_Format(PyExc_ValueError, "invalid Dbase32 letter: %c", status);
         }
         else {
             PyErr_SetString(PyExc_RuntimeError, "something went very wrong");
@@ -388,7 +388,7 @@ dbase32_check_db32(PyObject *self, PyObject *args)
                 r = DB32_REVERSE[txt_buf[i]];
                 if (r & 224) {
                     PyErr_Format(PyExc_ValueError,
-                        "invalid D-Base32 letter: %c", txt_buf[i]
+                        "invalid Dbase32 letter: %c", txt_buf[i]
                     );
                     return NULL;
                 }

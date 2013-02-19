@@ -307,24 +307,24 @@ class TestFunctions(TestCase):
         # Test with invalid base32 characters:
         with self.assertRaises(ValueError) as cm:
             func('CDEFCDE2')
-        self.assertEqual(str(cm.exception), 'invalid D-Base32 letter: 2')
+        self.assertEqual(str(cm.exception), 'invalid Dbase32 letter: 2')
         with self.assertRaises(ValueError) as cm:
             func('CDEFCDE=')
-        self.assertEqual(str(cm.exception), 'invalid D-Base32 letter: =')
+        self.assertEqual(str(cm.exception), 'invalid Dbase32 letter: =')
         with self.assertRaises(ValueError) as cm:
             func('CDEFCDEZ')
-        self.assertEqual(str(cm.exception), 'invalid D-Base32 letter: Z')
+        self.assertEqual(str(cm.exception), 'invalid Dbase32 letter: Z')
 
         # Test that it stops at the first invalid letter:
         with self.assertRaises(ValueError) as cm:
             func('2ZZZZZZZ')
-        self.assertEqual(str(cm.exception), 'invalid D-Base32 letter: 2')
+        self.assertEqual(str(cm.exception), 'invalid Dbase32 letter: 2')
         with self.assertRaises(ValueError) as cm:
             func('AAAAAA=Z')
-        self.assertEqual(str(cm.exception), 'invalid D-Base32 letter: =')
+        self.assertEqual(str(cm.exception), 'invalid Dbase32 letter: =')
         with self.assertRaises(ValueError) as cm:
             func('CDEZ=2=2')
-        self.assertEqual(str(cm.exception), 'invalid D-Base32 letter: Z')
+        self.assertEqual(str(cm.exception), 'invalid Dbase32 letter: Z')
 
         # Test invalid letter at each possible position in the string
         for size in TXT_SIZES:
@@ -333,28 +333,28 @@ class TestFunctions(TestCase):
                 txt = make_string(i, size, 'A', '/')
                 with self.assertRaises(ValueError) as cm:
                     func(txt)
-                self.assertEqual(str(cm.exception), 'invalid D-Base32 letter: /')
+                self.assertEqual(str(cm.exception), 'invalid Dbase32 letter: /')
                 txt = make_string(i, size, 'A', '.')
                 with self.assertRaises(ValueError) as cm:
                     func(txt)
-                self.assertEqual(str(cm.exception), 'invalid D-Base32 letter: .')
+                self.assertEqual(str(cm.exception), 'invalid Dbase32 letter: .')
 
                 # Test that it stops at the *first* invalid letter:
                 txt = make_string(i, size, 'A', '/', '.')
                 with self.assertRaises(ValueError) as cm:
                     func(txt)
-                self.assertEqual(str(cm.exception), 'invalid D-Base32 letter: /')
+                self.assertEqual(str(cm.exception), 'invalid Dbase32 letter: /')
                 txt = make_string(i, size, 'A', '.', '/')
                 with self.assertRaises(ValueError) as cm:
                     func(txt)
-                self.assertEqual(str(cm.exception), 'invalid D-Base32 letter: .')
+                self.assertEqual(str(cm.exception), 'invalid Dbase32 letter: .')
 
         # Test a slew of no-no letters:
         for L in BAD_LETTERS:
             txt = ('A' * 7) + L
             with self.assertRaises(ValueError) as cm:
                 func(txt)
-            self.assertEqual(str(cm.exception), 'invalid D-Base32 letter: ' + L)
+            self.assertEqual(str(cm.exception), 'invalid Dbase32 letter: ' + L)
 
         # Test with multi-byte UTF-8 characters:
         bad_s = '™' * 8
@@ -366,7 +366,7 @@ class TestFunctions(TestCase):
                 func(value)
             self.assertEqual(
                 str(cm.exception),
-                'invalid D-Base32 letter: â'
+                'invalid Dbase32 letter: â'
             )
         bad_s = 'AABBCCD™'
         bad_b = bad_s.encode('utf-8')
@@ -388,7 +388,7 @@ class TestFunctions(TestCase):
                 func(value)
             self.assertEqual(
                 str(cm.exception),
-                'invalid D-Base32 letter: â'
+                'invalid Dbase32 letter: â'
             )
 
     def check_db32dec(self, db32dec):
@@ -611,7 +611,7 @@ class TestFunctions(TestCase):
 
     def test_sort_p(self):
         """
-        Confirm assumptions about RFC-3548 sort-order, test D-Base32 sort-order.
+        Confirm assumptions about RFC-3548 sort-order, test Dbase32 sort-order.
         """
         ids = [os.urandom(30) for i in range(1000)]
         ids.extend(os.urandom(15) for i in range(1500))
@@ -654,7 +654,7 @@ class TestFunctions(TestCase):
 
     def test_sort_c(self):
         """
-        Test binary vs D-Base32 sort order, with a *lot* of values.
+        Test binary vs Dbase32 sort order, with a *lot* of values.
         """
         self.skip_if_no_c_ext()
         ids = [os.urandom(30) for i in range(20 * 1000)]

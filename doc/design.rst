@@ -227,7 +227,7 @@ As far as I know, this set of symbols (regardless of order) isn't used in any
 existing base32 encoding.
 
 
-Dmedia Base32
+Dmedia base32
 -------------
 
 I'm calling our encoding Dbase32 (D is for `Dmedia`_, and D is for Database).

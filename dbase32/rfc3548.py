@@ -120,7 +120,7 @@ def check_b32(text):
         for i in utf8:
             if i not in B32_SET:
                 raise ValueError(
-                    'invalid D-Base32 letter: {}'.format(chr(i))
+                    'invalid Dbase32 letter: {}'.format(chr(i))
                 )
 
 

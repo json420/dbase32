@@ -21,7 +21,7 @@
 #
 
 """
-Pure-Python implementation of D-Base32 encoding.
+Pure-Python implementation of the Dbase32 encoding.
 """
 
 from os import urandom
@@ -160,7 +160,7 @@ def _decode_x_iter(text, x_reverse):
     for i in text:
         r = x_reverse[i]
         if r > 31:
-            raise ValueError('invalid D-Base32 letter: {}'.format(chr(i)))
+            raise ValueError('invalid Dbase32 letter: {}'.format(chr(i)))
         taxi = (taxi << 5) | r
         bits += 5
         while bits >= 8:
@@ -176,7 +176,7 @@ def decode_x(text, x_reverse):
 
 def db32enc(data):
     """
-    Encode *data* into a D-Base32 string.
+    Encode *data* into a Dbase32 string.
 
     For exmple:
 
@@ -189,7 +189,7 @@ def db32enc(data):
 
 def db32dec(text):
     """
-    Decode D-Base32 encoded *text*.
+    Decode Dbase32 encoded *text*.
 
     For exmple:
 
@@ -215,7 +215,7 @@ def check_db32(text):
         for i in utf8:
             if i not in DB32_SET:
                 raise ValueError(
-                    'invalid D-Base32 letter: {}'.format(chr(i))
+                    'invalid Dbase32 letter: {}'.format(chr(i))
                 )
 
 
