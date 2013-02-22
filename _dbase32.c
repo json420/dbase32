@@ -334,14 +334,11 @@ dbase32_isdb32(PyObject *self, PyObject *args)
         31: 00011111  <= bits set in reverse-table for valid characters
        224: 11100000  <= bits set in reverse-table for invalid characters
 
-    This unrolled approach is much faster.  ~4.5 million/second up from
-    ~3.2 million/second for the fully rolled loop that does an error check
-    at each character.  */
+    This unrolled approach is much faster.  */
     if (r & 224) {
         Py_RETURN_FALSE;
-    } else {
-        Py_RETURN_TRUE;
     }
+    Py_RETURN_TRUE;
 }
 
 
@@ -382,7 +379,12 @@ dbase32_check_db32(PyObject *self, PyObject *args)
         r |= DB32_REVERSE[txt_buf[6]];
         r |= DB32_REVERSE[txt_buf[7]];
 
-        // Only one error check (branch) per block:
+        /* Only one error check (branch) per block:
+
+            31: 00011111  <= bits set in reverse-table for valid characters
+           224: 11100000  <= bits set in reverse-table for invalid characters
+
+        This unrolled approach is much faster.  */
         if (r & 224) {
             for (i=0; i < 8; i++) {
                 r = DB32_REVERSE[txt_buf[i]];
