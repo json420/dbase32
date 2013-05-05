@@ -27,6 +27,7 @@ Unit tests for `dbase32` module.
 from unittest import TestCase
 import os
 from random import SystemRandom
+import time
 import base64
 from collections import Counter, namedtuple
 
@@ -608,6 +609,66 @@ class TestFunctions(TestCase):
     def test_random_id_c(self):
         self.skip_if_no_c_ext()
         self.check_random_id(_dbase32.random_id)
+
+    def check_random_id2(self, random_id2):
+        def ts_enc(ts):
+            assert isinstance(ts, int)
+            assert ts > 0
+            buf = bytearray()
+            buf.append((ts >> 32) & 255)
+            buf.append((ts >> 24) & 255)
+            buf.append((ts >> 16) & 255)
+            buf.append((ts >>  8) & 255)
+            buf.append(ts & 255)
+            return fallback.db32enc(bytes(buf))
+
+        accum = set()
+        for n in range(100):
+            # Don't provide timestamp:
+            start = int(time.time())
+            _id = random_id2()
+            end = int(time.time())
+            self.assertIsInstance(_id, str)
+            self.assertEqual(len(_id), 24)
+            self.assertTrue(set(_id).issubset(fallback.DB32_FORWARD))
+            possible = set(ts_enc(i) for i in range(start, end + 1))
+            self.assertIn(_id[:8], possible)
+            accum.add(_id[8:])
+
+            # Current timestamp:
+            timestamp = time.time()
+            _id = random_id2(timestamp)
+            self.assertIsInstance(_id, str)
+            self.assertEqual(len(_id), 24)
+            self.assertTrue(set(_id).issubset(fallback.DB32_FORWARD))
+            self.assertEqual(_id[:8], ts_enc(int(timestamp)))
+            accum.add(_id[8:])
+
+            # Smallest timestamp:
+            _id = random_id2(0)
+            self.assertIsInstance(_id, str)
+            self.assertEqual(len(_id), 24)
+            self.assertTrue(set(_id).issubset(fallback.DB32_FORWARD))
+            self.assertEqual(_id[:8], '33333333')
+            accum.add(_id[8:])
+
+            # Largest timestamp:
+            _id = random_id2(2**40 - 1)
+            self.assertIsInstance(_id, str)
+            self.assertEqual(len(_id), 24)
+            self.assertTrue(set(_id).issubset(fallback.DB32_FORWARD))
+            self.assertEqual(_id[:8], 'YYYYYYYY')
+            accum.add(_id[8:])
+
+        # Make sure final 80 bits are actually random:
+        self.assertEqual(len(accum), 400)
+
+    def test_random_id2_p(self):
+        self.check_random_id2(fallback.random_id2)
+
+    def test_random_id2_c(self):
+        self.skip_if_no_c_ext()
+        self.check_random_id2(_dbase32.random_id2)
 
     def test_sort_p(self):
         """

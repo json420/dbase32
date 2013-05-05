@@ -468,6 +468,65 @@ dbase32_random_id(PyObject *self, PyObject *args, PyObject *kw)
 }
 
 
+static PyObject *
+dbase32_random_id2(PyObject *self, PyObject *args, PyObject *kw)
+{
+    static char *keys[] = {"timestamp", NULL};
+    double timestamp = -1;
+    PyObject *pyret;
+    time_t temp_ts;
+    uint64_t ts;
+    uint8_t *bin_buf, *txt_buf;
+    int status;
+
+    if (!PyArg_ParseTupleAndKeywords(args, kw, "|d:random_id2", keys, &timestamp)) {
+        return NULL;
+    }
+    if (timestamp < 0) {
+        time(&temp_ts);
+        ts = (uint64_t)(temp_ts);
+    }
+    else {
+        ts = (uint64_t)(timestamp);
+    }
+
+    // Allocate temp buffer for binary ID:
+    bin_buf = (uint8_t *)malloc(15);
+    if (bin_buf == NULL) {
+        return PyErr_NoMemory();
+    }
+
+    // First 5 bytes are from timestamp:
+    bin_buf[0] = (ts >> 32) & 255;
+    bin_buf[1] = (ts >> 24) & 255;
+    bin_buf[2] = (ts >> 16) & 255;
+    bin_buf[3] = (ts >>  8) & 255;
+    bin_buf[4] = ts & 255;
+
+    // Next 10 bytes are from os.urandom():
+    status = _PyOS_URandom(bin_buf + 5, 10);
+    if (status == -1) {
+        return NULL;
+    }
+
+    // Allocate destination buffer:
+    pyret = PyUnicode_New(24, DB32_END);
+    if (pyret == NULL ) {
+        return NULL;
+    }
+    txt_buf = (uint8_t *)PyUnicode_1BYTE_DATA(pyret);
+
+    // dbase32_encode() returns 0 on success:
+    status = dbase32_encode(15, bin_buf, 24, txt_buf);
+    free(bin_buf);
+    if (status != 0) {
+        PyErr_SetString(PyExc_RuntimeError, "something went very wrong");
+        Py_DECREF(pyret);
+        return NULL;
+    }
+    return pyret;
+}
+
 
 /* module init */
 static struct PyMethodDef dbase32_functions[] = {
@@ -477,6 +536,8 @@ static struct PyMethodDef dbase32_functions[] = {
     {"check_db32", dbase32_check_db32, METH_VARARGS, "check_db32(text)"},
     {"random_id", (PyCFunction)dbase32_random_id, METH_VARARGS | METH_KEYWORDS, 
         "random_id(numbytes=15)"},
+    {"random_id2", (PyCFunction)dbase32_random_id2, METH_VARARGS | METH_KEYWORDS, 
+        "random_id2(timestamp=-1)"},
     {NULL, NULL, 0, NULL}
 };
 

@@ -246,8 +246,8 @@ def random_id(numbytes=15):
 
 
 def random_id2(timestamp=-1):
-    assert isinstance(timestamp, int)
-    ts = (timestamp if timestamp >= 0 else int(time.time()))
+    assert isinstance(timestamp, (int, float))
+    ts = int(timestamp if timestamp >= 0 else time.time())
     buf = bytearray()
 
     # First 5 bytes are from the timestamp:
