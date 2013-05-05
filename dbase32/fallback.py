@@ -25,6 +25,7 @@ Pure-Python implementation of the Dbase32 encoding.
 """
 
 from os import urandom
+import time
 
 
 MAX_BIN_LEN = 60  # 480 bits
@@ -242,3 +243,22 @@ def random_id(numbytes=15):
             'numbytes is {}, need numbytes % 5 == 0'.format(numbytes)
         )
     return db32enc(urandom(numbytes))
+
+
+def random_id2(timestamp=-1):
+    assert isinstance(timestamp, int)
+    ts = (timestamp if timestamp >= 0 else int(time.time()))
+    buf = bytearray()
+
+    # First 5 bytes are from the timestamp:
+    buf.append((ts >> 32) & 255)
+    buf.append((ts >> 24) & 255)
+    buf.append((ts >> 16) & 255)
+    buf.append((ts >>  8) & 255)
+    buf.append(ts & 255)
+
+    # Next 10 bytes are from os.urandom():
+    buf.extend(urandom(10))
+
+    return db32enc(bytes(buf))
+

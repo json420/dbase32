@@ -28,6 +28,7 @@ from unittest import TestCase
 import os
 import base64
 from collections import Counter, namedtuple
+import time
 
 from dbase32 import fallback, gen
 
@@ -195,3 +196,40 @@ class TestFunctions(TestCase):
 
         text = b'F' * 48
         self.assertIs(fallback._check_length(text), text)
+
+    def test_random_id2(self):
+        def ts_enc(ts):
+            assert isinstance(ts, int)
+            assert ts > 0
+            buf = bytearray()
+            buf.append((ts >> 32) & 255)
+            buf.append((ts >> 24) & 255)
+            buf.append((ts >> 16) & 255)
+            buf.append((ts >>  8) & 255)
+            buf.append(ts & 255)
+            return fallback.db32enc(bytes(buf))
+
+        for n in range(100):
+            start = int(time.time())
+            _id = fallback.random_id2()
+            end = int(time.time())
+            self.assertIsInstance(_id, str)
+            self.assertEqual(len(_id), 24)
+            self.assertTrue(set(_id).issubset(fallback.DB32_FORWARD))
+            possible = set(ts_enc(i) for i in range(start, end + 1))
+            self.assertIn(_id[:8], possible)
+
+            # Smallest timestamp:
+            _id = fallback.random_id2(0)
+            self.assertIsInstance(_id, str)
+            self.assertEqual(len(_id), 24)
+            self.assertTrue(set(_id).issubset(fallback.DB32_FORWARD))
+            self.assertEqual(_id[:8], '33333333')
+
+            # Largest timestamp:
+            _id = fallback.random_id2(2**40 - 1)
+            self.assertIsInstance(_id, str)
+            self.assertEqual(len(_id), 24)
+            self.assertTrue(set(_id).issubset(fallback.DB32_FORWARD))
+            self.assertEqual(_id[:8], 'YYYYYYYY')
+
