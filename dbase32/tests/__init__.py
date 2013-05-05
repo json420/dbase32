@@ -147,6 +147,13 @@ class TestConstants(TestCase):
         else:
             self.assertIs(dbase32.random_id, fallback.random_id)
 
+    def test_log_id_alias(self):
+        if C_EXT_AVAIL:
+            self.assertIs(dbase32.log_id, _dbase32.log_id)
+            self.assertIsNot(dbase32.log_id, fallback.log_id)
+        else:
+            self.assertIs(dbase32.log_id, fallback.log_id)
+
 
 class TestFunctions(TestCase):
     def skip_if_no_c_ext(self):
