@@ -610,7 +610,7 @@ class TestFunctions(TestCase):
         self.skip_if_no_c_ext()
         self.check_random_id(_dbase32.random_id)
 
-    def check_random_id2(self, random_id2):
+    def check_log_id(self, log_id):
         def ts_bin(timestamp):
             ts = int(timestamp)
             assert ts >= 0
@@ -625,7 +625,7 @@ class TestFunctions(TestCase):
         for n in range(100):
             # Don't provide timestamp:
             start = int(time.time())
-            _id = random_id2()
+            _id = log_id()
             end = int(time.time())
             self.assertIsInstance(_id, str)
             self.assertEqual(len(_id), 24)
@@ -637,7 +637,7 @@ class TestFunctions(TestCase):
 
             # Current timestamp:
             timestamp = time.time()
-            _id = random_id2(timestamp)
+            _id = log_id(timestamp)
             self.assertIsInstance(_id, str)
             self.assertEqual(len(_id), 24)
             self.assertTrue(set(_id).issubset(fallback.DB32_FORWARD))
@@ -646,7 +646,7 @@ class TestFunctions(TestCase):
             accum.add(data[4:])
 
             # Smallest timestamp:
-            _id = random_id2(0)
+            _id = log_id(0)
             self.assertIsInstance(_id, str)
             self.assertEqual(len(_id), 24)
             self.assertTrue(set(_id).issubset(fallback.DB32_FORWARD))
@@ -655,7 +655,7 @@ class TestFunctions(TestCase):
             accum.add(data[4:])
 
             # Largest timestamp:
-            _id = random_id2(2**32 - 1)
+            _id = log_id(2**32 - 1)
             self.assertIsInstance(_id, str)
             self.assertEqual(len(_id), 24)
             self.assertTrue(set(_id).issubset(fallback.DB32_FORWARD))
@@ -666,12 +666,12 @@ class TestFunctions(TestCase):
         # Make sure final 80 bits are actually random:
         self.assertEqual(len(accum), 400)
 
-    def test_random_id2_p(self):
-        self.check_random_id2(fallback.random_id2)
+    def test_log_id_p(self):
+        self.check_log_id(fallback.log_id)
 
-    def test_random_id2_c(self):
+    def test_log_id_c(self):
         self.skip_if_no_c_ext()
-        self.check_random_id2(_dbase32.random_id2)
+        self.check_log_id(_dbase32.log_id)
 
     def test_sort_p(self):
         """

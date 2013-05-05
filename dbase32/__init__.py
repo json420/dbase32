@@ -34,9 +34,9 @@ b'binary foo'
 """
 
 try:
-    from _dbase32 import db32enc, db32dec, isdb32, check_db32, random_id, random_id2
+    from _dbase32 import db32enc, db32dec, isdb32, check_db32, random_id, log_id
 except ImportError:
-    from .fallback import db32enc, db32dec, isdb32, check_db32, random_id, random_id2
+    from .fallback import db32enc, db32dec, isdb32, check_db32, random_id, log_id
 
 
 __version__ = '0.6.0'
