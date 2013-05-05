@@ -13,16 +13,16 @@ Package: python3-dbase32
 Architecture: any
 Depends: ${python3:Depends}, ${shlibs:Depends}, ${misc:Depends}
 Suggests: python3-dbase32-doc
-Description: a database-friendly base-32 encoding
- The D-Base32 encoding is a base-32 variant designed for document oriented
+Description: a database-friendly base32 encoding
+ The Dbase32 encoding is a base32 variant designed for document oriented
  databases and applications, specifically for encoding document IDs.
  .
- D-Base32 uses an encoding table whose symbols are in ASCII/UTF-8 sorted order.
+ Dbase32 uses an encoding table whose symbols are in ASCII/UTF-8 sorted order.
  This means that unlike RFC-3548 Base32 encoding, the sort-order of the encoded
  data will match the sort-order of the binary data.
  .
  For space and performance reasons, some databases might build their indexes
- based on the compact binary IDs.  For simplicity and compatibility, other
+ based on the compact, binary IDs.  For simplicity and compatibility, other
  databases might build their indexes based on the base32-encoded IDS.
  .
  Standard base32-encoding is very problematic in the above scenarios because
@@ -31,7 +31,7 @@ Description: a database-friendly base-32 encoding
  depending on whether a system has its index build from the binary or the
  encoded IDs.
  .
- The D-Base32 encoding solves this problem by using an encoding table that is
+ The Dbase32 encoding solves this problem by using an encoding table that is
  in sorted order.
 
 Package: python3-dbase32-doc
@@ -42,10 +42,10 @@ Suggests: python3-dbase32
 Description: a database-friendly base32 encoding (documentation)
  This package provides the documentation for python3-dbase32.
  .
- The D-Base32 encoding is a base-32 variant designed for document oriented
+ The Dbase32 encoding is a base32 variant designed for document oriented
  databases and applications, specifically for encoding document IDs.
  .
- D-Base32 uses an encoding table whose symbols are in ASCII/UTF-8 sorted order.
+ Dbase32 uses an encoding table whose symbols are in ASCII/UTF-8 sorted order.
  This means that unlike RFC-3548 Base32 encoding, the sort-order of the encoded
  data will match the sort-order of the binary data.
  .
@@ -59,5 +59,5 @@ Description: a database-friendly base32 encoding (documentation)
  depending on whether a system has its index build from the binary or the
  encoded IDs.
  .
- The D-Base32 encoding solves this problem by using an encoding table that is
+ The Dbase32 encoding solves this problem by using an encoding table that is
  in sorted order.
