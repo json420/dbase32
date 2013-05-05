@@ -250,15 +250,14 @@ def random_id2(timestamp=-1):
     ts = int(timestamp if timestamp >= 0 else time.time())
     buf = bytearray()
 
-    # First 5 bytes are from the timestamp:
-    buf.append((ts >> 32) & 255)
+    # First 4 bytes are from the timestamp:
     buf.append((ts >> 24) & 255)
     buf.append((ts >> 16) & 255)
     buf.append((ts >>  8) & 255)
     buf.append(ts & 255)
 
-    # Next 10 bytes are from os.urandom():
-    buf.extend(urandom(10))
+    # Next 11 bytes are from os.urandom():
+    buf.extend(urandom(11))
 
     return db32enc(bytes(buf))
 

@@ -611,16 +611,15 @@ class TestFunctions(TestCase):
         self.check_random_id(_dbase32.random_id)
 
     def check_random_id2(self, random_id2):
-        def ts_enc(ts):
-            assert isinstance(ts, int)
-            assert ts > 0
+        def ts_bin(timestamp):
+            ts = int(timestamp)
+            assert ts >= 0
             buf = bytearray()
-            buf.append((ts >> 32) & 255)
             buf.append((ts >> 24) & 255)
             buf.append((ts >> 16) & 255)
             buf.append((ts >>  8) & 255)
             buf.append(ts & 255)
-            return fallback.db32enc(bytes(buf))
+            return bytes(buf)
 
         accum = set()
         for n in range(100):
@@ -631,9 +630,10 @@ class TestFunctions(TestCase):
             self.assertIsInstance(_id, str)
             self.assertEqual(len(_id), 24)
             self.assertTrue(set(_id).issubset(fallback.DB32_FORWARD))
-            possible = set(ts_enc(i) for i in range(start, end + 1))
-            self.assertIn(_id[:8], possible)
-            accum.add(_id[8:])
+            possible = set(ts_bin(i) for i in range(start, end + 1))
+            data = fallback.db32dec(_id)
+            self.assertIn(data[:4], possible)
+            accum.add(data[4:])
 
             # Current timestamp:
             timestamp = time.time()
@@ -641,24 +641,27 @@ class TestFunctions(TestCase):
             self.assertIsInstance(_id, str)
             self.assertEqual(len(_id), 24)
             self.assertTrue(set(_id).issubset(fallback.DB32_FORWARD))
-            self.assertEqual(_id[:8], ts_enc(int(timestamp)))
-            accum.add(_id[8:])
+            data = fallback.db32dec(_id)
+            self.assertEqual(data[:4], ts_bin(timestamp))
+            accum.add(data[4:])
 
             # Smallest timestamp:
             _id = random_id2(0)
             self.assertIsInstance(_id, str)
             self.assertEqual(len(_id), 24)
             self.assertTrue(set(_id).issubset(fallback.DB32_FORWARD))
-            self.assertEqual(_id[:8], '33333333')
-            accum.add(_id[8:])
+            data = fallback.db32dec(_id)
+            self.assertEqual(data[:4], bytes([0, 0, 0, 0]))
+            accum.add(data[4:])
 
             # Largest timestamp:
-            _id = random_id2(2**40 - 1)
+            _id = random_id2(2**32 - 1)
             self.assertIsInstance(_id, str)
             self.assertEqual(len(_id), 24)
             self.assertTrue(set(_id).issubset(fallback.DB32_FORWARD))
-            self.assertEqual(_id[:8], 'YYYYYYYY')
-            accum.add(_id[8:])
+            data = fallback.db32dec(_id)
+            self.assertEqual(data[:4], bytes([255, 255, 255, 255]))
+            accum.add(data[4:])
 
         # Make sure final 80 bits are actually random:
         self.assertEqual(len(accum), 400)

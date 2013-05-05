@@ -475,7 +475,7 @@ dbase32_random_id2(PyObject *self, PyObject *args, PyObject *kw)
     double timestamp = -1;
     PyObject *pyret;
     time_t temp_ts;
-    uint64_t ts;
+    uint32_t ts;
     uint8_t *bin_buf, *txt_buf;
     int status;
 
@@ -484,10 +484,10 @@ dbase32_random_id2(PyObject *self, PyObject *args, PyObject *kw)
     }
     if (timestamp < 0) {
         time(&temp_ts);
-        ts = (uint64_t)(temp_ts);
+        ts = (uint32_t)(temp_ts);
     }
     else {
-        ts = (uint64_t)(timestamp);
+        ts = (uint32_t)(timestamp);
     }
 
     // Allocate temp buffer for binary ID:
@@ -496,22 +496,23 @@ dbase32_random_id2(PyObject *self, PyObject *args, PyObject *kw)
         return PyErr_NoMemory();
     }
 
-    // First 5 bytes are from timestamp:
-    bin_buf[0] = (ts >> 32) & 255;
-    bin_buf[1] = (ts >> 24) & 255;
-    bin_buf[2] = (ts >> 16) & 255;
-    bin_buf[3] = (ts >>  8) & 255;
-    bin_buf[4] = ts & 255;
+    // First 4 bytes are from timestamp:
+    bin_buf[0] = (ts >> 24) & 255;
+    bin_buf[1] = (ts >> 16) & 255;
+    bin_buf[2] = (ts >>  8) & 255;
+    bin_buf[3] = ts & 255;
 
-    // Next 10 bytes are from os.urandom():
-    status = _PyOS_URandom(bin_buf + 5, 10);
+    // Next 11 bytes are from os.urandom():
+    status = _PyOS_URandom(bin_buf + 4, 11);
     if (status == -1) {
+        free(bin_buf);
         return NULL;
     }
 
     // Allocate destination buffer:
     pyret = PyUnicode_New(24, DB32_END);
     if (pyret == NULL ) {
+        free(bin_buf);
         return NULL;
     }
     txt_buf = (uint8_t *)PyUnicode_1BYTE_DATA(pyret);
