@@ -227,6 +227,23 @@ Functions
     The random data is from ``os.urandom()``.
 
 
+.. function:: log_id(timestamp=-1)
+
+    Return a (generally) monotonic ID with 88 bits of random entropy.
+
+    Similar to :func:`random_id()`, this function returns a 120-bit (15-byte)
+    ID, which will 24 characters in length when Dbase32 encoded.
+
+    The difference is the first 4 bytes of this ID are the time since the Unix
+    Epoch in seconds, truncated a 32-bit unsigned integer (which wont overflow
+    till the year 2106).  The remaining 11 bytes are from ``os.urandom()``.
+
+    This ID function is aimed at event logging, where a (generally) monotonic ID
+    will result in a b-tree grows in a much more space efficient manner.
+
+    If you provide the optional *timestamp* kwarg, this timestamp will be used.
+    Otherwise the timestamp is built by calling ``time.time()``.
+
 
 Constants
 ---------
