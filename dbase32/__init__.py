@@ -40,7 +40,7 @@ except ImportError:
 
 
 __version__ = '0.6.0'
-__all__ = ('db32enc', 'db32dec', 'isdb32', 'check_db32', 'random_id')
+__all__ = ('db32enc', 'db32dec', 'isdb32', 'check_db32', 'random_id', 'log_id')
 
 DB32ALPHABET = '3456789ABCDEFGHIJKLMNOPQRSTUVWXY'
 MAX_BIN_LEN = 60  # 480 bits
