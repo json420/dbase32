@@ -90,6 +90,19 @@ def make_bytes(ints):
 
 
 class TestConstants(TestCase):
+    def test_version(self):
+        self.assertIsInstance(dbase32.__version__, str)
+        (major, minor, micro) = dbase32.__version__.split('.')
+        p1 = int(major)
+        self.assertTrue(p1 >= 0)
+        self.assertEqual(str(p1), major)
+        p2 = int(minor)
+        self.assertTrue(p2 >= 0)
+        self.assertEqual(str(p2), minor)
+        p3 = int(micro)
+        self.assertTrue(p3 >= 0)
+        self.assertEqual(str(p3), micro)
+
     def test_db32alphabet(self):
         self.assertIsInstance(dbase32.DB32ALPHABET, str)
         self.assertEqual(dbase32.DB32ALPHABET, fallback.DB32_FORWARD)
