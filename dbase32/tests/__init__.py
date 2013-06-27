@@ -103,24 +103,30 @@ class TestConstants(TestCase):
         self.assertTrue(p3 >= 0)
         self.assertEqual(str(p3), micro)
 
-    def test_db32alphabet(self):
+    def test_DB32ALPHABET(self):
         self.assertIsInstance(dbase32.DB32ALPHABET, str)
+        self.assertEqual(len(dbase32.DB32ALPHABET), 32)
+        self.assertEqual(len(set(dbase32.DB32ALPHABET)), 32)
         self.assertEqual(dbase32.DB32ALPHABET, fallback.DB32_FORWARD)
 
-    def test_max(self):
+    def test_MAX_BIN_LEN(self):
         self.assertIsInstance(dbase32.MAX_BIN_LEN, int)
         self.assertEqual(dbase32.MAX_BIN_LEN, fallback.MAX_BIN_LEN)
+
+    def test_MAX_TXT_LEN(self):
         self.assertIsInstance(dbase32.MAX_TXT_LEN, int)
         self.assertEqual(dbase32.MAX_TXT_LEN, fallback.MAX_TXT_LEN)
 
-    def test_random(self):
+    def test_RANDOM_BITS(self):
         self.assertIsInstance(dbase32.RANDOM_BITS, int)
         self.assertEqual(dbase32.RANDOM_BITS % 40, 0)
 
+    def test_RANDOM_BYTES(self):
         self.assertIsInstance(dbase32.RANDOM_BYTES, int)
         self.assertEqual(dbase32.RANDOM_BYTES, dbase32.RANDOM_BITS // 8)
         self.assertEqual(dbase32.RANDOM_BYTES % 5, 0)
 
+    def test_RANDOM_B32LEN(self):
         self.assertIsInstance(dbase32.RANDOM_B32LEN, int)
         self.assertEqual(dbase32.RANDOM_B32LEN, dbase32.RANDOM_BITS // 5)
         self.assertEqual(dbase32.RANDOM_B32LEN % 8, 0)
