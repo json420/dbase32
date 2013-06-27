@@ -237,7 +237,7 @@ Functions
     a one second granularity.
 
     Similar to :func:`random_id()`, this function returns a 120-bit (15-byte)
-    ID, which will 24 characters in length when Dbase32 encoded.
+    ID, which will be 24 characters in length when Dbase32 encoded.
 
     The difference is the first 4 bytes of this ID are the time since the Unix
     Epoch in seconds, truncated a 32-bit unsigned integer (which wont overflow
