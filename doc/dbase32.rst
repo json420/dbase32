@@ -5,14 +5,16 @@
     :synopsis: base32-encoding with a sorted-order alphabet (for databases)
 
 
-The :mod:`dbase32` API consists of just five functions:
+The :mod:`dbase32` API consists of just six functions:
 
     * For encoding and decoding, there is :func:`db32enc()` and :func:`db32dec()`
 
     * For validation, there is :func:`isdb32()` and :func:`check_db32()`
 
-    * Lastly, :func:`random_id()` generates Dbase32 encoded random IDs
+    * :func:`random_id()` generates Dbase32 encoded random IDs
 
+    * Lastly, :func:`log_id()` generates so called "monotonic" IDs that will
+      sort by timestamp
 
 
 Tutorial
@@ -230,6 +232,9 @@ Functions
 .. function:: log_id(timestamp=-1)
 
     Return a (generally) monotonic ID with 88 bits of random entropy.
+
+    These IDs will sort in ascending order according to the Unix timestamp, with
+    a one second granularity.
 
     Similar to :func:`random_id()`, this function returns a 120-bit (15-byte)
     ID, which will 24 characters in length when Dbase32 encoded.
