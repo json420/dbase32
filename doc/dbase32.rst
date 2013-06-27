@@ -244,7 +244,7 @@ Functions
     till the year 2106).  The remaining 11 bytes are from ``os.urandom()``.
 
     This ID function is aimed at event logging, where a (generally) monotonic ID
-    will result in a b-tree grows in a much more space efficient manner.
+    will result in a b-tree that grows in a more space efficient manner.
 
     If you provide the optional *timestamp* kwarg, this timestamp will be used.
     Otherwise the timestamp is built by calling ``time.time()``.
