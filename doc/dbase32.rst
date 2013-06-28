@@ -13,8 +13,8 @@ The :mod:`dbase32` API consists of just six functions:
 
     * :func:`random_id()` generates Dbase32 encoded random IDs
 
-    * Lastly, :func:`log_id()` generates so called "monotonic" IDs that will
-      sort by timestamp
+    * :func:`log_id()` generates so called "monotonic" IDs that will sort by
+      timestamp
 
 
 Tutorial
