@@ -1,7 +1,7 @@
 Installing on Ubuntu
 ====================
 
-Dbase32 packages are available for `Ubuntu`_ Raring in the
+Dbase32 packages are available for `Ubuntu`_ in the
 `Novacut Stable Releases PPA`_ and the `Novacut Daily Builds PPA`_.
 
 Installation is easy. First add either the stable PPA::
@@ -27,13 +27,13 @@ After which the documentation can be browsed at:
 
     file:///usr/share/doc/python3-dbase32-doc/html/index.html
 
-Note if you add both the stable and the daily PPA, the versions in the daily
-PPA will supersede the versions in the stable PPA.
+Note that if you add both the stable and the daily PPA, the versions in the
+daily PPA will supersede the versions in the stable PPA.
 
 Also see :doc:`bugs`.
 
 
-.. _`Novacut Stable Releases PPA`: https://launchpad.net/~novacut/+archive/stable?field.series_filter=raring
-.. _`Novacut Daily Builds PPA`: https://launchpad.net/~novacut/+archive/daily?field.series_filter=raring
 .. _`Ubuntu`: http://www.ubuntu.com/
+.. _`Novacut Stable Releases PPA`: https://launchpad.net/~novacut/+archive/stable
+.. _`Novacut Daily Builds PPA`: https://launchpad.net/~novacut/+archive/daily
 

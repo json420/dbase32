@@ -48,8 +48,8 @@ Contents:
 .. _`RFC-3548 Base32`: http://tools.ietf.org/html/rfc4648
 .. _`LGPLv3+`: http://www.gnu.org/licenses/lgpl-3.0.html
 .. _`Novacut`: https://wiki.ubuntu.com/Novacut
-.. _`Novacut Stable Releases PPA`: https://launchpad.net/~novacut/+archive/stable?field.series_filter=raring
-.. _`Novacut Daily Builds PPA`: https://launchpad.net/~novacut/+archive/daily?field.series_filter=raring
+.. _`Novacut Stable Releases PPA`: https://launchpad.net/~novacut/+archive/stable
+.. _`Novacut Daily Builds PPA`: https://launchpad.net/~novacut/+archive/daily
 .. _`#novacut`: http://webchat.freenode.net/?channels=novacut
 .. _`Ubuntu`: http://www.ubuntu.com/
 .. _`Python 3.3`: http://docs.python.org/3.3/
