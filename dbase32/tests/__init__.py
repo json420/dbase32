@@ -638,6 +638,7 @@ class TestFunctions(TestCase):
 
     def check_log_id(self, log_id):
         def ts_bin(timestamp):
+            assert isinstance(timestamp, (int, float))
             ts = int(timestamp)
             assert ts >= 0
             buf = bytearray()
@@ -648,7 +649,7 @@ class TestFunctions(TestCase):
             return bytes(buf)
 
         accum = set()
-        for n in range(100):
+        for n in range(250):
             # Don't provide timestamp:
             start = int(time.time())
             _id = log_id()
@@ -656,7 +657,7 @@ class TestFunctions(TestCase):
             self.assertIsInstance(_id, str)
             self.assertEqual(len(_id), 24)
             self.assertTrue(set(_id).issubset(fallback.DB32_FORWARD))
-            possible = set(ts_bin(i) for i in range(start, end + 1))
+            possible = set(ts_bin(i) for i in range(start - 1, end + 2))
             data = fallback.db32dec(_id)
             self.assertIn(data[:4], possible)
             accum.add(data[4:])
@@ -690,7 +691,7 @@ class TestFunctions(TestCase):
             accum.add(data[4:])
 
         # Make sure final 80 bits are actually random:
-        self.assertEqual(len(accum), 400)
+        self.assertEqual(len(accum), 1000)
 
     def test_log_id_p(self):
         self.check_log_id(fallback.log_id)
