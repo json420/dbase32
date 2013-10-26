@@ -1,5 +1,5 @@
-dbase32 (0.9.0-0~saucy) saucy; urgency=low
+dbase32 (0.10.0-0~trusty) saucy; urgency=low
 
   * Upstream pre-release
 
- -- Jason Gerard DeRose <jderose@novacut.com>  Sun, 05 May 2013 23:35:06 +0000
+ -- Jason Gerard DeRose <jderose@novacut.com>  Sat, 26 Oct 2013 15:16:31 -0600
