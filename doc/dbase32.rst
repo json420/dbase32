@@ -13,8 +13,7 @@ The :mod:`dbase32` API consists of just six functions:
 
     * :func:`random_id()` generates Dbase32 encoded random IDs
 
-    * :func:`log_id()` generates so called "monotonic" IDs that will sort by
-      their timestamp
+    * :func:`log_id()` generates random IDs that will sort by timestamp
 
 
 
@@ -106,8 +105,8 @@ Although note that the C implementation of :func:`random_id()` is faster than
 the above because it does everything internally with no back-and-forth between
 Python and C.
 
-Lastly, use :func:`log_id()` to generate so called "monotonic" random IDs which
-will sort according to their Unix timestamp with a one second granularity.
+Lastly, use :func:`log_id()` to generate random IDs which will sort according to
+their Unix timestamp with a one second granularity.
 
 Similar to :func:`random_id()`, :func:`log_id()` returns a 120-bit (15-byte) ID,
 which will be 24 characters in length when Dbase32 encoded.  The difference is
@@ -249,7 +248,7 @@ Functions
 
 .. function:: log_id(timestamp=-1)
 
-    Return a (generally) monotonic ID with 88 bits of random entropy.
+    Return a Dbase32 encoded random ID that will sort according to timestamp.
 
     These IDs will sort in ascending order according to the Unix timestamp, with
     a one second granularity.
@@ -261,10 +260,10 @@ Functions
     Epoch in seconds, truncated a 32-bit unsigned integer (which wont overflow
     till the year 2106).  The remaining 11 bytes are from ``os.urandom()``.
 
-    This ID function is aimed at event logging, where a (generally) monotonic ID
-    will result in a b-tree that grows in a more space efficient manner.
+    This function is aimed at event logging and similar scenarios where it's
+    handy for the IDs to sort chronologically.
 
-    If you provide the optional *timestamp* kwarg, this timestamp will be used.
+    If you provide the optional *timestamp* kwarg, that timestamp will be used.
     Otherwise the timestamp is built by calling ``time.time()``.
 
 
