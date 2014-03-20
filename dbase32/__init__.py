@@ -34,13 +34,13 @@ b'binary foo'
 """
 
 try:
-    from _dbase32 import db32enc, db32dec, isdb32, check_db32, random_id, log_id
+    from _dbase32 import db32enc, db32dec, isdb32, check_db32, random_id, time_id
 except ImportError:
-    from .fallback import db32enc, db32dec, isdb32, check_db32, random_id, log_id
+    from .fallback import db32enc, db32dec, isdb32, check_db32, random_id, time_id
 
 
 __version__ = '1.0.0'
-__all__ = ('db32enc', 'db32dec', 'isdb32', 'check_db32', 'random_id', 'log_id')
+__all__ = ('db32enc', 'db32dec', 'isdb32', 'check_db32', 'random_id', 'time_id')
 
 DB32ALPHABET = '3456789ABCDEFGHIJKLMNOPQRSTUVWXY'
 MAX_BIN_LEN = 60  # 480 bits

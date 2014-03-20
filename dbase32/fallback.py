@@ -245,7 +245,7 @@ def random_id(numbytes=15):
     return db32enc(urandom(numbytes))
 
 
-def log_id(timestamp=-1):
+def time_id(timestamp=-1):
     assert isinstance(timestamp, (int, float))
     ts = int(timestamp if timestamp >= 0 else time.time())
     buf = bytearray()

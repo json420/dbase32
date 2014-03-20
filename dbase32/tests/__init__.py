@@ -166,12 +166,12 @@ class TestConstants(TestCase):
         else:
             self.assertIs(dbase32.random_id, fallback.random_id)
 
-    def test_log_id_alias(self):
+    def test_time_id_alias(self):
         if C_EXT_AVAIL:
-            self.assertIs(dbase32.log_id, _dbase32.log_id)
-            self.assertIsNot(dbase32.log_id, fallback.log_id)
+            self.assertIs(dbase32.time_id, _dbase32.time_id)
+            self.assertIsNot(dbase32.time_id, fallback.time_id)
         else:
-            self.assertIs(dbase32.log_id, fallback.log_id)
+            self.assertIs(dbase32.time_id, fallback.time_id)
 
 
 class TestFunctions(TestCase):
@@ -636,7 +636,7 @@ class TestFunctions(TestCase):
         self.skip_if_no_c_ext()
         self.check_random_id(_dbase32.random_id)
 
-    def check_log_id(self, log_id):
+    def check_time_id(self, time_id):
         def ts_bin(timestamp):
             assert isinstance(timestamp, (int, float))
             ts = int(timestamp)
@@ -652,7 +652,7 @@ class TestFunctions(TestCase):
         for n in range(250):
             # Don't provide timestamp:
             start = int(time.time())
-            _id = log_id()
+            _id = time_id()
             end = int(time.time())
             self.assertIsInstance(_id, str)
             self.assertEqual(len(_id), 24)
@@ -664,7 +664,7 @@ class TestFunctions(TestCase):
 
             # Current timestamp:
             timestamp = time.time()
-            _id = log_id(timestamp)
+            _id = time_id(timestamp)
             self.assertIsInstance(_id, str)
             self.assertEqual(len(_id), 24)
             self.assertTrue(set(_id).issubset(fallback.DB32_FORWARD))
@@ -673,7 +673,7 @@ class TestFunctions(TestCase):
             accum.add(data[4:])
 
             # Smallest timestamp:
-            _id = log_id(0)
+            _id = time_id(0)
             self.assertIsInstance(_id, str)
             self.assertEqual(len(_id), 24)
             self.assertTrue(set(_id).issubset(fallback.DB32_FORWARD))
@@ -682,7 +682,7 @@ class TestFunctions(TestCase):
             accum.add(data[4:])
 
             # Largest timestamp:
-            _id = log_id(2**32 - 1)
+            _id = time_id(2**32 - 1)
             self.assertIsInstance(_id, str)
             self.assertEqual(len(_id), 24)
             self.assertTrue(set(_id).issubset(fallback.DB32_FORWARD))
@@ -693,12 +693,12 @@ class TestFunctions(TestCase):
         # Make sure final 80 bits are actually random:
         self.assertEqual(len(accum), 1000)
 
-    def test_log_id_p(self):
-        self.check_log_id(fallback.log_id)
+    def test_time_id_p(self):
+        self.check_time_id(fallback.time_id)
 
-    def test_log_id_c(self):
+    def test_time_id_c(self):
         self.skip_if_no_c_ext()
-        self.check_log_id(_dbase32.log_id)
+        self.check_time_id(_dbase32.time_id)
 
     def test_sort_p(self):
         """
