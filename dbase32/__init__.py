@@ -39,6 +39,11 @@ except ImportError:
     from .fallback import db32enc, db32dec, isdb32, check_db32, random_id, time_id
 
 
+# FIXME: For backward-compatability with Dbase32 <= 0.10; at some point in the
+# future we may want to drop this:
+log_id = time_id
+
+
 __version__ = '1.0.0'
 __all__ = ('db32enc', 'db32dec', 'isdb32', 'check_db32', 'random_id', 'time_id')
 

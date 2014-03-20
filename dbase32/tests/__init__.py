@@ -173,6 +173,9 @@ class TestConstants(TestCase):
         else:
             self.assertIs(dbase32.time_id, fallback.time_id)
 
+    def test_log_id_alias(self):
+        self.assertIs(dbase32.log_id, dbase32.time_id)
+
 
 class TestFunctions(TestCase):
     def skip_if_no_c_ext(self):
