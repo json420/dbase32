@@ -94,7 +94,7 @@ def run_benchmark(numbytes=30):
     yield 'Random IDs/second:'
     yield run('os.urandom(15)', 100)
     yield run('_dbase32.random_id(15)', 100)
-    yield run('_dbase32.log_id()', 100)
+    yield run('_dbase32.time_id()', 100)
 
 
 if __name__ == '__main__':

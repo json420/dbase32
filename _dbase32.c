@@ -469,25 +469,20 @@ dbase32_random_id(PyObject *self, PyObject *args, PyObject *kw)
 
 
 static PyObject *
-dbase32_log_id(PyObject *self, PyObject *args, PyObject *kw)
+dbase32_time_id(PyObject *self, PyObject *args, PyObject *kw)
 {
     static char *keys[] = {"timestamp", NULL};
     double timestamp = -1;
     PyObject *pyret;
-    time_t temp_ts;
     uint32_t ts;
     uint8_t *bin_buf, *txt_buf;
     int status;
 
-    if (!PyArg_ParseTupleAndKeywords(args, kw, "|d:log_id", keys, &timestamp)) {
+    if (!PyArg_ParseTupleAndKeywords(args, kw, "|d:time_id", keys, &timestamp)) {
         return NULL;
     }
     if (timestamp < 0) {
-        time(&temp_ts);
-        ts = (uint32_t)(temp_ts);
-    }
-    else {
-        ts = (uint32_t)(timestamp);
+        timestamp = (double)time(NULL);
     }
 
     // Allocate temp buffer for binary ID:
@@ -497,6 +492,7 @@ dbase32_log_id(PyObject *self, PyObject *args, PyObject *kw)
     }
 
     // First 4 bytes are from timestamp:
+    ts = (uint32_t)timestamp;
     bin_buf[0] = (ts >> 24) & 255;
     bin_buf[1] = (ts >> 16) & 255;
     bin_buf[2] = (ts >>  8) & 255;
@@ -537,8 +533,8 @@ static struct PyMethodDef dbase32_functions[] = {
     {"check_db32", dbase32_check_db32, METH_VARARGS, "check_db32(text)"},
     {"random_id", (PyCFunction)dbase32_random_id, METH_VARARGS | METH_KEYWORDS, 
         "random_id(numbytes=15)"},
-    {"log_id", (PyCFunction)dbase32_log_id, METH_VARARGS | METH_KEYWORDS, 
-        "log_id(timestamp=-1)"},
+    {"time_id", (PyCFunction)dbase32_time_id, METH_VARARGS | METH_KEYWORDS, 
+        "time_id(timestamp=-1)"},
     {NULL, NULL, 0, NULL}
 };
 

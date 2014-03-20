@@ -3,17 +3,17 @@ Section: python
 Priority: optional
 Maintainer: Jason Gerard DeRose <jderose@novacut.com>
 Build-Depends: debhelper (>= 9),
-    python3-all-dev (>= 3.3),
+    python3-all-dev (>= 3.4~rc1),
     python3-sphinx,
 Standards-Version: 3.9.4
-X-Python3-Version: >= 3.3
+X-Python3-Version: >= 3.4
 Homepage: https://launchpad.net/dbase32
 
 Package: python3-dbase32
 Architecture: any
 Depends: ${python3:Depends}, ${shlibs:Depends}, ${misc:Depends}
 Suggests: python3-dbase32-doc
-Description: a database-friendly base32 encoding
+Description: database-friendly base32 encoding
  The Dbase32 encoding is a base32 variant designed for document oriented
  databases and applications, specifically for encoding document IDs.
  .
@@ -39,7 +39,7 @@ Architecture: all
 Section: doc
 Depends: ${sphinxdoc:Depends}, ${misc:Depends}
 Suggests: python3-dbase32
-Description: a database-friendly base32 encoding (documentation)
+Description: database-friendly base32 encoding (documentation)
  This package provides the documentation for python3-dbase32.
  .
  The Dbase32 encoding is a base32 variant designed for document oriented
