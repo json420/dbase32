@@ -474,7 +474,6 @@ dbase32_time_id(PyObject *self, PyObject *args, PyObject *kw)
     static char *keys[] = {"timestamp", NULL};
     double timestamp = -1;
     PyObject *pyret;
-    time_t temp_ts;
     uint32_t ts;
     uint8_t *bin_buf, *txt_buf;
     int status;
@@ -483,11 +482,7 @@ dbase32_time_id(PyObject *self, PyObject *args, PyObject *kw)
         return NULL;
     }
     if (timestamp < 0) {
-        time(&temp_ts);
-        ts = (uint32_t)(temp_ts);
-    }
-    else {
-        ts = (uint32_t)(timestamp);
+        timestamp = (double)time(NULL);
     }
 
     // Allocate temp buffer for binary ID:
@@ -497,6 +492,7 @@ dbase32_time_id(PyObject *self, PyObject *args, PyObject *kw)
     }
 
     // First 4 bytes are from timestamp:
+    ts = (uint32_t)timestamp;
     bin_buf[0] = (ts >> 24) & 255;
     bin_buf[1] = (ts >> 16) & 255;
     bin_buf[2] = (ts >>  8) & 255;
