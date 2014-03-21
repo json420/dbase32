@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/python3
 
 # dbase32: base32-encoding with a sorted-order alphabet (for databases)
 # Copyright (C) 2013 Novacut Inc
@@ -26,17 +26,30 @@
 Install `dbase32`.
 """
 
-from __future__ import print_function
-
 import sys
 if sys.version_info < (3, 3):
-    sys.exit('dbase32 requires Python 3.3 or newer')
+    sys.exit('ERROR: dbase32 requires Python 3.3 or newer')
 
+import os
+from os import path
+import subprocess
 from distutils.core import setup, Extension
 from distutils.cmd import Command
 
 import dbase32
 from dbase32.tests.run import run_tests
+
+
+def run_sphinx_doctest():
+    sphinx_build = '/usr/share/sphinx/scripts/python3/sphinx-build'
+    if not os.access(sphinx_build, os.R_OK | os.X_OK):
+        print('warning, cannot read and execute: {!r}'.format(sphinx_build))
+        return
+    tree = path.dirname(path.abspath(__file__))
+    doc = path.join(tree, 'doc')
+    doctest = path.join(tree, 'doc', '_build', 'doctest')
+    cmd = [sys.executable, sphinx_build, '-EW', '-b', 'doctest', doc, doctest]
+    subprocess.check_call(cmd)
 
 
 class Test(Command):
@@ -53,6 +66,7 @@ class Test(Command):
     def run(self):
         if not run_tests():
             raise SystemExit('2')
+        run_sphinx_doctest()
 
 
 class Benchmark(Command):
