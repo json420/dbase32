@@ -223,6 +223,12 @@ each capable of over 10 million validations per second::
          478,284: _dbase32.random_id(15)
          486,841: _dbase32.time_id()
 
+The encoding and decoding performance above is compared to the ``base64`` C
+implementation in the Python3 standard library, which, fast as it is, isn't
+nearly as fast as the ``dbase32`` C implementation.
+
+``:D``
+
 
 
 Functions
