@@ -16,13 +16,27 @@ why this alphabet was chosen, please see the :doc:`design`.
 high-performance C extension and a pure-Python fallback.  The C extension is
 automatically selected when available.
 
-Example usage:
+Example encoding and decoding:
 
 >>> from dbase32 import db32enc, db32dec
 >>> db32enc(b'binary foo')
 'FCNPVRELI7J9FUUI'
 >>> db32dec('FCNPVRELI7J9FUUI')
 b'binary foo'
+
+:mod:`dbase32` also provides high-performance validation functions that allow
+you to sanitize untrusted input without decoding the IDs.  For example:
+
+>>> from dbase32 import isdb32, check_db32
+>>> isdb32('FCNPVRELI7J9FUUI')
+True
+>>> isdb32('../very/naughty/')
+False
+>>> check_db32('FCNPVRELI7J9FUUI')
+>>> check_db32('../very/naughty/')
+Traceback (most recent call last):
+  ...
+ValueError: invalid Dbase32 letter: .
 
 Dbase32 is being developed as part of the `Novacut`_ project. Packages are
 available for `Ubuntu`_ in the `Novacut Stable Releases PPA`_ and the
