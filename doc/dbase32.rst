@@ -180,11 +180,6 @@ untrusted input are used to construct the full filenames by which data is read
 from the file-system.  Without properly validating this untrusted input, the
 ``FileStore`` could easily be vulnerable to directory traversal attacks.
 
-However, if file access is only allowed when these untrusted file IDs are valid
-Dbase32 encoded IDs, directory traversal attacks should not be possible.  At
-least that's the *theory*, but please don't count on this Dbase32 security
-property as your only line of defense!
-
 ``dbase32`` is rather unique among base32 implementations in that its
 high-performance validation functions allow you to check whether some encoded
 text is well-formed without actually decoding it.
