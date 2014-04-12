@@ -253,7 +253,7 @@ dbase32_db32dec(PyObject *self, PyObject *args)
     PyObject *pyret;
     const uint8_t *txt_buf;
     uint8_t *bin_buf;
-    size_t txt_len = 0;  // FIXME: Is something wrong with the s# format?
+    size_t txt_len = 0;  // Note: the "s#" format requires initializing to zero
     size_t bin_len;
     int status;
 
@@ -302,7 +302,7 @@ static PyObject *
 dbase32_isdb32(PyObject *self, PyObject *args)
 {
     const uint8_t *txt_buf;
-    size_t txt_len = 0;  // FIXME: Is something wrong with the s# format?
+    size_t txt_len = 0;  // Note: the "s#" format requires initializing to zero
     size_t block, count;
     uint8_t r = 0;
 
@@ -346,7 +346,7 @@ static PyObject *
 dbase32_check_db32(PyObject *self, PyObject *args)
 {
     const uint8_t *txt_buf;
-    size_t txt_len = 0;  // FIXME: Is something wrong with the s# format?
+    size_t txt_len = 0;  // Note: the "s#" format requires initializing to zero
     size_t block, count, i;
     uint8_t r;
 
