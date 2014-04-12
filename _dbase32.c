@@ -435,7 +435,7 @@ dbase32_random_id(PyObject *self, PyObject *args, PyObject *kw)
     }
 
     // Allocate temp buffer for binary ID:
-    bin_buf = (uint8_t *)malloc(numbytes);
+    bin_buf = (uint8_t *)malloc(numbytes * sizeof(uint8_t));
     if (bin_buf == NULL) {
         return PyErr_NoMemory();
     }
@@ -486,7 +486,7 @@ dbase32_time_id(PyObject *self, PyObject *args, PyObject *kw)
     }
 
     // Allocate temp buffer for binary ID:
-    bin_buf = (uint8_t *)malloc(15);
+    bin_buf = (uint8_t *)malloc(15 * sizeof(uint8_t));
     if (bin_buf == NULL) {
         return PyErr_NoMemory();
     }
