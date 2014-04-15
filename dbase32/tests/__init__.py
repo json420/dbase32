@@ -29,7 +29,7 @@ import os
 from random import SystemRandom
 import time
 import base64
-from collections import Counter, namedtuple
+from collections import namedtuple
 
 import dbase32
 from dbase32 import fallback

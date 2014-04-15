@@ -25,10 +25,7 @@ Unit tests for `dbase32.fallback` module.
 """
 
 from unittest import TestCase
-import os
-import base64
-from collections import Counter, namedtuple
-import time
+from collections import Counter
 
 from dbase32 import fallback, gen
 
