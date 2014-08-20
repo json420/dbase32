@@ -139,7 +139,6 @@ dbase32_encode(const size_t bin_len, const uint8_t *bin_buf,
  *      status == 1 means txt_len is invalid
  *      status == 2 means bin_len is invalid
  *      status >= 3 means txt_buf contains one or more invalid letters
- *
  */
 static inline uint8_t
 dbase32_decode(const size_t txt_len, const uint8_t *txt_buf,
@@ -156,8 +155,7 @@ dbase32_decode(const size_t txt_len, const uint8_t *txt_buf,
         return 2;
     }
 
-    /*
-     * To mitigate timing attacks, we always decode the entire buffer, and then
+    /* To mitigate timing attacks, we always decode the entire buffer, and then
      * do a single error check on the final value of `r`.
      *
      * However, use of the DB32_REVERSE table means this function still leaks
@@ -187,9 +185,7 @@ dbase32_decode(const size_t txt_len, const uint8_t *txt_buf,
         bin_buf += 5;
     }
 
-    /* 
-     * Return value is (r & 244):
-     *
+    /* Return value is (r & 244):
      *       31: 00011111 <= bits set in DB32_REVERSE for valid characters
      *      224: 11100000 <= bits set in DB32_REVERSE for invalid characters
      */
@@ -203,10 +199,9 @@ dbase32_decode(const size_t txt_len, const uint8_t *txt_buf,
  * Both `dbase32_isdb32()` and `dbase32_check_db32()` use this function.
  *
  * Return value is the status:
- *      status == 0: valid Dbase32
- *      status == 1: txt_len is invalid
- *      status > 1: txt_buf contains one or more invalid Dbase32 letters
- *
+ *      status == 0 means valid Dbase32
+ *      status == 1 means txt_len is invalid
+ *      status >= 2 means txt_buf contains one or more invalid Dbase32 letters
  */
 static inline uint8_t
 dbase32_invalid(const size_t txt_len, const uint8_t *txt_buf)
@@ -218,8 +213,7 @@ dbase32_invalid(const size_t txt_len, const uint8_t *txt_buf)
         return 1;
     }
 
-    /*
-     * To mitigate timing attacks, we always scan the entire buffer, and then do
+    /* To mitigate timing attacks, we always scan the entire buffer, and then do
      * a single error check on the final value of `r`.
      *
      * However, use of the DB32_REVERSE table means this function still leaks
@@ -238,9 +232,7 @@ dbase32_invalid(const size_t txt_len, const uint8_t *txt_buf)
         txt_buf += 8;  /* Move the pointer */
     }
 
-    /* 
-     * Return value is (r & 244):
-     *
+    /* Return value is (r & 244):
      *       31: 00011111 <= bits set in DB32_REVERSE for valid characters
      *      224: 11100000 <= bits set in DB32_REVERSE for invalid characters
      */
