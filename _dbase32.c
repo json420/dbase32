@@ -339,16 +339,21 @@ dbase32_db32dec(PyObject *self, PyObject *args)
 static PyObject *
 dbase32_isdb32(PyObject *self, PyObject *args)
 {
-    const uint8_t *txt_buf = NULL;
     size_t txt_len = 0;
+    const uint8_t *txt_buf = NULL;
 
+    /* Parse args */
     if (!PyArg_ParseTuple(args, "s#:isdb32", &txt_buf, &txt_len)) {
         return NULL;
     }
+
+    /* Ensure that txt_len is valid for well-formed IDs */
     if (txt_len < 8 || txt_len > MAX_TXT_LEN || txt_len % 8 != 0) {
         Py_RETURN_FALSE;
     }
-    if (dbase32_invalid(txt_len, txt_buf)) {
+
+    /* dbase32_invalid() returns 0 if all characters are valid */
+    if (dbase32_invalid(txt_len, txt_buf) != 0) {
         Py_RETURN_FALSE;
     }
     Py_RETURN_TRUE;
