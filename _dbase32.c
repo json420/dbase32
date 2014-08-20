@@ -195,6 +195,38 @@ dbase32_decode(const size_t txt_len, const uint8_t *txt_buf,
 }
 
 
+/*
+ * dbase32_invalid() 
+ */
+static uint8_t
+dbase32_invalid(const size_t txt_len, const uint8_t *txt_buf)
+{
+    size_t block, count;
+    uint8_t r;
+
+    if (txt_len < 8 || txt_len > MAX_TXT_LEN || txt_len % 8 != 0) {
+        return 1;
+    }
+
+    /*
+     * To mitigate timing attacks, we always scan the entire buffer:
+     */
+    count = txt_len / 8;
+    for (r = block = 0; block < count; block++) {
+        r |= DB32_REVERSE[txt_buf[0]];
+        r |= DB32_REVERSE[txt_buf[1]];
+        r |= DB32_REVERSE[txt_buf[2]];
+        r |= DB32_REVERSE[txt_buf[3]];
+        r |= DB32_REVERSE[txt_buf[4]];
+        r |= DB32_REVERSE[txt_buf[5]];
+        r |= DB32_REVERSE[txt_buf[6]];
+        r |= DB32_REVERSE[txt_buf[7]];
+        txt_buf += 8;  /* Move the pointer */
+    }
+    return (r & 224);
+}
+
+
 static PyObject *
 dbase32_db32enc(PyObject *self, PyObject *args)
 {
