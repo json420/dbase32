@@ -345,16 +345,18 @@ dbase32_isdb32(PyObject *self, PyObject *args)
 static PyObject *
 dbase32_check_db32(PyObject *self, PyObject *args)
 {
-    const uint8_t *txt_buf;
+    const uint8_t *txt_buf = NULL;
     size_t txt_len = 0;  // Note: the "s#" format requires initializing to zero
-    size_t block, count, i;
-    uint8_t r;
+    size_t block, count;
+    uint8_t r = 0;
 
     if (!PyArg_ParseTuple(args, "s#:check_db32", &txt_buf, &txt_len)) {
         return NULL;
     }
 
-    // check len(text)
+    /*
+     * Check len(text):
+     */
     if (txt_len < 8 || txt_len > MAX_TXT_LEN) {
         PyErr_Format(PyExc_ValueError,
             "len(text) is %u, need 8 <= len(text) <= %u", txt_len, MAX_TXT_LEN
@@ -368,9 +370,12 @@ dbase32_check_db32(PyObject *self, PyObject *args)
         return NULL;
     }
 
+    /*
+     * To mitigate timing attacks, we always scan the entire buffer:
+     */
     count = txt_len / 8;
     for (block=0; block < count; block++) {
-        r =  DB32_REVERSE[txt_buf[0]];
+        r |= DB32_REVERSE[txt_buf[0]];
         r |= DB32_REVERSE[txt_buf[1]];
         r |= DB32_REVERSE[txt_buf[2]];
         r |= DB32_REVERSE[txt_buf[3]];
@@ -378,30 +383,16 @@ dbase32_check_db32(PyObject *self, PyObject *args)
         r |= DB32_REVERSE[txt_buf[5]];
         r |= DB32_REVERSE[txt_buf[6]];
         r |= DB32_REVERSE[txt_buf[7]];
+        txt_buf += 8;  /* Move the pointer */
+    }
 
-        /* Only one error check (branch) per block:
-
-            31: 00011111  <= bits set in reverse-table for valid characters
-           224: 11100000  <= bits set in reverse-table for invalid characters
-
-        This unrolled approach is much faster.  */
-        if (r & 224) {
-            for (i=0; i < 8; i++) {
-                r = DB32_REVERSE[txt_buf[i]];
-                if (r & 224) {
-                    PyErr_Format(PyExc_ValueError,
-                        "invalid Dbase32 letter: %c", txt_buf[i]
-                    );
-                    return NULL;
-                }
-            }
-            // Whoa, we screwed up something!
-            PyErr_SetString(PyExc_RuntimeError, "something went very wrong");
-            return NULL;
-        }
-
-        // Move the pointer:
-        txt_buf += 8;
+    /*
+     * And then we do only a single error check at the end:
+     */
+    if (r & 224) {
+        PyObject *borrowed = PyTuple_GetItem(args, 0);
+        PyErr_Format(PyExc_ValueError, "invalid Dbase32: %R", borrowed);
+        return NULL;
     }
 
     Py_RETURN_NONE;
