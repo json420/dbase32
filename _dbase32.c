@@ -292,6 +292,7 @@ dbase32_db32dec(PyObject *self, PyObject *args)
     const uint8_t *txt_buf = NULL;
     size_t bin_len = 0;
     uint8_t *bin_buf = NULL;
+    uint8_t status;
     PyObject *borrowed = NULL;  /* Borrowed reference only used in error */
     PyObject *ret = NULL;
 
@@ -322,13 +323,18 @@ dbase32_db32dec(PyObject *self, PyObject *args)
     }
     bin_buf = (uint8_t *)PyBytes_AS_STRING(ret);
 
-    /* dbase32_decode() returns 0 on success */
-    if (dbase32_decode(txt_len, txt_buf, bin_len, bin_buf) != 0) {
+    /* dbase32_decode() returns 0 on success, 224 on invalid Dbase32 */
+    status = dbase32_decode(txt_len, txt_buf, bin_len, bin_buf);
+    if (status == 224) {
         Py_CLEAR(ret);
         borrowed = PyTuple_GetItem(args, 0);
         if (borrowed != NULL) {
             PyErr_Format(PyExc_ValueError, "invalid Dbase32: %R", borrowed);
         }
+    }
+    else if (status != 0) {
+        /* Any status other than 0 and 224 means an internal error occurred */
+        Py_FatalError("internal error in dbase32_db32dec()");
     }
     return ret;
 }
