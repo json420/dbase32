@@ -358,14 +358,16 @@ dbase32_isdb32(PyObject *self, PyObject *args)
 static PyObject *
 dbase32_check_db32(PyObject *self, PyObject *args)
 {
+    size_t txt_len = 0;
     const uint8_t *txt_buf = NULL;
-    size_t txt_len = 0;  // Note: the "s#" format requires initializing to zero
+    PyObject *borrowed = NULL;  /* Borrowed reference only used in error */
 
+    /* Parse args */
     if (!PyArg_ParseTuple(args, "s#:check_db32", &txt_buf, &txt_len)) {
         return NULL;
     }
 
-    // Check that len(text) is valid:
+    /* Ensure that txt_len is valid for well-formed IDs */
     if (txt_len < 8 || txt_len > MAX_TXT_LEN) {
         PyErr_Format(PyExc_ValueError,
             "len(text) is %u, need 8 <= len(text) <= %u", txt_len, MAX_TXT_LEN
@@ -379,10 +381,12 @@ dbase32_check_db32(PyObject *self, PyObject *args)
         return NULL;
     }
 
-    // Check that text contains only valid Dbase32 letters:
-    if (dbase32_invalid(txt_len, txt_buf)) {
-        PyObject *borrowed = PyTuple_GetItem(args, 0);
-        PyErr_Format(PyExc_ValueError, "invalid Dbase32: %R", borrowed);
+    /* dbase32_invalid() returns 0 if all characters are valid */
+    if (dbase32_invalid(txt_len, txt_buf) != 0) {
+        borrowed = PyTuple_GetItem(args, 0);
+        if (borrowed != NULL) {
+            PyErr_Format(PyExc_ValueError, "invalid Dbase32: %R", borrowed);
+        }
         return NULL;
     }
 
