@@ -335,10 +335,8 @@ dbase32_db32dec(PyObject *self, PyObject *args)
 static PyObject *
 dbase32_isdb32(PyObject *self, PyObject *args)
 {
-    const uint8_t *txt_buf;
-    size_t txt_len = 0;  // Note: the "s#" format requires initializing to zero
-    size_t block, count;
-    uint8_t r = 0;
+    const uint8_t *txt_buf = NULL;
+    size_t txt_len = 0;
 
     if (!PyArg_ParseTuple(args, "s#:isdb32", &txt_buf, &txt_len)) {
         return NULL;
@@ -346,30 +344,7 @@ dbase32_isdb32(PyObject *self, PyObject *args)
     if (txt_len < 8 || txt_len > MAX_TXT_LEN || txt_len % 8 != 0) {
         Py_RETURN_FALSE;
     }
-
-    // Scan entire txt_buf:
-    count = txt_len / 8;
-    for (block=0; block < count; block++) {
-        r |= DB32_REVERSE[txt_buf[0]];
-        r |= DB32_REVERSE[txt_buf[1]];
-        r |= DB32_REVERSE[txt_buf[2]];
-        r |= DB32_REVERSE[txt_buf[3]];
-        r |= DB32_REVERSE[txt_buf[4]];
-        r |= DB32_REVERSE[txt_buf[5]];
-        r |= DB32_REVERSE[txt_buf[6]];
-        r |= DB32_REVERSE[txt_buf[7]];
-
-        // Move the pointer:
-        txt_buf += 8;
-    }
-
-    /* Now do a single error check:
-
-        31: 00011111  <= bits set in reverse-table for valid characters
-       224: 11100000  <= bits set in reverse-table for invalid characters
-
-    This unrolled approach is much faster.  */
-    if (r & 224) {
+    if (dbase32_invalid(txt_len, txt_buf)) {
         Py_RETURN_FALSE;
     }
     Py_RETURN_TRUE;
@@ -381,16 +356,12 @@ dbase32_check_db32(PyObject *self, PyObject *args)
 {
     const uint8_t *txt_buf = NULL;
     size_t txt_len = 0;  // Note: the "s#" format requires initializing to zero
-    size_t block, count;
-    uint8_t r = 0;
 
     if (!PyArg_ParseTuple(args, "s#:check_db32", &txt_buf, &txt_len)) {
         return NULL;
     }
 
-    /*
-     * Check len(text):
-     */
+    // Check that len(text) is valid:
     if (txt_len < 8 || txt_len > MAX_TXT_LEN) {
         PyErr_Format(PyExc_ValueError,
             "len(text) is %u, need 8 <= len(text) <= %u", txt_len, MAX_TXT_LEN
@@ -404,26 +375,8 @@ dbase32_check_db32(PyObject *self, PyObject *args)
         return NULL;
     }
 
-    /*
-     * To mitigate timing attacks, we always scan the entire buffer:
-     */
-    count = txt_len / 8;
-    for (block=0; block < count; block++) {
-        r |= DB32_REVERSE[txt_buf[0]];
-        r |= DB32_REVERSE[txt_buf[1]];
-        r |= DB32_REVERSE[txt_buf[2]];
-        r |= DB32_REVERSE[txt_buf[3]];
-        r |= DB32_REVERSE[txt_buf[4]];
-        r |= DB32_REVERSE[txt_buf[5]];
-        r |= DB32_REVERSE[txt_buf[6]];
-        r |= DB32_REVERSE[txt_buf[7]];
-        txt_buf += 8;  /* Move the pointer */
-    }
-
-    /*
-     * And then we do only a single error check at the end:
-     */
-    if (r & 224) {
+    // Check that text contains only valid Dbase32 letters:
+    if (dbase32_invalid(txt_len, txt_buf)) {
         PyObject *borrowed = PyTuple_GetItem(args, 0);
         PyErr_Format(PyExc_ValueError, "invalid Dbase32: %R", borrowed);
         return NULL;
