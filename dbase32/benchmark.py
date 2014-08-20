@@ -51,6 +51,12 @@ assert fallback.isdb32(text_db32) is True
 assert _dbase32.isdb32(text_db32) is True
 assert fallback.isdb32(not_db32) is False
 assert _dbase32.isdb32(not_db32) is False
+
+def timing_test(text):
+    try:
+        _dbase32.check_db32(text)
+    except ValueError:
+        pass
 """
 
 
@@ -95,6 +101,13 @@ def run_benchmark(numbytes=30):
     yield run('os.urandom(15)', 100)
     yield run('_dbase32.random_id(15)', 100)
     yield run('_dbase32.time_id()', 100)
+
+    yield 'Timing attack test:'
+    for index in (0, 8, 16):
+        letters = ['A' for i in range(24)]
+        letters[index] = 'a'
+        text = ''.join(letters)
+        yield run('timing_test({!r})'.format(text))
 
 
 if __name__ == '__main__':
