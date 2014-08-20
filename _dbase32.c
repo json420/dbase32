@@ -129,32 +129,44 @@ dbase32_encode(const size_t bin_len, const uint8_t *bin_buf,
 }
 
 
-/* dbase32_decode()
-
-Return value is the status:
-    status >=  0 means invalid Dbase32 letter (char is returned)
-    status == -1 means success
-    status == -2 means invalid txt_len
-    status == -3 means invalid bin_len
-    status == -4 means internal error  */
-static int
+/*
+ * dbase32_decode(txt_len, txt_buf, bin_len, bin_buf) => status
+ *
+ * `dbase32_db32dec()` uses this function.
+ *
+ * Return value is the status:
+ *      status == 0 means success
+ *      status == 1 means txt_len is invalid
+ *      status == 2 means bin_len is invalid
+ *      status >= 3 means txt_buf contains one or more invalid letters
+ *
+ */
+static inline uint8_t
 dbase32_decode(const size_t txt_len, const uint8_t *txt_buf,
                const size_t bin_len,       uint8_t *bin_buf)
 {
-    size_t i, block, count;
+    size_t block, count;
     uint8_t r;
     uint64_t taxi;
 
     if (txt_len < 8 || txt_len > MAX_TXT_LEN || txt_len % 8 != 0) {
-        return -2;
+        return 1;
     }
     if (bin_len != txt_len * 5 / 8) {
-        return -3;
+        return 2;
     }
+
+    /*
+     * To mitigate timing attacks, we always decode the entire buffer, and then
+     * do a single error check on the final value of `r`.
+     *
+     * However, use of the DB32_REVERSE table means this function still leaks
+     * information through cache misses, etc.
+     */
     count = txt_len / 8;
-    for (block=0; block < count; block++) {
-        // Pack 40 bits into the taxi (5 bits at a time):
-        r = DB32_REVERSE[txt_buf[0]];                taxi = r;
+    for (r = block = 0; block < count; block++) {
+        /* Pack 40 bits into the taxi (5 bits at a time) */
+        r = DB32_REVERSE[txt_buf[0]] | (r & 224);    taxi = r;
         r = DB32_REVERSE[txt_buf[1]] | (r & 224);    taxi = r | (taxi << 5);
         r = DB32_REVERSE[txt_buf[2]] | (r & 224);    taxi = r | (taxi << 5);
         r = DB32_REVERSE[txt_buf[3]] | (r & 224);    taxi = r | (taxi << 5);
@@ -163,35 +175,25 @@ dbase32_decode(const size_t txt_len, const uint8_t *txt_buf,
         r = DB32_REVERSE[txt_buf[6]] | (r & 224);    taxi = r | (taxi << 5);
         r = DB32_REVERSE[txt_buf[7]] | (r & 224);    taxi = r | (taxi << 5);
 
-        /* Only one error check (branch) per block, rather than 8:
-
-            31: 00011111 <= bits set in reverse-table for valid characters
-           224: 11100000 <= bits set in reverse-table for invalid characters
-
-        So above we preserve the 3 high bits in r (if ever set), and then do
-        a single error check on the final r value.  */
-        if (r & 224) {
-            for (i=0; i < 8; i++) {
-                r = DB32_REVERSE[txt_buf[i]];
-                if (r & 224) {
-                    return txt_buf[i];
-                }
-            }
-            return -4;  // Whoa, we screwed up something!
-        }
-
-        // Unpack 40 bits from the taxi (8 bits at a time):
+        /* Unpack 40 bits from the taxi (8 bits at a time) */
         bin_buf[0] = (taxi >> 32) & 255;
         bin_buf[1] = (taxi >> 24) & 255;
         bin_buf[2] = (taxi >> 16) & 255;
         bin_buf[3] = (taxi >>  8) & 255;
         bin_buf[4] = taxi & 255;
 
-        // Move the pointers:
+        /* Move the pointers */
         txt_buf += 8;
         bin_buf += 5;
     }
-    return -1;
+
+    /* 
+     * Return value is (r & 244):
+     *
+     *       31: 00011111 <= bits set in DB32_REVERSE for valid characters
+     *      224: 11100000 <= bits set in DB32_REVERSE for invalid characters
+     */
+    return (r & 224);
 }
 
 
@@ -239,8 +241,8 @@ dbase32_invalid(const size_t txt_len, const uint8_t *txt_buf)
     /* 
      * Return value is (r & 244):
      *
-     *       31: 00011111 <= bits set in reverse-table for valid characters
-     *      224: 11100000 <= bits set in reverse-table for invalid characters
+     *       31: 00011111 <= bits set in DB32_REVERSE for valid characters
+     *      224: 11100000 <= bits set in DB32_REVERSE for invalid characters
      */
     return (r & 224);
 }
@@ -301,12 +303,11 @@ dbase32_db32enc(PyObject *self, PyObject *args)
 static PyObject *
 dbase32_db32dec(PyObject *self, PyObject *args)
 {
-    PyObject *pyret;
+    PyObject *pyret = NULL;
     const uint8_t *txt_buf;
     uint8_t *bin_buf;
     size_t txt_len = 0;  // Note: the "s#" format requires initializing to zero
     size_t bin_len;
-    int status;
 
     // Strictly validate, we only accept well-formed IDs:
     if (!PyArg_ParseTuple(args, "s#:db32dec", &txt_buf, &txt_len)) {
@@ -333,19 +334,11 @@ dbase32_db32dec(PyObject *self, PyObject *args)
     }
     bin_buf = (uint8_t *)PyBytes_AS_STRING(pyret);
 
-    // dbase32_decode() returns -1 on success:
-    status = dbase32_decode(txt_len, txt_buf, bin_len, bin_buf);
-    if (status != -1) {
-        if (status >= 0) {
-            PyObject *borrowed = PyTuple_GetItem(args, 0);
-            PyErr_Format(PyExc_ValueError, "invalid Dbase32: %R", borrowed);
-            return NULL;
-        }
-        else {
-            PyErr_SetString(PyExc_RuntimeError, "something went very wrong");
-        }
-        Py_DECREF(pyret);
-        return NULL;
+    // dbase32_decode() returns 0 on success:
+    if (dbase32_decode(txt_len, txt_buf, bin_len, bin_buf) != 0) {
+        Py_CLEAR(pyret);
+        PyObject *borrowed = PyTuple_GetItem(args, 0);
+        PyErr_Format(PyExc_ValueError, "invalid Dbase32: %R", borrowed);
     }
     return pyret;
 }
