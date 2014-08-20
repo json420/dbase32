@@ -337,24 +337,24 @@ class TestFunctions(TestCase):
         # Test with invalid base32 characters:
         with self.assertRaises(ValueError) as cm:
             func('CDEFCDE2')
-        self.assertEqual(str(cm.exception), 'invalid Dbase32 letter: 2')
+        self.assertEqual(str(cm.exception), "invalid Dbase32: 'CDEFCDE2'")
         with self.assertRaises(ValueError) as cm:
             func('CDEFCDE=')
-        self.assertEqual(str(cm.exception), 'invalid Dbase32 letter: =')
+        self.assertEqual(str(cm.exception), "invalid Dbase32: 'CDEFCDE='")
         with self.assertRaises(ValueError) as cm:
             func('CDEFCDEZ')
-        self.assertEqual(str(cm.exception), 'invalid Dbase32 letter: Z')
+        self.assertEqual(str(cm.exception), "invalid Dbase32: 'CDEFCDEZ'")
 
         # Test that it stops at the first invalid letter:
         with self.assertRaises(ValueError) as cm:
             func('2ZZZZZZZ')
-        self.assertEqual(str(cm.exception), 'invalid Dbase32 letter: 2')
+        self.assertEqual(str(cm.exception), "invalid Dbase32: '2ZZZZZZZ'")
         with self.assertRaises(ValueError) as cm:
             func('AAAAAA=Z')
-        self.assertEqual(str(cm.exception), 'invalid Dbase32 letter: =')
+        self.assertEqual(str(cm.exception), "invalid Dbase32: 'AAAAAA=Z'")
         with self.assertRaises(ValueError) as cm:
             func('CDEZ=2=2')
-        self.assertEqual(str(cm.exception), 'invalid Dbase32 letter: Z')
+        self.assertEqual(str(cm.exception), "invalid Dbase32: 'CDEZ=2=2'")
 
         # Test invalid letter at each possible position in the string
         for size in TXT_SIZES:
@@ -363,28 +363,38 @@ class TestFunctions(TestCase):
                 txt = make_string(i, size, 'A', '/')
                 with self.assertRaises(ValueError) as cm:
                     func(txt)
-                self.assertEqual(str(cm.exception), 'invalid Dbase32 letter: /')
+                self.assertEqual(str(cm.exception),
+                    'invalid Dbase32: {!r}'.format(txt)
+                )
                 txt = make_string(i, size, 'A', '.')
                 with self.assertRaises(ValueError) as cm:
                     func(txt)
-                self.assertEqual(str(cm.exception), 'invalid Dbase32 letter: .')
+                self.assertEqual(str(cm.exception),
+                    'invalid Dbase32: {!r}'.format(txt)
+                )
 
                 # Test that it stops at the *first* invalid letter:
                 txt = make_string(i, size, 'A', '/', '.')
                 with self.assertRaises(ValueError) as cm:
                     func(txt)
-                self.assertEqual(str(cm.exception), 'invalid Dbase32 letter: /')
+                self.assertEqual(str(cm.exception),
+                    'invalid Dbase32: {!r}'.format(txt)
+                )
                 txt = make_string(i, size, 'A', '.', '/')
                 with self.assertRaises(ValueError) as cm:
                     func(txt)
-                self.assertEqual(str(cm.exception), 'invalid Dbase32 letter: .')
+                self.assertEqual(str(cm.exception),
+                    'invalid Dbase32: {!r}'.format(txt)
+                )
 
         # Test a slew of no-no letters:
         for L in BAD_LETTERS:
             txt = ('A' * 7) + L
             with self.assertRaises(ValueError) as cm:
                 func(txt)
-            self.assertEqual(str(cm.exception), 'invalid Dbase32 letter: ' + L)
+            self.assertEqual(str(cm.exception),
+                'invalid Dbase32: {!r}'.format(txt)
+            )
 
         # Test with multi-byte UTF-8 characters:
         bad_s = '™' * 8
@@ -394,9 +404,8 @@ class TestFunctions(TestCase):
         for value in [bad_s, bad_b]:
             with self.assertRaises(ValueError) as cm:        
                 func(value)
-            self.assertEqual(
-                str(cm.exception),
-                'invalid Dbase32 letter: â'
+            self.assertEqual(str(cm.exception),
+                'invalid Dbase32: {!r}'.format(value)
             )
         bad_s = 'AABBCCD™'
         bad_b = bad_s.encode('utf-8')
@@ -416,9 +425,8 @@ class TestFunctions(TestCase):
         for value in [bad_s, bad_b]:
             with self.assertRaises(ValueError) as cm:        
                 func(value)
-            self.assertEqual(
-                str(cm.exception),
-                'invalid Dbase32 letter: â'
+            self.assertEqual(str(cm.exception),
+                'invalid Dbase32: {!r}'.format(value)
             )
 
     def check_db32dec(self, db32dec):

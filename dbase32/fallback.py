@@ -155,10 +155,10 @@ def encode_x(data, x_forward):
 
 
 def _decode_x_iter(text, x_reverse):
-    assert isinstance(text, bytes)
+    utf8 = _check_length(_text_to_bytes(text))
     taxi = 0
     bits = 0
-    for i in text:
+    for i in utf8:
         r = x_reverse[i]
         if r > 31:
             raise ValueError('invalid Dbase32: {!r}'.format(text))
@@ -171,8 +171,7 @@ def _decode_x_iter(text, x_reverse):
 
 
 def decode_x(text, x_reverse):
-    utf8 = _check_length(_text_to_bytes(text))
-    return bytes(_decode_x_iter(utf8, x_reverse))
+    return bytes(_decode_x_iter(text, x_reverse))
 
 
 def db32enc(data):

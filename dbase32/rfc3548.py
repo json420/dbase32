@@ -117,11 +117,9 @@ def isb32(text):
 def check_b32(text):
     utf8 = _check_length(_text_to_bytes(text))
     if not B32_SET.issuperset(utf8):
-        for i in utf8:
-            if i not in B32_SET:
-                raise ValueError(
-                    'invalid Dbase32 letter: {}'.format(chr(i))
-                )
+        raise ValueError(
+            'invalid Dbase32: {!r}'.format(text)
+        )
 
 
 def random_id(numbytes=15):
