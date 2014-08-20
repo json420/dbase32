@@ -296,16 +296,19 @@ cleanup:
 static PyObject *
 dbase32_db32dec(PyObject *self, PyObject *args)
 {
-    PyObject *pyret = NULL;
-    const uint8_t *txt_buf;
-    uint8_t *bin_buf;
-    size_t txt_len = 0;  // Note: the "s#" format requires initializing to zero
-    size_t bin_len;
+    size_t txt_len = 0;
+    const uint8_t *txt_buf = NULL;
+    size_t bin_len = 0;
+    uint8_t *bin_buf = NULL;
+    PyObject *borrowed = NULL;  /* Borrowed reference only used in error */
+    PyObject *ret = NULL;
 
-    // Strictly validate, we only accept well-formed IDs:
+    /* Parse args */
     if (!PyArg_ParseTuple(args, "s#:db32dec", &txt_buf, &txt_len)) {
         return NULL;
     }
+
+    /* Only decode well-formed IDs */
     if (txt_len < 8 || txt_len > MAX_TXT_LEN) {
         PyErr_Format(PyExc_ValueError,
             "len(text) is %u, need 8 <= len(text) <= %u", txt_len, MAX_TXT_LEN
@@ -319,21 +322,23 @@ dbase32_db32dec(PyObject *self, PyObject *args)
         return NULL;
     }
 
-    // Allocate destination buffer:
+    /* Allocate destination buffer */
     bin_len = txt_len * 5 / 8;
-    pyret = PyBytes_FromStringAndSize(NULL, bin_len);
-    if (pyret == NULL) {
+    ret = PyBytes_FromStringAndSize(NULL, bin_len);
+    if (ret == NULL) {
         return NULL;
     }
-    bin_buf = (uint8_t *)PyBytes_AS_STRING(pyret);
+    bin_buf = (uint8_t *)PyBytes_AS_STRING(ret);
 
-    // dbase32_decode() returns 0 on success:
+    /* dbase32_decode() returns 0 on success */
     if (dbase32_decode(txt_len, txt_buf, bin_len, bin_buf) != 0) {
-        Py_CLEAR(pyret);
-        PyObject *borrowed = PyTuple_GetItem(args, 0);
-        PyErr_Format(PyExc_ValueError, "invalid Dbase32: %R", borrowed);
+        Py_CLEAR(ret);
+        borrowed = PyTuple_GetItem(args, 0);
+        if (borrowed != NULL) {
+            PyErr_Format(PyExc_ValueError, "invalid Dbase32: %R", borrowed);
+        }
     }
-    return pyret;
+    return ret;
 }
 
 
