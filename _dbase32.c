@@ -245,52 +245,51 @@ dbase32_invalid(const size_t txt_len, const uint8_t *txt_buf)
 static PyObject *
 dbase32_db32enc(PyObject *self, PyObject *args)
 {
-    Py_buffer pybuf;
-    PyObject *pyret;
-    const uint8_t *bin_buf;
-    uint8_t *txt_buf;
-    size_t bin_len, txt_len;
-    uint8_t status;
+    Py_buffer view;
+    size_t bin_len = 0;
+    const uint8_t *bin_buf = NULL;
+    size_t txt_len = 0;
+    uint8_t *txt_buf = NULL;
+    PyObject *ret = NULL;
 
-    // Strictly validate, we only accept well-formed IDs:
-    if (!PyArg_ParseTuple(args, "y*:db32enc", &pybuf)) {
+    /* Parse args */
+    if (!PyArg_ParseTuple(args, "y*:db32enc", &view)) {
         return NULL;
     }
-    bin_buf = pybuf.buf;
-    bin_len = pybuf.len;
+
+    /* Only encode well-formed IDs */
+    bin_len = view.len;
     if (bin_len < 5 || bin_len > MAX_BIN_LEN) {
         PyErr_Format(PyExc_ValueError,
             "len(data) is %u, need 5 <= len(data) <= %u", bin_len, MAX_BIN_LEN
         );
-        PyBuffer_Release(&pybuf);
-        return NULL;
+        goto cleanup;
     }
     if (bin_len % 5 != 0) {
         PyErr_Format(PyExc_ValueError,
             "len(data) is %u, need len(data) % 5 == 0", bin_len
         );
-        PyBuffer_Release(&pybuf);
-        return NULL;
+        goto cleanup;
     }
+    bin_buf = view.buf;
 
-    // Allocate destination buffer:
+    /* Allocate destination buffer */
     txt_len = bin_len * 8 / 5;
-    pyret = PyUnicode_New(txt_len, DB32_END);
-    if (pyret == NULL ) {
-        PyBuffer_Release(&pybuf);
-        return NULL;
+    ret = PyUnicode_New(txt_len, DB32_END);
+    if (ret == NULL) {
+        goto cleanup;
     }
-    txt_buf = (uint8_t *)PyUnicode_1BYTE_DATA(pyret);
+    txt_buf = (uint8_t *)PyUnicode_1BYTE_DATA(ret);
 
-    // dbase32_encode() returns 0 on success:
-    status = dbase32_encode(bin_len, bin_buf, txt_len, txt_buf);
-    PyBuffer_Release(&pybuf);
-    if (status != 0) {
+    /* dbase32_encode() returns 0 on success */
+    if (dbase32_encode(bin_len, bin_buf, txt_len, txt_buf) != 0) {
         PyErr_SetString(PyExc_RuntimeError, "something went very wrong");
-        Py_DECREF(pyret);
-        return NULL;
+        Py_CLEAR(ret);
     }
-    return pyret;
+
+cleanup:
+    PyBuffer_Release(&view);
+    return ret;
 }
 
 
