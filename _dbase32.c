@@ -286,7 +286,9 @@ dbase32_db32dec(PyObject *self, PyObject *args)
     status = dbase32_decode(txt_len, txt_buf, bin_len, bin_buf);
     if (status != -1) {
         if (status >= 0) {
-            PyErr_Format(PyExc_ValueError, "invalid Dbase32 letter: %c", status);
+            PyObject *borrowed = PyTuple_GetItem(args, 0);
+            PyErr_Format(PyExc_ValueError, "invalid Dbase32: %R", borrowed);
+            return NULL;
         }
         else {
             PyErr_SetString(PyExc_RuntimeError, "something went very wrong");

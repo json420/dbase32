@@ -161,7 +161,7 @@ def _decode_x_iter(text, x_reverse):
     for i in text:
         r = x_reverse[i]
         if r > 31:
-            raise ValueError('invalid Dbase32 letter: {}'.format(chr(i)))
+            raise ValueError('invalid Dbase32: {!r}'.format(text))
         taxi = (taxi << 5) | r
         bits += 5
         while bits >= 8:
@@ -213,9 +213,7 @@ def isdb32(text):
 def check_db32(text):
     utf8 = _check_length(_text_to_bytes(text))
     if not DB32_SET.issuperset(utf8):
-        raise ValueError(
-            'invalid Dbase32: {!r}'.format(text)
-        )
+        raise ValueError('invalid Dbase32: {!r}'.format(text))
 
 
 def random_id(numbytes=15):
