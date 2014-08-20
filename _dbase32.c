@@ -196,9 +196,17 @@ dbase32_decode(const size_t txt_len, const uint8_t *txt_buf,
 
 
 /*
- * dbase32_invalid() 
+ * dbase32_invalid(txt_len, txt_buf) => status
+ *
+ * Both `dbase32_isdb32()` and `dbase32_check_db32()` use this function.
+ *
+ * Return value is the status:
+ *      status == 0: valid Dbase32
+ *      status == 1: txt_len is invalid
+ *      status > 1: txt_buf contains one or more invalid Dbase32 letters
+ *
  */
-static uint8_t
+static inline uint8_t
 dbase32_invalid(const size_t txt_len, const uint8_t *txt_buf)
 {
     size_t block, count;
@@ -209,7 +217,11 @@ dbase32_invalid(const size_t txt_len, const uint8_t *txt_buf)
     }
 
     /*
-     * To mitigate timing attacks, we always scan the entire buffer:
+     * To mitigate timing attacks, we always scan the entire buffer, and then do
+     * a single error check on the final value of `r`.
+     *
+     * However, use of the DB32_REVERSE table means this function still leaks
+     * information through cache misses, etc.
      */
     count = txt_len / 8;
     for (r = block = 0; block < count; block++) {
@@ -223,6 +235,13 @@ dbase32_invalid(const size_t txt_len, const uint8_t *txt_buf)
         r |= DB32_REVERSE[txt_buf[7]];
         txt_buf += 8;  /* Move the pointer */
     }
+
+    /* 
+     * Return value is (r & 244):
+     *
+     *       31: 00011111 <= bits set in reverse-table for valid characters
+     *      224: 11100000 <= bits set in reverse-table for invalid characters
+     */
     return (r & 224);
 }
 
