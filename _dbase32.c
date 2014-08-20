@@ -279,8 +279,7 @@ dbase32_db32enc(PyObject *self, PyObject *args)
 
     /* dbase32_encode() returns 0 on success */
     if (dbase32_encode(bin_len, bin_buf, txt_len, txt_buf) != 0) {
-        PyErr_SetString(PyExc_RuntimeError, "internal error in db32enc()");
-        Py_CLEAR(ret);
+        Py_FatalError("internal error in dbase32_db32enc()");
     }
     return ret;
 }
