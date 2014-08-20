@@ -245,7 +245,6 @@ dbase32_invalid(const size_t txt_len, const uint8_t *txt_buf)
 static PyObject *
 dbase32_db32enc(PyObject *self, PyObject *args)
 {
-    Py_buffer view;
     size_t bin_len = 0;
     const uint8_t *bin_buf = NULL;
     size_t txt_len = 0;
@@ -253,42 +252,37 @@ dbase32_db32enc(PyObject *self, PyObject *args)
     PyObject *ret = NULL;
 
     /* Parse args */
-    if (!PyArg_ParseTuple(args, "y*:db32enc", &view)) {
+    if (!PyArg_ParseTuple(args, "y#:db32dec", &bin_buf, &bin_len)) {
         return NULL;
     }
 
     /* Only encode well-formed IDs */
-    bin_len = view.len;
     if (bin_len < 5 || bin_len > MAX_BIN_LEN) {
         PyErr_Format(PyExc_ValueError,
             "len(data) is %u, need 5 <= len(data) <= %u", bin_len, MAX_BIN_LEN
         );
-        goto cleanup;
+        return NULL;
     }
     if (bin_len % 5 != 0) {
         PyErr_Format(PyExc_ValueError,
             "len(data) is %u, need len(data) % 5 == 0", bin_len
         );
-        goto cleanup;
+        return NULL;
     }
-    bin_buf = view.buf;
 
     /* Allocate destination buffer */
     txt_len = bin_len * 8 / 5;
     ret = PyUnicode_New(txt_len, DB32_END);
     if (ret == NULL) {
-        goto cleanup;
+        return NULL;
     }
     txt_buf = (uint8_t *)PyUnicode_1BYTE_DATA(ret);
 
     /* dbase32_encode() returns 0 on success */
     if (dbase32_encode(bin_len, bin_buf, txt_len, txt_buf) != 0) {
-        PyErr_SetString(PyExc_RuntimeError, "something went very wrong");
+        PyErr_SetString(PyExc_RuntimeError, "internal error in db32enc()");
         Py_CLEAR(ret);
     }
-
-cleanup:
-    PyBuffer_Release(&view);
     return ret;
 }
 
