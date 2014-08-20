@@ -83,13 +83,17 @@ static const uint8_t DB32_REVERSE[256] = {
 };
 
 
-/* dbase32_encode()
-
-Return value is the status:
-    status == 0 means success
-    status == 1 means invalid bin_len
-    status == 2 means invalid txt_len */
-static uint8_t
+/* dbase32_encode(bin_len, bin_buf, txt_len, txt_buf) => status
+ *
+ * This function is used by `db32enc()`, `random_id()`, and `time_id()`.
+ *
+ * Return value is the status:
+ *      status == 0 means success
+ *      status == 1 means bin_len is invalid
+ *      status == 2 means txt_len is invalid
+ *      status >= 3 means internal error (reserved for future use)
+ */
+static inline uint8_t
 dbase32_encode(const size_t bin_len, const uint8_t *bin_buf,
                const size_t txt_len,       uint8_t *txt_buf)
 {
@@ -103,15 +107,15 @@ dbase32_encode(const size_t bin_len, const uint8_t *bin_buf,
         return 2;
     }
     count = bin_len / 5;
-    for (block=0; block < count; block++) {
-        // Pack 40 bits into the taxi (8 bits at a time):
+    for (block = 0; block < count; block++) {
+        /* Pack 40 bits into the taxi (8 bits at a time) */
         taxi = bin_buf[0];
         taxi = bin_buf[1] | (taxi << 8);
         taxi = bin_buf[2] | (taxi << 8);
         taxi = bin_buf[3] | (taxi << 8);
         taxi = bin_buf[4] | (taxi << 8);
 
-        // Unpack 40 bits from the taxi (5 bits at a time):
+        /* Unpack 40 bits from the taxi (5 bits at a time) */
         txt_buf[0] = DB32_FORWARD[(taxi >> 35) & 31];
         txt_buf[1] = DB32_FORWARD[(taxi >> 30) & 31];
         txt_buf[2] = DB32_FORWARD[(taxi >> 25) & 31];
@@ -121,7 +125,7 @@ dbase32_encode(const size_t bin_len, const uint8_t *bin_buf,
         txt_buf[6] = DB32_FORWARD[(taxi >>  5) & 31];
         txt_buf[7] = DB32_FORWARD[taxi & 31];
 
-        // Move the pointers:
+        /* Move the pointers */
         bin_buf += 5;
         txt_buf += 8;
     }
@@ -129,10 +133,9 @@ dbase32_encode(const size_t bin_len, const uint8_t *bin_buf,
 }
 
 
-/*
- * dbase32_decode(txt_len, txt_buf, bin_len, bin_buf) => status
+/* dbase32_decode(txt_len, txt_buf, bin_len, bin_buf) => status
  *
- * `dbase32_db32dec()` uses this function.
+ * This function is used by `db32dec()`.
  *
  * Return value is the status:
  *      status == 0 means success
@@ -193,10 +196,9 @@ dbase32_decode(const size_t txt_len, const uint8_t *txt_buf,
 }
 
 
-/*
- * dbase32_invalid(txt_len, txt_buf) => status
+/* dbase32_invalid(txt_len, txt_buf) => status
  *
- * Both `dbase32_isdb32()` and `dbase32_check_db32()` use this function.
+ * This function is used by `isdb32()` and `check_db32()`.
  *
  * Return value is the status:
  *      status == 0 means valid Dbase32
