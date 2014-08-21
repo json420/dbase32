@@ -195,7 +195,7 @@ dbase32_decode(const size_t txt_len, const uint8_t *txt_buf,
 }
 
 
-/* dbase32_invalid(txt_len, txt_buf) => status
+/* dbase32_validate(txt_len, txt_buf) => status
  *
  * This function is used by `isdb32()` and `check_db32()`.
  *
@@ -205,7 +205,7 @@ dbase32_decode(const size_t txt_len, const uint8_t *txt_buf,
  *      status >= 2 means txt_buf contains one or more invalid Dbase32 letters
  */
 static inline uint8_t
-dbase32_invalid(const size_t txt_len, const uint8_t *txt_buf)
+dbase32_validate(const size_t txt_len, const uint8_t *txt_buf)
 {
     size_t block, count;
     uint8_t r;
@@ -357,8 +357,8 @@ dbase32_isdb32(PyObject *self, PyObject *args)
         Py_RETURN_FALSE;
     }
 
-    /* dbase32_invalid() returns 0 on success, 224 on invalid Dbase32 */
-    status = dbase32_invalid(txt_len, txt_buf);
+    /* dbase32_validate() returns 0 on success, 224 on invalid Dbase32 */
+    status = dbase32_validate(txt_len, txt_buf);
     if (status == 0) {
         Py_RETURN_TRUE;
     }
@@ -397,8 +397,8 @@ dbase32_check_db32(PyObject *self, PyObject *args)
         return NULL;
     }
 
-    /* dbase32_invalid() returns 0 on success, 224 on invalid Dbase32 */
-    status = dbase32_invalid(txt_len, txt_buf);
+    /* dbase32_validate() returns 0 on success, 224 on invalid Dbase32 */
+    status = dbase32_validate(txt_len, txt_buf);
     if (status == 0) {
         Py_RETURN_NONE;
     }
