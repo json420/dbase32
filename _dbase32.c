@@ -292,7 +292,7 @@ dbase32_db32dec(PyObject *self, PyObject *args)
     const uint8_t *txt_buf = NULL;
     size_t bin_len = 0;
     uint8_t *bin_buf = NULL;
-    uint8_t status;
+    uint8_t status = 1;
     PyObject *borrowed = NULL;  /* Borrowed reference only used in error */
     PyObject *ret = NULL;
 
@@ -345,7 +345,7 @@ dbase32_isdb32(PyObject *self, PyObject *args)
 {
     size_t txt_len = 0;
     const uint8_t *txt_buf = NULL;
-    uint8_t status;
+    uint8_t status = 1;
 
     /* Parse args */
     if (!PyArg_ParseTuple(args, "s#:isdb32", &txt_buf, &txt_len)) {
@@ -424,7 +424,7 @@ dbase32_random_id(PyObject *self, PyObject *args, PyObject *kw)
     PyObject *pyret;
     uint8_t *bin_buf, *txt_buf;
     size_t txt_len;
-    int status;
+    int status = 1;
 
     if (!PyArg_ParseTupleAndKeywords(args, kw, "|n:random_id", keys, &numbytes)) {
         return NULL;
@@ -484,7 +484,7 @@ dbase32_time_id(PyObject *self, PyObject *args, PyObject *kw)
     PyObject *pyret;
     uint32_t ts;
     uint8_t *bin_buf, *txt_buf;
-    int status;
+    int status = 1;
 
     if (!PyArg_ParseTupleAndKeywords(args, kw, "|d:time_id", keys, &timestamp)) {
         return NULL;
