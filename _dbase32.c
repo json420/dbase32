@@ -375,6 +375,7 @@ dbase32_check_db32(PyObject *self, PyObject *args)
 {
     size_t txt_len = 0;
     const uint8_t *txt_buf = NULL;
+    uint8_t status = 1;
     PyObject *borrowed = NULL;  /* Borrowed reference only used in error */
 
     /* Parse args */
@@ -396,16 +397,22 @@ dbase32_check_db32(PyObject *self, PyObject *args)
         return NULL;
     }
 
-    /* dbase32_invalid() returns 0 if all characters are valid */
-    if (dbase32_invalid(txt_len, txt_buf) != 0) {
+    /* dbase32_invalid() returns 0 on success, 224 on invalid Dbase32 */
+    status = dbase32_invalid(txt_len, txt_buf);
+    if (status == 0) {
+        Py_RETURN_NONE;
+    }
+    if (status == 224) {
         borrowed = PyTuple_GetItem(args, 0);
         if (borrowed != NULL) {
             PyErr_Format(PyExc_ValueError, "invalid Dbase32: %R", borrowed);
         }
-        return NULL;
     }
-
-    Py_RETURN_NONE;
+    else {
+        /* Any status other than 0 and 224 means an internal error occurred */
+        Py_FatalError("internal error in _dbase32.check_db32()");
+    }
+    return NULL;
 }
 
 
