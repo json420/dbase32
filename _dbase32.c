@@ -345,6 +345,7 @@ dbase32_isdb32(PyObject *self, PyObject *args)
 {
     size_t txt_len = 0;
     const uint8_t *txt_buf = NULL;
+    uint8_t status;
 
     /* Parse args */
     if (!PyArg_ParseTuple(args, "s#:isdb32", &txt_buf, &txt_len)) {
@@ -356,11 +357,16 @@ dbase32_isdb32(PyObject *self, PyObject *args)
         Py_RETURN_FALSE;
     }
 
-    /* dbase32_invalid() returns 0 if all characters are valid */
-    if (dbase32_invalid(txt_len, txt_buf) != 0) {
-        Py_RETURN_FALSE;
+    /* dbase32_invalid() returns 0 on success, 224 on invalid Dbase32 */
+    status = dbase32_invalid(txt_len, txt_buf);
+    if (status == 0) {
+        Py_RETURN_TRUE;
     }
-    Py_RETURN_TRUE;
+    if (status != 224) {
+        /* Any status other than 0 and 224 means an internal error occurred */
+        Py_FatalError("internal error in dbase32_isdb32()");
+    }
+    Py_RETURN_FALSE;
 }
 
 
