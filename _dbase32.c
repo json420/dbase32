@@ -279,7 +279,7 @@ dbase32_db32enc(PyObject *self, PyObject *args)
 
     /* dbase32_encode() returns 0 on success */
     if (dbase32_encode(bin_len, bin_buf, txt_len, txt_buf) != 0) {
-        Py_FatalError("internal error in dbase32_db32enc()");
+        Py_FatalError("internal error in `_dbase32.db32enc()`");
     }
     return ret;
 }
@@ -334,7 +334,7 @@ dbase32_db32dec(PyObject *self, PyObject *args)
     }
     else if (status != 0) {
         /* Any status other than 0 and 224 means an internal error occurred */
-        Py_FatalError("internal error in dbase32_db32dec()");
+        Py_FatalError("internal error in `_dbase32.db32dec()`");
     }
     return ret;
 }
@@ -364,7 +364,7 @@ dbase32_isdb32(PyObject *self, PyObject *args)
     }
     if (status != 224) {
         /* Any status other than 0 and 224 means an internal error occurred */
-        Py_FatalError("internal error in dbase32_isdb32()");
+        Py_FatalError("internal error in `_dbase32.isdb32()`");
     }
     Py_RETURN_FALSE;
 }
@@ -410,7 +410,7 @@ dbase32_check_db32(PyObject *self, PyObject *args)
     }
     else {
         /* Any status other than 0 and 224 means an internal error occurred */
-        Py_FatalError("internal error in _dbase32.check_db32()");
+        Py_FatalError("internal error in `_dbase32.check_db32()`");
     }
     return NULL;
 }
