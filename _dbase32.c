@@ -475,23 +475,28 @@ dbase32_random_id(PyObject *self, PyObject *args, PyObject *kw)
     free(bin_buf);
     if (status != 0) {
         /* Any status other than 0 means an internal error occurred */
-        Py_FatalError("internal error in _dbase32.check_db32()");
+        Py_FatalError("internal error in `_dbase32.random_id()`");
         Py_CLEAR(ret);  /* Should not be reached */
     }
     return ret;
 }
 
 
+/*
+ * C implementation of `dbase32.time_id()`
+ */
 static PyObject *
 dbase32_time_id(PyObject *self, PyObject *args, PyObject *kw)
 {
     static char *keys[] = {"timestamp", NULL};
     double timestamp = -1;
-    PyObject *pyret;
-    uint32_t ts;
-    uint8_t *bin_buf, *txt_buf;
-    int status = 1;
+    uint32_t ts = 0;
+    uint8_t *bin_buf = NULL;
+    uint8_t *txt_buf = NULL;
+    PyObject *ret = NULL;
+    uint8_t status = 1;
 
+    /* Parse arguments */
     if (!PyArg_ParseTupleAndKeywords(args, kw, "|d:time_id", keys, &timestamp)) {
         return NULL;
     }
@@ -499,43 +504,42 @@ dbase32_time_id(PyObject *self, PyObject *args, PyObject *kw)
         timestamp = (double)time(NULL);
     }
 
-    // Allocate temp buffer for binary ID:
+    /* Allocate temporary buffer for binary ID */
     bin_buf = (uint8_t *)malloc(15 * sizeof(uint8_t));
     if (bin_buf == NULL) {
         return PyErr_NoMemory();
     }
 
-    // First 4 bytes are from timestamp:
+    /* First 4 bytes are from timestamp */
     ts = (uint32_t)timestamp;
     bin_buf[0] = (ts >> 24) & 255;
     bin_buf[1] = (ts >> 16) & 255;
     bin_buf[2] = (ts >>  8) & 255;
     bin_buf[3] = ts & 255;
 
-    // Next 11 bytes are from os.urandom():
-    status = _PyOS_URandom(bin_buf + 4, 11);
-    if (status == -1) {
+    /* Next 11 bytes are from os.urandom() */
+    if (_PyOS_URandom(bin_buf + 4, 15) != 0) {
         free(bin_buf);
         return NULL;
     }
 
-    // Allocate destination buffer:
-    pyret = PyUnicode_New(24, DB32_END);
-    if (pyret == NULL ) {
+    /* Allocate destination buffer */
+    ret = PyUnicode_New(24, DB32_END);
+    if (ret == NULL ) {
         free(bin_buf);
         return NULL;
     }
-    txt_buf = (uint8_t *)PyUnicode_1BYTE_DATA(pyret);
+    txt_buf = (uint8_t *)PyUnicode_1BYTE_DATA(ret);
 
-    // dbase32_encode() returns 0 on success:
+    /* dbase32_encode() returns 0 on success */
     status = dbase32_encode(15, bin_buf, 24, txt_buf);
     free(bin_buf);
     if (status != 0) {
-        PyErr_SetString(PyExc_RuntimeError, "something went very wrong");
-        Py_DECREF(pyret);
-        return NULL;
+        /* Any status other than 0 means an internal error occurred */
+        Py_FatalError("internal error in `_dbase32.time_id()`");
+        Py_CLEAR(ret);  /* Should not be reached */
     }
-    return pyret;
+    return ret;
 }
 
 
