@@ -82,15 +82,11 @@ static const uint8_t DB32_REVERSE[256] = {
 };
 
 
-/* dbase32_encode(bin_len, bin_buf, txt_len, txt_buf) => status
+/* dbase32_encode(): internal Dbase32 encoding function.
  *
  * This function is used by `db32enc()`, `random_id()`, and `time_id()`.
  *
- * Return value is the status:
- *      status == 0 means success
- *      status == 1 means bin_len is invalid
- *      status == 2 means txt_len is invalid
- *      status >= 3 means internal error (reserved for future use)
+ * Return value == 0 means success, return value != 0 means internal error.
  */
 static inline uint8_t
 dbase32_encode(const size_t bin_len, const uint8_t *bin_buf,
@@ -132,7 +128,7 @@ dbase32_encode(const size_t bin_len, const uint8_t *bin_buf,
 }
 
 
-/* dbase32_decode(txt_len, txt_buf, bin_len, bin_buf) => status
+/* dbase32_decode(): internal Dbase32 decoding function.
  *
  * This function is used by `db32dec()`.
  *
@@ -195,7 +191,7 @@ dbase32_decode(const size_t txt_len, const uint8_t *txt_buf,
 }
 
 
-/* dbase32_validate(txt_len, txt_buf) => status
+/* dbase32_validate(): internal Dbase32 validation function.
  *
  * This function is used by `isdb32()` and `check_db32()`.
  *
@@ -241,6 +237,9 @@ dbase32_validate(const size_t txt_len, const uint8_t *txt_buf)
 }
 
 
+/*
+ * C implementation of `dbase32.db32enc()`
+ */
 static PyObject *
 dbase32_db32enc(PyObject *self, PyObject *args)
 {
@@ -285,6 +284,9 @@ dbase32_db32enc(PyObject *self, PyObject *args)
 }
 
 
+/*
+ * C implementation of `dbase32.db32dec()`
+ */
 static PyObject *
 dbase32_db32dec(PyObject *self, PyObject *args)
 {
@@ -340,6 +342,9 @@ dbase32_db32dec(PyObject *self, PyObject *args)
 }
 
 
+/*
+ * C implementation of `dbase32.isdb32()`
+ */
 static PyObject *
 dbase32_isdb32(PyObject *self, PyObject *args)
 {
@@ -370,6 +375,9 @@ dbase32_isdb32(PyObject *self, PyObject *args)
 }
 
 
+/*
+ * C implementation of `dbase32.check_db32()`
+ */
 static PyObject *
 dbase32_check_db32(PyObject *self, PyObject *args)
 {
