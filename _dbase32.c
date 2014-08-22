@@ -416,63 +416,69 @@ dbase32_check_db32(PyObject *self, PyObject *args)
 }
 
 
+/*
+ * C implementation of `dbase32.random_id()`
+ */
 static PyObject *
 dbase32_random_id(PyObject *self, PyObject *args, PyObject *kw)
 {
     static char *keys[] = {"numbytes", NULL};
-    size_t numbytes = 15;
-    PyObject *pyret;
-    uint8_t *bin_buf, *txt_buf;
-    size_t txt_len;
-    int status = 1;
+    size_t bin_len = 15;
+    size_t txt_len = 0;
+    uint8_t *bin_buf = NULL;
+    uint8_t *txt_buf = NULL;
+    PyObject *ret = NULL;
+    uint8_t status = 1;
 
-    if (!PyArg_ParseTupleAndKeywords(args, kw, "|n:random_id", keys, &numbytes)) {
-        return NULL;
-    }
-    if (numbytes < 5 || numbytes > MAX_BIN_LEN) {
-        PyErr_Format(PyExc_ValueError,
-            "numbytes is %u, need 5 <= numbytes <= %u", numbytes, MAX_BIN_LEN
-        );
-        return NULL;
-    }
-    if (numbytes % 5 != 0) {
-        PyErr_Format(PyExc_ValueError,
-            "numbytes is %u, need numbytes % 5 == 0", numbytes
-        );
+    /* Parse arguments */
+    if (!PyArg_ParseTupleAndKeywords(args, kw, "|n:random_id", keys, &bin_len)) {
         return NULL;
     }
 
-    // Allocate temp buffer for binary ID:
-    bin_buf = (uint8_t *)malloc(numbytes * sizeof(uint8_t));
+    /* Validate numbytes (bin_len) */
+    if (bin_len < 5 || bin_len > MAX_BIN_LEN) {
+        PyErr_Format(PyExc_ValueError,
+            "numbytes is %u, need 5 <= numbytes <= %u", bin_len, MAX_BIN_LEN
+        );
+        return NULL;
+    }
+    if (bin_len % 5 != 0) {
+        PyErr_Format(PyExc_ValueError,
+            "numbytes is %u, need numbytes % 5 == 0", bin_len
+        );
+        return NULL;
+    }
+
+    /* Allocate temporary buffer for binary ID */
+    bin_buf = (uint8_t *)malloc(bin_len * sizeof(uint8_t));
     if (bin_buf == NULL) {
         return PyErr_NoMemory();
     }
 
-    // Get random bytes from /dev/urandom:
-    status = _PyOS_URandom(bin_buf, numbytes);
-    if (status == -1) {
+    /* Get random bytes from /dev/urandom */
+    if (_PyOS_URandom(bin_buf, bin_len) != 0) {
         free(bin_buf);
         return NULL;
     }
 
-    // Allocate destination buffer:
-    txt_len = numbytes * 8 / 5;
-    pyret = PyUnicode_New(txt_len, DB32_END);
-    if (pyret == NULL ) {
+    /* Allocate destination buffer */
+    txt_len = bin_len * 8 / 5;
+    ret = PyUnicode_New(txt_len, DB32_END);
+    if (ret == NULL ) {
         free(bin_buf);
         return NULL;
     }
-    txt_buf = (uint8_t *)PyUnicode_1BYTE_DATA(pyret);
+    txt_buf = (uint8_t *)PyUnicode_1BYTE_DATA(ret);
 
-    // dbase32_encode() returns 0 on success:
-    status = dbase32_encode(numbytes, bin_buf, txt_len, txt_buf);
+    /* dbase32_encode() returns 0 on success */
+    status = dbase32_encode(bin_len, bin_buf, txt_len, txt_buf);
     free(bin_buf);
     if (status != 0) {
-        PyErr_SetString(PyExc_RuntimeError, "something went very wrong");
-        Py_DECREF(pyret);
-        return NULL;
+        /* Any status other than 0 means an internal error occurred */
+        Py_FatalError("internal error in _dbase32.check_db32()");
+        Py_CLEAR(ret);  /* Should not be reached */
     }
-    return pyret;
+    return ret;
 }
 
 
