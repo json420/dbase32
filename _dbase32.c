@@ -82,11 +82,14 @@ static const uint8_t DB32_REVERSE[256] = {
 };
 
 
-/* dbase32_encode(): internal Dbase32 encoding function.
+/* 
+ * dbase32_encode(): internal Dbase32 encoding function.
  *
  * This function is used by `db32enc()`, `random_id()`, and `time_id()`.
  *
- * Return value == 0 means success, return value != 0 means internal error.
+ * Returns 0 on success.
+ *
+ * Any return value other than 0 should be treated as an internal error.
  */
 static inline uint8_t
 dbase32_encode(const size_t bin_len, const uint8_t *bin_buf,
@@ -128,15 +131,14 @@ dbase32_encode(const size_t bin_len, const uint8_t *bin_buf,
 }
 
 
-/* dbase32_decode(): internal Dbase32 decoding function.
+/* 
+ * dbase32_decode(): internal Dbase32 decoding function.
  *
  * This function is used by `db32dec()`.
  *
- * Return value is the status:
- *      status == 0 means success
- *      status == 1 means txt_len is invalid
- *      status == 2 means bin_len is invalid
- *      status >= 3 means txt_buf contains one or more invalid letters
+ * Returns 0 on success, 224 when txt_buf contains invalid characters.
+ *
+ * Any return value other than 0 or 224 should be treated as an internal error.
  */
 static inline uint8_t
 dbase32_decode(const size_t txt_len, const uint8_t *txt_buf,
@@ -191,14 +193,14 @@ dbase32_decode(const size_t txt_len, const uint8_t *txt_buf,
 }
 
 
-/* dbase32_validate(): internal Dbase32 validation function.
+/* 
+ * dbase32_validate(): internal Dbase32 validation function.
  *
  * This function is used by `isdb32()` and `check_db32()`.
  *
- * Return value is the status:
- *      status == 0 means valid Dbase32
- *      status == 1 means txt_len is invalid
- *      status >= 2 means txt_buf contains one or more invalid Dbase32 letters
+ * Returns 0 when valid, 224 when invalid.
+ *
+ * Any return value other than 0 or 224 should be treated as an internal error.
  */
 static inline uint8_t
 dbase32_validate(const size_t txt_len, const uint8_t *txt_buf)
@@ -244,8 +246,8 @@ static PyObject *
 dbase32_db32enc(PyObject *self, PyObject *args)
 {
     size_t bin_len = 0;
-    const uint8_t *bin_buf = NULL;
     size_t txt_len = 0;
+    const uint8_t *bin_buf = NULL;
     uint8_t *txt_buf = NULL;
     PyObject *ret = NULL;
 
@@ -291,8 +293,8 @@ static PyObject *
 dbase32_db32dec(PyObject *self, PyObject *args)
 {
     size_t txt_len = 0;
-    const uint8_t *txt_buf = NULL;
     size_t bin_len = 0;
+    const uint8_t *txt_buf = NULL;
     uint8_t *bin_buf = NULL;
     uint8_t status = 1;
     PyObject *borrowed = NULL;  /* Borrowed reference only used in error */
