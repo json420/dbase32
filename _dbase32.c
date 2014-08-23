@@ -185,7 +185,7 @@ dbase32_decode(const size_t txt_len, const uint8_t *txt_buf,
         bin_buf += 5;
     }
 
-    /* Return value is (r & 244):
+    /* Return value is (r & 224):
      *       31: 00011111 <= bits set in DB32_REVERSE for valid characters
      *      224: 11100000 <= bits set in DB32_REVERSE for invalid characters
      */
@@ -231,7 +231,7 @@ dbase32_validate(const size_t txt_len, const uint8_t *txt_buf)
         txt_buf += 8;  /* Move the pointer */
     }
 
-    /* Return value is (r & 244):
+    /* Return value is (r & 224):
      *       31: 00011111 <= bits set in DB32_REVERSE for valid characters
      *      224: 11100000 <= bits set in DB32_REVERSE for invalid characters
      */
