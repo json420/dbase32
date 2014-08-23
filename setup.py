@@ -119,7 +119,7 @@ class Benchmark(Command):
 
 
 _dbase32 = Extension('_dbase32', sources=['_dbase32.c'],
-    #extra_compile_args=['-O3']
+    extra_compile_args=['-Werror'],  # Make all warnings into errors 
 )
 
 setup(
