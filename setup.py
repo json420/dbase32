@@ -118,8 +118,7 @@ class Benchmark(Command):
             print(line)
 
 
-_dbase32 = Extension('_dbase32',
-    sources=['_dbase32.c'],
+_dbase32 = Extension('_dbase32', sources=['_dbase32.c'],
     extra_compile_args=['-Werror'],  # Make all warnings into errors 
 )
 
