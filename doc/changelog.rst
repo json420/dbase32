@@ -14,7 +14,7 @@ Changes:
       misses (especially L1) in the DB32_REVERSE table can still leak
       information, the C implementations of these functions still can't be
       considered constant-time; however, Dbase32 1.2 is certainly a step in the
-      right direction, and as such; all Dbase32 users are strongly encouraged to
+      right direction, and as such, all Dbase32 users are strongly encouraged to
       upgrade, especially those who might be encoding/decoding/validating
       security sensitive data
 
