@@ -56,6 +56,7 @@ Contents:
     bugs
     dbase32
     design
+    changelog
 
 
 .. _`Dbase32`: https://launchpad.net/dbase32
