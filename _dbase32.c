@@ -26,8 +26,16 @@
 #define MAX_TXT_LEN 96
 #define DB32_END 89
 
+/* Forward table for encoding.
+ */
 static const uint8_t DB32_FORWARD[32] = "3456789ABCDEFGHIJKLMNOPQRSTUVWXY";
-static const uint8_t DB32_REVERSE[256] = {
+
+/* Reverse table for decoding and validating.
+ *
+ * We align to 64 bytes so all the valid entries all fit within a single 64 byte
+ * L1 cache line.
+ */
+static const uint8_t DB32_REVERSE[256] __attribute__ ((aligned (64))) = {
     255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,
     255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,
     255,255,255,255,255,255,255,255,255,255,255,255,255,
