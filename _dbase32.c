@@ -48,7 +48,8 @@ static const uint8_t DB32_FORWARD[32] = "3456789ABCDEFGHIJKLMNOPQRSTUVWXY";
  * The 42 byte left rotation was chosen at it allows the table to at least be
  * balanced between two 32-byte cache lines (ARM Cortext-A9, for example), which
  * helps make cache hits and misses at least a bit more difficult to exploit in
- * some scenarios:
+ * some scenarios.  With the 42 byte left rotation, 16 valid entries will be in
+ * each 32-byte cache line:
  *
  *              3456789       ABCDEFGHI    JKLMNOPQRSTUVWXY                
  *     ________________________________    ________________________________
