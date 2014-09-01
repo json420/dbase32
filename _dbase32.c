@@ -28,8 +28,12 @@
 
 /*
  * DB32_FORWARD: table for encoding.
+ * 
+ * So that the forward-table fits in a single 64-byte (or 32-byte) cache line,
+ * we explicitly request 32-byte alignment:
  */
-static const uint8_t DB32_FORWARD[32] = "3456789ABCDEFGHIJKLMNOPQRSTUVWXY";
+static const uint8_t DB32_FORWARD[32] __attribute__ ((aligned (32))) \
+    = "3456789ABCDEFGHIJKLMNOPQRSTUVWXY";
 
 
 /* 
