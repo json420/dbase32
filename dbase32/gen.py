@@ -186,7 +186,7 @@ def iter_c(name, forward, reverse, start, end):
             yield '    {},'.format(','.join(str(r.value) for r in item))
         else:
             r = item
-            yield '    {:>3},  // {!r} [{:>2}] [{:>2}]'.format(
+            yield '    {:>3},  // {!r} [{:>2}] -> [{:>2}]'.format(
                 r.value, r.key, r.i, r.i - 42
             )
 
