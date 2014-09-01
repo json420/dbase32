@@ -303,7 +303,33 @@ class TestFunctions(TestCase):
         expected.append(0)
         self.assertEqual(gen.rotate_left(reverse, 1), tuple(expected))
 
-        expected = list(range(54, 256))
-        expected.extend(range(54))
-        self.assertEqual(gen.rotate_left(reverse, 54), tuple(expected))
+        expected = list(range(51, 256))
+        expected.extend(range(51))
+        self.assertEqual(gen.rotate_left(reverse, 51), tuple(expected))
+
+    def test_count_valid(self):
+        forward = gen.gen_forward(gen.REMOVE)
+        reverse = gen.gen_reverse(forward)
+
+        # Verify assupmtions about cache line distribution in non-rotated table:
+        self.assertEqual(gen.count_valid(reverse), 32)
+        self.assertEqual(gen.count_valid(reverse[0:64]), 7)
+        self.assertEqual(gen.count_valid(reverse[64:128]), 25)
+        self.assertEqual(gen.count_valid(reverse[128:192]), 0)
+        self.assertEqual(gen.count_valid(reverse[192:256]), 0)
+
+        # Test the rotated table:
+        rotated = gen.rotate_left(reverse, 42)
+        self.assertEqual(gen.count_valid(rotated), 32)
+        self.assertEqual(gen.count_valid(rotated[0:64]), 32)
+        self.assertEqual(gen.count_valid(rotated[64:128]), 0)
+        self.assertEqual(gen.count_valid(rotated[128:192]), 0)
+        self.assertEqual(gen.count_valid(rotated[192:256]), 0)
+
+        # Test the rotated table re ballanced entries between 32 byte cache lines:
+        self.assertEqual(gen.count_valid(rotated[0:32]), 16)
+        self.assertEqual(gen.count_valid(rotated[32:64]), 16)
+
+        # Test the count_cache_32() helper also:
+        self.assertEqual(gen.count_cache_32(rotated), (16, 16))
 
