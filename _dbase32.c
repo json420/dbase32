@@ -47,15 +47,15 @@ static const uint8_t DB32_FORWARD[32] = "3456789ABCDEFGHIJKLMNOPQRSTUVWXY";
  *
  * The 42 byte left rotation was chosen at it allows the table to at least be
  * balanced between two 32-byte cache lines (ARM Cortext-A9, for example), which
- * helps make cache hits and misses at least a bit more difficult to exploit on
- * systems when even the valid entries will span more than one cache line:
+ * helps make cache hits and misses at least a bit more difficult to exploit in
+ * some scenarios:
  *
- *              3456789       ABCDEFGHI  JKLMNOPQRSTUVWXY                
- *     ________________________________  ________________________________
- *     ^ 1st 32-byte cache line ^        ^ 2nd 32-byte cache line ^
+ *              3456789       ABCDEFGHI    JKLMNOPQRSTUVWXY                
+ *     ________________________________    ________________________________
+ *     ^ 1st 32-byte cache line ^          ^ 2nd 32-byte cache line ^
  *
- * We align to 64 bytes so all the valid entries all fit within a single 64 byte
- * L1 cache line.
+ * We also explicitly request 64 byte alignment, so that the start of the table
+ * will actually be at the start of a cache line.
  */
 static const uint8_t DB32_REVERSE[256] __attribute__ ((aligned (64))) = {
     255,255,255,255,255,255,255,255,255,
