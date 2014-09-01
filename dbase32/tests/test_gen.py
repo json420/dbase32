@@ -294,3 +294,16 @@ class TestFunctions(TestCase):
                 (90, 'Z',  25),
             )
         )
+
+    def test_rotate_left(self):
+        reverse = tuple(range(256))
+        self.assertEqual(gen.rotate_left(reverse, 0), reverse)
+
+        expected = list(range(1, 256))
+        expected.append(0)
+        self.assertEqual(gen.rotate_left(reverse, 1), tuple(expected))
+
+        expected = list(range(54, 256))
+        expected.extend(range(54))
+        self.assertEqual(gen.rotate_left(reverse, 54), tuple(expected))
+

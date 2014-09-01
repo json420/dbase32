@@ -132,6 +132,13 @@ def gen_reverse(forward):
     return tuple(_gen_reverse_iter(forward))
 
 
+def rotate_left(reverse, offset):
+    assert isinstance(offset, int) and 0 <= offset < 64
+    rotated = list(reverse[offset:])
+    rotated.extend(reverse[:offset])
+    return tuple(rotated)
+
+
 def group_empty_iter(reverse, size=19):
     buf = []
     for r in reverse:
@@ -228,4 +235,10 @@ if __name__ == '__main__':
     for line in line_iter(name.upper(), forward, reverse, start, end):
         print(line)
     print('')
+
+    first = None
+    for r in reverse:
+        if first is None and r.value != 255:
+            first = r.i
+    print(first)
 
