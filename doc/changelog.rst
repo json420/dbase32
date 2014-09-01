@@ -2,6 +2,19 @@ Changelog
 =========
 
 
+1.3 (unreleased)
+----------------
+
+Changes:
+
+    * `lp:1359862`_ --- Fix timing leakage in cache hit/miss for non-error
+      conditions --- in C implementation, reverse table is now rotated 42 bytes
+      to the left, so that all valid entries fit in a single 64-byte cache line,
+      and that valid entries are at least balanced between two 32-byte cache
+      lines (16 entries in each 32-byte cache line)
+
+
+
 1.2 (August 2014)
 -----------------
 
@@ -80,6 +93,7 @@ Changes:
 .. _`Download Dbase32 1.1`: https://launchpad.net/dbase32/+milestone/1.1
 .. _`Download Dbase32 1.0`: https://launchpad.net/dbase32/+milestone/1.0
 
+.. _`lp:1359862`: https://bugs.launchpad.net/dbase32/+bug/1359862
 .. _`Mitigate timing attacks`: https://bugs.launchpad.net/dbase32/+bug/1359828
 .. _`Pyflakes`: https://launchpad.net/pyflakes
 .. _`Sphinx`: http://sphinx-doc.org/
