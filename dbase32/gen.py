@@ -132,6 +132,26 @@ def gen_reverse(forward):
     return tuple(_gen_reverse_iter(forward))
 
 
+def rotate_left(reverse, offset):
+    assert isinstance(offset, int) and 0 <= offset < 64
+    rotated = list(reverse[offset:])
+    rotated.extend(reverse[:offset])
+    return tuple(rotated)
+
+
+def count_valid(reverse):
+    count = 0
+    for r in reverse:
+        if r.value != 255:
+            assert 0 <= r.value <= 31
+            count += 1
+    return count
+
+
+def count_cache_32(reverse):
+    return (count_valid(reverse[0:32]), count_valid(reverse[32:64]))
+
+
 def group_empty_iter(reverse, size=19):
     buf = []
     for r in reverse:
@@ -166,7 +186,9 @@ def iter_c(name, forward, reverse, start, end):
             yield '    {},'.format(','.join(str(r.value) for r in item))
         else:
             r = item
-            yield '    {:>3},  // {!r} [{:>2}]'.format(r.value, r.key, r.i)
+            yield '    {:>3},  // {!r} [{:>2}] -> [{:>2}]'.format(
+                r.value, r.key, r.i, r.i - 42
+            )
 
     yield '};'
 
@@ -185,6 +207,24 @@ def iter_python(name, forward, reverse, start, end):
             yield '    {:>3},  # {!r} [{:>2}]'.format(r.value, r.key, r.i)
 
     yield ')'
+
+
+def get_c32_rep(rotated):
+    accum = []
+    for r in rotated[0:32]:
+        if r.value == 255:
+            accum.append(' ')
+        else:
+            accum.append(r.key)
+    accum.append('  ')
+    for r in rotated[32:64]:
+        if r.value == 255:
+            accum.append(' ')
+        else:
+            accum.append(r.key)
+    first = ''.join(accum)
+    second = ('_' * 32) + '  ' + ('_' * 32)
+    return (first, second)
 
 
 if __name__ == '__main__':
@@ -223,6 +263,9 @@ if __name__ == '__main__':
     start = get_start(forward)
     end = get_end(forward)
     line_iter = (iter_python if options.python else iter_c)
+
+    if not options.python:
+        reverse = rotate_left(reverse, 42)
 
     print('')
     for line in line_iter(name.upper(), forward, reverse, start, end):

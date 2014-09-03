@@ -26,50 +26,86 @@
 #define MAX_TXT_LEN 96
 #define DB32_END 89
 
-static const uint8_t DB32_FORWARD[32] = "3456789ABCDEFGHIJKLMNOPQRSTUVWXY";
-static const uint8_t DB32_REVERSE[256] = {
+/*
+ * DB32_FORWARD: table for encoding.
+ * 
+ * So that the forward-table fits in a single 64-byte (or 32-byte) cache line,
+ * we explicitly request 32-byte alignment:
+ */
+static const uint8_t DB32_FORWARD[32] __attribute__ ((aligned (32))) \
+    = "3456789ABCDEFGHIJKLMNOPQRSTUVWXY";
+
+
+/* 
+ * DB32_REVERSE: table for decoding and validating.
+ *
+ * To prevent timing attacks when decoding or validating *valid* Dbase32 IDs,
+ * we rotate the DB32_REVERSE table to the left by 42 bytes.
+ *
+ * This allows all valid entries to fit within a single 64-byte cache line,
+ * which means that on machines with a 64-byte (or larger) cache line size,
+ * cache hits and misses can't leak any information about the contents of a
+ * *valid* Dbase32 ID.  However, note that hits an misses can still leak
+ * information about what invalid bytes are in an ID, as the entire table will
+ * still span 4 64-byte cache lines.
+ *
+ * The 42 byte left rotation was chosen as it allows the table to at least be
+ * balanced between two 32-byte cache lines (ARM Cortext-A9, for example), which
+ * helps make cache hits and misses at least a bit more difficult to exploit in
+ * some scenarios.  With the 42 byte left rotation, 16 valid entries will be in
+ * each 32-byte cache line:
+ *
+ *              3456789       ABCDEFGHI    JKLMNOPQRSTUVWXY                
+ *     ________________________________    ________________________________
+ *     ^ 1st 32-byte cache line ^          ^ 2nd 32-byte cache line ^
+ *
+ * We also explicitly request 64-byte alignment, so that the start of the table
+ * will actually be at the start of a cache line.
+ */
+static const uint8_t DB32_REVERSE[256] __attribute__ ((aligned (64))) = {
+    255,255,255,255,255,255,255,255,255,
+        // [Original] -> [Rotated]
+      0,  // '3' [51] -> [ 9]
+      1,  // '4' [52] -> [10]
+      2,  // '5' [53] -> [11]
+      3,  // '6' [54] -> [12]
+      4,  // '7' [55] -> [13]
+      5,  // '8' [56] -> [14]
+      6,  // '9' [57] -> [15]
+    255,  // ':' [58] -> [16]
+    255,  // ';' [59] -> [17]
+    255,  // '<' [60] -> [18]
+    255,  // '=' [61] -> [19]
+    255,  // '>' [62] -> [20]
+    255,  // '?' [63] -> [21]
+    255,  // '@' [64] -> [22]
+      7,  // 'A' [65] -> [23]
+      8,  // 'B' [66] -> [24]
+      9,  // 'C' [67] -> [25]
+     10,  // 'D' [68] -> [26]
+     11,  // 'E' [69] -> [27]
+     12,  // 'F' [70] -> [28]
+     13,  // 'G' [71] -> [29]
+     14,  // 'H' [72] -> [30]
+     15,  // 'I' [73] -> [31]
+     16,  // 'J' [74] -> [32]
+     17,  // 'K' [75] -> [33]
+     18,  // 'L' [76] -> [34]
+     19,  // 'M' [77] -> [35]
+     20,  // 'N' [78] -> [36]
+     21,  // 'O' [79] -> [37]
+     22,  // 'P' [80] -> [38]
+     23,  // 'Q' [81] -> [39]
+     24,  // 'R' [82] -> [40]
+     25,  // 'S' [83] -> [41]
+     26,  // 'T' [84] -> [42]
+     27,  // 'U' [85] -> [43]
+     28,  // 'V' [86] -> [44]
+     29,  // 'W' [87] -> [45]
+     30,  // 'X' [88] -> [46]
+     31,  // 'Y' [89] -> [47]
     255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,
     255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,
-    255,255,255,255,255,255,255,255,255,255,255,255,255,
-      0,  // '3' [51]
-      1,  // '4' [52]
-      2,  // '5' [53]
-      3,  // '6' [54]
-      4,  // '7' [55]
-      5,  // '8' [56]
-      6,  // '9' [57]
-    255,  // ':' [58]
-    255,  // ';' [59]
-    255,  // '<' [60]
-    255,  // '=' [61]
-    255,  // '>' [62]
-    255,  // '?' [63]
-    255,  // '@' [64]
-      7,  // 'A' [65]
-      8,  // 'B' [66]
-      9,  // 'C' [67]
-     10,  // 'D' [68]
-     11,  // 'E' [69]
-     12,  // 'F' [70]
-     13,  // 'G' [71]
-     14,  // 'H' [72]
-     15,  // 'I' [73]
-     16,  // 'J' [74]
-     17,  // 'K' [75]
-     18,  // 'L' [76]
-     19,  // 'M' [77]
-     20,  // 'N' [78]
-     21,  // 'O' [79]
-     22,  // 'P' [80]
-     23,  // 'Q' [81]
-     24,  // 'R' [82]
-     25,  // 'S' [83]
-     26,  // 'T' [84]
-     27,  // 'U' [85]
-     28,  // 'V' [86]
-     29,  // 'W' [87]
-     30,  // 'X' [88]
-     31,  // 'Y' [89]
     255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,
     255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,
     255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,
@@ -78,7 +114,7 @@ static const uint8_t DB32_REVERSE[256] = {
     255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,
     255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,
     255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,
-    255,255,255,255,255,255,255,255,255,255,255,255,255,255,
+    255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,
 };
 
 
@@ -130,6 +166,8 @@ dbase32_encode(const size_t bin_len, const uint8_t *bin_buf,
     return 0;
 }
 
+#define ROTATE(i) \
+    DB32_REVERSE[(uint8_t)(txt_buf[i] - 42)]
 
 /* 
  * dbase32_decode(): internal Dbase32 decoding function.
@@ -164,14 +202,14 @@ dbase32_decode(const size_t txt_len, const uint8_t *txt_buf,
     count = txt_len / 8;
     for (r = block = 0; block < count; block++) {
         /* Pack 40 bits into the taxi (5 bits at a time) */
-        r = DB32_REVERSE[txt_buf[0]] | (r & 224);    taxi = r;
-        r = DB32_REVERSE[txt_buf[1]] | (r & 224);    taxi = r | (taxi << 5);
-        r = DB32_REVERSE[txt_buf[2]] | (r & 224);    taxi = r | (taxi << 5);
-        r = DB32_REVERSE[txt_buf[3]] | (r & 224);    taxi = r | (taxi << 5);
-        r = DB32_REVERSE[txt_buf[4]] | (r & 224);    taxi = r | (taxi << 5);
-        r = DB32_REVERSE[txt_buf[5]] | (r & 224);    taxi = r | (taxi << 5);
-        r = DB32_REVERSE[txt_buf[6]] | (r & 224);    taxi = r | (taxi << 5);
-        r = DB32_REVERSE[txt_buf[7]] | (r & 224);    taxi = r | (taxi << 5);
+        r = ROTATE(0) | (r & 224);    taxi = r;
+        r = ROTATE(1) | (r & 224);    taxi = r | (taxi << 5);
+        r = ROTATE(2) | (r & 224);    taxi = r | (taxi << 5);
+        r = ROTATE(3) | (r & 224);    taxi = r | (taxi << 5);
+        r = ROTATE(4) | (r & 224);    taxi = r | (taxi << 5);
+        r = ROTATE(5) | (r & 224);    taxi = r | (taxi << 5);
+        r = ROTATE(6) | (r & 224);    taxi = r | (taxi << 5);
+        r = ROTATE(7) | (r & 224);    taxi = r | (taxi << 5);
 
         /* Unpack 40 bits from the taxi (8 bits at a time) */
         bin_buf[0] = (taxi >> 32) & 255;
@@ -220,14 +258,14 @@ dbase32_validate(const size_t txt_len, const uint8_t *txt_buf)
      */
     count = txt_len / 8;
     for (r = block = 0; block < count; block++) {
-        r |= DB32_REVERSE[txt_buf[0]];
-        r |= DB32_REVERSE[txt_buf[1]];
-        r |= DB32_REVERSE[txt_buf[2]];
-        r |= DB32_REVERSE[txt_buf[3]];
-        r |= DB32_REVERSE[txt_buf[4]];
-        r |= DB32_REVERSE[txt_buf[5]];
-        r |= DB32_REVERSE[txt_buf[6]];
-        r |= DB32_REVERSE[txt_buf[7]];
+        r |= ROTATE(0);
+        r |= ROTATE(1);
+        r |= ROTATE(2);
+        r |= ROTATE(3);
+        r |= ROTATE(4);
+        r |= ROTATE(5);
+        r |= ROTATE(6);
+        r |= ROTATE(7);
         txt_buf += 8;  /* Move the pointer */
     }
 
