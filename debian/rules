@@ -5,7 +5,8 @@
 
 
 override_dh_auto_clean:
-	rm -rf build/ doc/_build/
+	rm -rf build/ doc/_build/ dbase32/__pycache__/ dbase32/tests/__pycache__/
+	rm -f dbase32/_dbase32.cpython-*.so
 
 override_dh_auto_build:
 	sphinx-build -b html doc/ doc/_build/html/
