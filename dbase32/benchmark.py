@@ -36,8 +36,7 @@ import dbase32
 SETUP = """
 import os
 import base64
-import _dbase32
-from dbase32 import _dbase32py
+from dbase32 import _dbase32, _dbase32py
 
 text_db32 = {!r}
 data = _dbase32.db32dec(text_db32)

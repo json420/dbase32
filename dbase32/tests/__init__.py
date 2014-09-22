@@ -37,7 +37,7 @@ from dbase32 import _dbase32py
 
 # True if the C extension is available
 try:
-    import _dbase32
+    from dbase32 import _dbase32
     C_EXT_AVAIL = True
 except ImportError:
     C_EXT_AVAIL = False
