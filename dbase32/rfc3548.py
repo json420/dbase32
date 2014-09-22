@@ -26,8 +26,8 @@ Validate encode_x(), decode_x() against known good RFC-3548 encode/decode.
 
 from os import urandom
 
-from .fallback import encode_x, decode_x, _text_to_bytes, _check_length
-from .fallback import MAX_BIN_LEN, MAX_TXT_LEN
+from ._dbase32py import encode_x, decode_x, _text_to_bytes, _check_length
+from ._dbase32py import MAX_BIN_LEN, MAX_TXT_LEN
 
 
 __all__ = ('b32enc', 'b32dec', 'isb32', 'check_b32', 'random_id')

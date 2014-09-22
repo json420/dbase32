@@ -37,7 +37,7 @@ SETUP = """
 import os
 import base64
 import _dbase32
-from dbase32 import fallback
+from dbase32 import _dbase32py
 
 text_db32 = {!r}
 data = _dbase32.db32dec(text_db32)
@@ -47,9 +47,9 @@ not_db32 = text_db32[:-1] + 'Z'
 assert base64.b64decode(text_b64) == data
 assert _dbase32.db32dec(text_db32) == data
 
-assert fallback.isdb32(text_db32) is True
+assert _dbase32py.isdb32(text_db32) is True
 assert _dbase32.isdb32(text_db32) is True
-assert fallback.isdb32(not_db32) is False
+assert _dbase32py.isdb32(not_db32) is False
 assert _dbase32.isdb32(not_db32) is False
 
 def timing_test(text):
@@ -84,18 +84,18 @@ def run_benchmark(numbytes=30):
     yield 'Encodes/second:'
     yield run('base64.b64encode(data)')
     yield run('_dbase32.db32enc(data)')
-    yield run('fallback.db32enc(data)', 25)
+    yield run('_dbase32py.db32enc(data)', 25)
 
     yield 'Decodes/second:'
     yield run('base64.b64decode(text_b64)')
     yield run('_dbase32.db32dec(text_db32)')
-    yield run('fallback.db32dec(text_db32)', 25)
+    yield run('_dbase32py.db32dec(text_db32)', 25)
 
     yield 'Validations/second:'
     yield run('_dbase32.isdb32(text_db32)')
-    yield run('fallback.isdb32(text_db32)', 100)
+    yield run('_dbase32py.isdb32(text_db32)', 100)
     yield run('_dbase32.check_db32(text_db32)')
-    yield run('fallback.check_db32(text_db32)', 100)
+    yield run('_dbase32py.check_db32(text_db32)', 100)
 
     yield 'Random IDs/second:'
     yield run('os.urandom(15)', 100)

@@ -33,7 +33,7 @@ import base64
 from collections import namedtuple
 
 import dbase32
-from dbase32 import fallback
+from dbase32 import _dbase32py
 
 # True if the C extension is available
 try:
@@ -108,15 +108,15 @@ class TestConstants(TestCase):
         self.assertIsInstance(dbase32.DB32ALPHABET, str)
         self.assertEqual(len(dbase32.DB32ALPHABET), 32)
         self.assertEqual(len(set(dbase32.DB32ALPHABET)), 32)
-        self.assertEqual(dbase32.DB32ALPHABET, fallback.DB32_FORWARD)
+        self.assertEqual(dbase32.DB32ALPHABET, _dbase32py.DB32_FORWARD)
 
     def test_MAX_BIN_LEN(self):
         self.assertIsInstance(dbase32.MAX_BIN_LEN, int)
-        self.assertEqual(dbase32.MAX_BIN_LEN, fallback.MAX_BIN_LEN)
+        self.assertEqual(dbase32.MAX_BIN_LEN, _dbase32py.MAX_BIN_LEN)
 
     def test_MAX_TXT_LEN(self):
         self.assertIsInstance(dbase32.MAX_TXT_LEN, int)
-        self.assertEqual(dbase32.MAX_TXT_LEN, fallback.MAX_TXT_LEN)
+        self.assertEqual(dbase32.MAX_TXT_LEN, _dbase32py.MAX_TXT_LEN)
 
     def test_RANDOM_BITS(self):
         self.assertIsInstance(dbase32.RANDOM_BITS, int)
@@ -135,44 +135,44 @@ class TestConstants(TestCase):
     def test_db32enc_alias(self):
         if C_EXT_AVAIL:
             self.assertIs(dbase32.db32enc, _dbase32.db32enc)
-            self.assertIsNot(dbase32.db32enc, fallback.db32enc)
+            self.assertIsNot(dbase32.db32enc, _dbase32py.db32enc)
         else:
-            self.assertIs(dbase32.db32enc, fallback.db32enc)
+            self.assertIs(dbase32.db32enc, _dbase32py.db32enc)
 
     def test_db32dec_alias(self):
         if C_EXT_AVAIL:
             self.assertIs(dbase32.db32dec, _dbase32.db32dec)
-            self.assertIsNot(dbase32.db32dec, fallback.db32dec)
+            self.assertIsNot(dbase32.db32dec, _dbase32py.db32dec)
         else:
-            self.assertIs(dbase32.db32dec, fallback.db32dec)
+            self.assertIs(dbase32.db32dec, _dbase32py.db32dec)
 
     def test_isdb32_alias(self):
         if C_EXT_AVAIL:
             self.assertIs(dbase32.isdb32, _dbase32.isdb32)
-            self.assertIsNot(dbase32.isdb32, fallback.isdb32)
+            self.assertIsNot(dbase32.isdb32, _dbase32py.isdb32)
         else:
-            self.assertIs(dbase32.isdb32, fallback.isdb32)
+            self.assertIs(dbase32.isdb32, _dbase32py.isdb32)
 
     def test_check_db32_alias(self):
         if C_EXT_AVAIL:
             self.assertIs(dbase32.check_db32, _dbase32.check_db32)
-            self.assertIsNot(dbase32.check_db32, fallback.check_db32)
+            self.assertIsNot(dbase32.check_db32, _dbase32py.check_db32)
         else:
-            self.assertIs(dbase32.check_db32, fallback.check_db32)
+            self.assertIs(dbase32.check_db32, _dbase32py.check_db32)
 
     def test_random_id_alias(self):
         if C_EXT_AVAIL:
             self.assertIs(dbase32.random_id, _dbase32.random_id)
-            self.assertIsNot(dbase32.random_id, fallback.random_id)
+            self.assertIsNot(dbase32.random_id, _dbase32py.random_id)
         else:
-            self.assertIs(dbase32.random_id, fallback.random_id)
+            self.assertIs(dbase32.random_id, _dbase32py.random_id)
 
     def test_time_id_alias(self):
         if C_EXT_AVAIL:
             self.assertIs(dbase32.time_id, _dbase32.time_id)
-            self.assertIsNot(dbase32.time_id, fallback.time_id)
+            self.assertIsNot(dbase32.time_id, _dbase32py.time_id)
         else:
-            self.assertIs(dbase32.time_id, fallback.time_id)
+            self.assertIs(dbase32.time_id, _dbase32py.time_id)
 
     def test_log_id_alias(self):
         self.assertIs(dbase32.log_id, dbase32.time_id)
@@ -258,7 +258,7 @@ class TestFunctions(TestCase):
         """
         Test the pure-Python implementation of db32enc().
         """
-        self.check_db32enc(fallback.db32enc)
+        self.check_db32enc(_dbase32py.db32enc)
 
     def test_db32enc_c(self):
         """
@@ -273,7 +273,7 @@ class TestFunctions(TestCase):
                 data = os.urandom(size)
                 self.assertEqual(
                     _dbase32.db32enc(data),
-                    fallback.db32enc(data)
+                    _dbase32py.db32enc(data)
                 )
 
     def check_text_type(self, func):
@@ -493,7 +493,7 @@ class TestFunctions(TestCase):
         """
         Test the pure-Python implementation of db32enc().
         """
-        self.check_db32dec(fallback.db32dec)
+        self.check_db32dec(_dbase32py.db32dec)
 
     def test_db32dec_c(self):
         """
@@ -502,19 +502,19 @@ class TestFunctions(TestCase):
         self.skip_if_no_c_ext()
         self.check_db32dec(_dbase32.db32dec)
 
-        # Compare against the fallback.db32dec Python version:
+        # Compare against the _dbase32py.db32dec Python version:
         for size in TXT_SIZES:
             for i in range(1000):
                 text_s = ''.join(
-                    random.choice(fallback.DB32_FORWARD)
+                    random.choice(_dbase32py.DB32_FORWARD)
                     for n in range(size)
                 )
                 text_b = text_s.encode('utf-8')
                 self.assertEqual(len(text_s), size)
                 self.assertEqual(len(text_b), size)
-                data = fallback.db32dec(text_s)
+                data = _dbase32py.db32dec(text_s)
                 self.assertEqual(len(data), size * 5 // 8)
-                self.assertEqual(fallback.db32dec(text_b), data)
+                self.assertEqual(_dbase32py.db32dec(text_b), data)
                 self.assertEqual(_dbase32.db32dec(text_s), data)
                 self.assertEqual(_dbase32.db32dec(text_b), data)
 
@@ -533,7 +533,7 @@ class TestFunctions(TestCase):
             self.assertIs(isdb32(b'Z' * size), False)
 
             good = ''.join(
-                random.choice(fallback.DB32_FORWARD)
+                random.choice(_dbase32py.DB32_FORWARD)
                 for n in range(size)
             )
             self.assertIs(isdb32(good), True)
@@ -584,7 +584,7 @@ class TestFunctions(TestCase):
                 self.assertIs(isdb32(bad_b), False)
 
     def test_isdb32_p(self):
-        self.check_isdb32(fallback.isdb32)
+        self.check_isdb32(_dbase32py.isdb32)
 
     def test_isdb32_c(self):
         self.skip_if_no_c_ext()
@@ -610,7 +610,7 @@ class TestFunctions(TestCase):
         self.assertIsNone(check_db32(b'Y' * 96))
 
     def test_check_db32_p(self):
-        self.check_check_db32(fallback.check_db32)
+        self.check_check_db32(_dbase32py.check_db32)
 
     def test_check_db32_c(self):
         self.skip_if_no_c_ext()
@@ -682,9 +682,9 @@ class TestFunctions(TestCase):
         self.assertEqual(len(accum), count)
 
     def test_random_id_p(self):
-        self.check_random_id(fallback.random_id)
+        self.check_random_id(_dbase32py.random_id)
         with self.assertRaises(TypeError) as cm:        
-            fallback.random_id([])
+            _dbase32py.random_id([])
         self.assertEqual(
             str(cm.exception),
             "numbytes must be an int; got <class 'list'>"
@@ -714,9 +714,9 @@ class TestFunctions(TestCase):
             end = int(time.time())
             self.assertIsInstance(_id, str)
             self.assertEqual(len(_id), 24)
-            self.assertTrue(set(_id).issubset(fallback.DB32_FORWARD))
+            self.assertTrue(set(_id).issubset(_dbase32py.DB32_FORWARD))
             possible = set(ts_bin(i) for i in range(start - 1, end + 2))
-            data = fallback.db32dec(_id)
+            data = _dbase32py.db32dec(_id)
             self.assertIn(data[:4], possible)
             accum.add(data[4:])
 
@@ -725,8 +725,8 @@ class TestFunctions(TestCase):
             _id = time_id(timestamp)
             self.assertIsInstance(_id, str)
             self.assertEqual(len(_id), 24)
-            self.assertTrue(set(_id).issubset(fallback.DB32_FORWARD))
-            data = fallback.db32dec(_id)
+            self.assertTrue(set(_id).issubset(_dbase32py.DB32_FORWARD))
+            data = _dbase32py.db32dec(_id)
             self.assertEqual(data[:4], ts_bin(timestamp))
             accum.add(data[4:])
 
@@ -734,8 +734,8 @@ class TestFunctions(TestCase):
             _id = time_id(0)
             self.assertIsInstance(_id, str)
             self.assertEqual(len(_id), 24)
-            self.assertTrue(set(_id).issubset(fallback.DB32_FORWARD))
-            data = fallback.db32dec(_id)
+            self.assertTrue(set(_id).issubset(_dbase32py.DB32_FORWARD))
+            data = _dbase32py.db32dec(_id)
             self.assertEqual(data[:4], bytes([0, 0, 0, 0]))
             accum.add(data[4:])
 
@@ -743,8 +743,8 @@ class TestFunctions(TestCase):
             _id = time_id(2**32 - 1)
             self.assertIsInstance(_id, str)
             self.assertEqual(len(_id), 24)
-            self.assertTrue(set(_id).issubset(fallback.DB32_FORWARD))
-            data = fallback.db32dec(_id)
+            self.assertTrue(set(_id).issubset(_dbase32py.DB32_FORWARD))
+            data = _dbase32py.db32dec(_id)
             self.assertEqual(data[:4], bytes([255, 255, 255, 255]))
             accum.add(data[4:])
 
@@ -752,7 +752,7 @@ class TestFunctions(TestCase):
         self.assertEqual(len(accum), 1000)
 
     def test_time_id_p(self):
-        self.check_time_id(fallback.time_id)
+        self.check_time_id(_dbase32py.time_id)
 
     def test_time_id_c(self):
         self.skip_if_no_c_ext()
@@ -769,7 +769,7 @@ class TestFunctions(TestCase):
             Tup(
                 data,
                 base64.b32encode(data).decode('utf-8'),
-                fallback.db32enc(data)
+                _dbase32py.db32enc(data)
             )
             for data in ids
         )
@@ -786,7 +786,7 @@ class TestFunctions(TestCase):
             self.assertNotEqual(t.b32, t.db32)
 
             self.assertEqual(t.b32, base64.b32encode(t.data).decode('utf-8'))
-            self.assertEqual(t.db32, fallback.db32enc(t.data))
+            self.assertEqual(t.db32, _dbase32py.db32enc(t.data))
 
         # Now sort and compare:
         sort_by_data = sorted(orig, key=lambda t: t.data)
@@ -822,9 +822,9 @@ class TestFunctions(TestCase):
         for size in BIN_SIZES:
             for i in range(1000):
                 data = os.urandom(size)
-                db32 = fallback.db32enc(data)
-                self.assertEqual(fallback.db32dec(db32), data)
-                self.assertEqual(fallback.db32dec(db32.encode('utf-8')), data)
+                db32 = _dbase32py.db32enc(data)
+                self.assertEqual(_dbase32py.db32dec(db32), data)
+                self.assertEqual(_dbase32py.db32dec(db32.encode('utf-8')), data)
 
     def test_roundtrip_c(self):
         """
