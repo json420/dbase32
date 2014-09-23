@@ -100,8 +100,8 @@ exploitable timing information** in these scenarios:
         :func:`dbase32.isdb32()`, and :func:`dbase32.check_db32()` all leak
         timing information that can provide insight into the exact content of
         the text being decoded or validated; this is because even in the
-        *rotated* ``DB32_REVERSE`` table, all *valid* entries still span two
-        32-byte cache lines
+        *rotated* ``DB32_REVERSE`` table, the *valid* entries in the table still
+        span two 32-byte cache lines
 
     *   When decoding or validating *invalid* Dbase32 IDs on architectures with
         a 64-byte cache-line size, :func:`dbase32.db32dec()`,
