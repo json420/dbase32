@@ -27,7 +27,7 @@ Security fixes:
         is seemingly not exploitable when applications directly Dbase32-encode
         secret data, but this certainly could be exploited when attacker
         controlled input interacts with secret data such that when the secret is
-        know, a valid Dbase32 ID should be produced; for example, this is an
+        known, a valid Dbase32 ID should be produced; for example, this is an
         exploitable pattern that should be avoided::
 
             # Don't do this!  isdb32() timing can leak information about secret!
