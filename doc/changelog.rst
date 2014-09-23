@@ -36,6 +36,21 @@ Security fixes:
             else:
                 print('Rejected')
 
+Other changes:
+
+    *   Move ``_dbase32`` (the C implementation) to ``dbase32._dbase32``; using
+        a package-relative import (rather than an absolute import) makes life
+        easier for developers and packagers as the ``dbase32`` package can no
+        longer inadvertently import ``_dbase32`` from another location in the
+        Python path; prior to this change, importing ``dbase32`` from within the
+        source tree would fall-back to importing ``_dbase32`` from the
+        system-wide ``python3-dbase32`` package if it was installed; now
+        ``dbase32`` will only use the C extension from the same package
+        location, will never fall-back to a version installed elsewhere
+
+    *   Rename ``dbase32.fallback`` (the Python implementation) to
+        ``dbase32._dbase32py``, just to be consistent with the above naming
+
 
 
 1.2 (August 2014)
