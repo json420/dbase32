@@ -55,6 +55,7 @@ Contents:
     install
     bugs
     dbase32
+    security
     design
     changelog
 
