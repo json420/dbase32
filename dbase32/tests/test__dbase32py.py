@@ -21,13 +21,13 @@
 #
 
 """
-Unit tests for `dbase32.fallback` module.
+Unit tests for `dbase32._dbase32py` module.
 """
 
 from unittest import TestCase
 from collections import Counter
 
-from dbase32 import fallback, gen
+from dbase32 import _dbase32py, gen
 
 possible = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'
 assert ''.join(sorted(set(possible))) == possible
@@ -36,65 +36,65 @@ assert len(possible) == 36
 
 class TestConstants(TestCase):
     def test_max(self):
-        self.assertIsInstance(fallback.MAX_BIN_LEN, int)
-        self.assertIsInstance(fallback.MAX_TXT_LEN, int)
-        self.assertEqual(fallback.MAX_BIN_LEN % 5, 0)
-        self.assertEqual(fallback.MAX_TXT_LEN % 8, 0)
-        self.assertEqual(fallback.MAX_BIN_LEN, fallback.MAX_TXT_LEN * 5 // 8)
+        self.assertIsInstance(_dbase32py.MAX_BIN_LEN, int)
+        self.assertIsInstance(_dbase32py.MAX_TXT_LEN, int)
+        self.assertEqual(_dbase32py.MAX_BIN_LEN % 5, 0)
+        self.assertEqual(_dbase32py.MAX_TXT_LEN % 8, 0)
+        self.assertEqual(_dbase32py.MAX_BIN_LEN, _dbase32py.MAX_TXT_LEN * 5 // 8)
 
     def test_start(self):
         self.assertEqual(
-            fallback.DB32_START,
-            ord(min(fallback.DB32_FORWARD))
+            _dbase32py.DB32_START,
+            ord(min(_dbase32py.DB32_FORWARD))
         )
         self.assertEqual(
-            fallback.DB32_START,
-            ord(fallback.DB32_FORWARD[0])
+            _dbase32py.DB32_START,
+            ord(_dbase32py.DB32_FORWARD[0])
         )
         self.assertEqual(
-            fallback.DB32_START,
-            gen.get_start(fallback.DB32_FORWARD)
+            _dbase32py.DB32_START,
+            gen.get_start(_dbase32py.DB32_FORWARD)
         )
 
     def test_end(self):
         self.assertEqual(
-            fallback.DB32_END,
-            ord(max(fallback.DB32_FORWARD))
+            _dbase32py.DB32_END,
+            ord(max(_dbase32py.DB32_FORWARD))
         )
         self.assertEqual(
-            fallback.DB32_END,
-            ord(fallback.DB32_FORWARD[-1])
+            _dbase32py.DB32_END,
+            ord(_dbase32py.DB32_FORWARD[-1])
         )
         self.assertEqual(
-            fallback.DB32_END,
-            gen.get_end(fallback.DB32_FORWARD)
+            _dbase32py.DB32_END,
+            gen.get_end(_dbase32py.DB32_FORWARD)
         )
 
     def test_forward(self):
         self.assertEqual(
-            ''.join(sorted(set(fallback.DB32_FORWARD))),
-            fallback.DB32_FORWARD
+            ''.join(sorted(set(_dbase32py.DB32_FORWARD))),
+            _dbase32py.DB32_FORWARD
         )
         self.assertEqual(
-            set(fallback.DB32_FORWARD),
+            set(_dbase32py.DB32_FORWARD),
             set(possible) - set('012Z')
         )
-        self.assertIsInstance(fallback.DB32_FORWARD, str)
-        self.assertEqual(len(fallback.DB32_FORWARD), 32)
-        self.assertEqual(fallback.DB32_FORWARD, gen.gen_forward('012Z'))
-        gen.check_forward(fallback.DB32_FORWARD)
+        self.assertIsInstance(_dbase32py.DB32_FORWARD, str)
+        self.assertEqual(len(_dbase32py.DB32_FORWARD), 32)
+        self.assertEqual(_dbase32py.DB32_FORWARD, gen.gen_forward('012Z'))
+        gen.check_forward(_dbase32py.DB32_FORWARD)
 
     def test_reverse(self):
-        self.assertIsInstance(fallback.DB32_REVERSE, tuple)
-        self.assertEqual(len(fallback.DB32_REVERSE), 256)
-        self.assertEqual(min(fallback.DB32_REVERSE), 0)
-        self.assertEqual(max(fallback.DB32_REVERSE), 255)
+        self.assertIsInstance(_dbase32py.DB32_REVERSE, tuple)
+        self.assertEqual(len(_dbase32py.DB32_REVERSE), 256)
+        self.assertEqual(min(_dbase32py.DB32_REVERSE), 0)
+        self.assertEqual(max(_dbase32py.DB32_REVERSE), 255)
         self.assertEqual(
-            fallback.DB32_REVERSE,
-            tuple(r.value for r in gen.gen_reverse(fallback.DB32_FORWARD))
+            _dbase32py.DB32_REVERSE,
+            tuple(r.value for r in gen.gen_reverse(_dbase32py.DB32_FORWARD))
         )
 
-        for (i, value) in enumerate(fallback.DB32_REVERSE):
+        for (i, value) in enumerate(_dbase32py.DB32_REVERSE):
             if i < 51:
                 self.assertEqual(value, 255)
             if 51 <= i <= 57:
@@ -108,59 +108,59 @@ class TestConstants(TestCase):
 
         expected = set(range(32))
         expected.add(255)
-        self.assertEqual(set(fallback.DB32_REVERSE), expected)
+        self.assertEqual(set(_dbase32py.DB32_REVERSE), expected)
 
-        counts = Counter(fallback.DB32_REVERSE)
+        counts = Counter(_dbase32py.DB32_REVERSE)
         self.assertEqual(counts[255], 256 - 32)
         for i in range(32):
             self.assertEqual(counts[i], 1)
 
     def test_set(self):
-        self.assertIsInstance(fallback.DB32_SET, frozenset)
-        self.assertEqual(fallback.DB32_SET,
-            frozenset(fallback.DB32_FORWARD.encode('utf-8'))
+        self.assertIsInstance(_dbase32py.DB32_SET, frozenset)
+        self.assertEqual(_dbase32py.DB32_SET,
+            frozenset(_dbase32py.DB32_FORWARD.encode('utf-8'))
         )
 
 
 class TestFunctions(TestCase):
     def test_text_to_bytes(self):
         with self.assertRaises(TypeError) as cm:
-            fallback._text_to_bytes(17)
+            _dbase32py._text_to_bytes(17)
         self.assertEqual(
             str(cm.exception), 
             "'int' does not support the buffer interface"
         )
 
         with self.assertRaises(TypeError) as cm:
-            fallback._text_to_bytes(18.5)
+            _dbase32py._text_to_bytes(18.5)
         self.assertEqual(
             str(cm.exception), 
             "'float' does not support the buffer interface"
         )
 
         with self.assertRaises(TypeError) as cm:
-            fallback._text_to_bytes(bytearray(b'3399AAYY'))
+            _dbase32py._text_to_bytes(bytearray(b'3399AAYY'))
         self.assertEqual(
             str(cm.exception), 
             'must be read-only pinned buffer, not bytearray'
         )
 
-        self.assertEqual(fallback._text_to_bytes('3399AAYY'), b'3399AAYY')
-        self.assertEqual(fallback._text_to_bytes(b'3399AAYY'), b'3399AAYY')
+        self.assertEqual(_dbase32py._text_to_bytes('3399AAYY'), b'3399AAYY')
+        self.assertEqual(_dbase32py._text_to_bytes(b'3399AAYY'), b'3399AAYY')
 
-        self.assertEqual(fallback._text_to_bytes('four'), b'four')
-        self.assertEqual(fallback._text_to_bytes(b'four'), b'four')
+        self.assertEqual(_dbase32py._text_to_bytes('four'), b'four')
+        self.assertEqual(_dbase32py._text_to_bytes(b'four'), b'four')
 
     def test_check_length(self):
         # Test when len(text) is too small:
         with self.assertRaises(ValueError) as cm:
-            fallback._check_length(b'')
+            _dbase32py._check_length(b'')
         self.assertEqual(
             str(cm.exception),
             'len(text) is 0, need 8 <= len(text) <= 96'
         )
         with self.assertRaises(ValueError) as cm:
-            fallback._check_length(b'-seven-')
+            _dbase32py._check_length(b'-seven-')
         self.assertEqual(
             str(cm.exception),
             'len(text) is 7, need 8 <= len(text) <= 96'
@@ -168,7 +168,7 @@ class TestFunctions(TestCase):
 
         # Test when len(text) is too big:
         with self.assertRaises(ValueError) as cm:
-            fallback._check_length(b'A' * 97)
+            _dbase32py._check_length(b'A' * 97)
         self.assertEqual(
             str(cm.exception),
             'len(text) is 97, need 8 <= len(text) <= 96'
@@ -176,20 +176,20 @@ class TestFunctions(TestCase):
 
         # Test when len(text) % 8 != 0:
         with self.assertRaises(ValueError) as cm:
-            fallback._check_length(b'A' * 65)
+            _dbase32py._check_length(b'A' * 65)
         self.assertEqual(
             str(cm.exception),
             'len(text) is 65, need len(text) % 8 == 0'
         )
 
         text = b'12345678'
-        self.assertIs(fallback._check_length(text), text)
+        self.assertIs(_dbase32py._check_length(text), text)
 
         text = b'Z' * 96
-        self.assertIs(fallback._check_length(text), text)
+        self.assertIs(_dbase32py._check_length(text), text)
 
         text = b'R' * 24
-        self.assertIs(fallback._check_length(text), text)
+        self.assertIs(_dbase32py._check_length(text), text)
 
         text = b'F' * 48
-        self.assertIs(fallback._check_length(text), text)
+        self.assertIs(_dbase32py._check_length(text), text)

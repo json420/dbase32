@@ -118,10 +118,6 @@ class Benchmark(Command):
             print(line)
 
 
-_dbase32 = Extension('_dbase32', sources=['_dbase32.c'],
-    extra_compile_args=['-Werror'],  # Make all warnings into errors 
-)
-
 setup(
     name='dbase32',
     description='base32-encoding with a sorted-order alphabet',
@@ -134,7 +130,11 @@ setup(
         'dbase32',
         'dbase32.tests',
     ],
-    ext_modules=[_dbase32],
+    ext_modules=[
+        Extension('dbase32._dbase32', sources=['dbase32/_dbase32.c'],
+            extra_compile_args=['-Werror'],  # Make all warnings into errors 
+        ),
+    ],
     cmdclass={
         'test': Test,
         'benchmark': Benchmark,

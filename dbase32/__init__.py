@@ -34,9 +34,9 @@ b'binary foo'
 """
 
 try:
-    from _dbase32 import db32enc, db32dec, isdb32, check_db32, random_id, time_id
+    from ._dbase32 import db32enc, db32dec, isdb32, check_db32, random_id, time_id
 except ImportError:
-    from .fallback import db32enc, db32dec, isdb32, check_db32, random_id, time_id
+    from ._dbase32py import db32enc, db32dec, isdb32, check_db32, random_id, time_id
 
 
 # FIXME: For backward-compatability with Dbase32 <= 0.10; at some point in the
