@@ -63,13 +63,14 @@ Security fixes:
     *   `lp:1359828`_ --- Mitigate timing attacks when decoding with
         :func:`dbase32.db32dec()` or validating with
         :func:`dbase32.check_db32()` --- the C implementation now always decodes
-        or validates entire ID rather than stopping at the first base-32 "block"
-        (8 bytes) containing an error; note that as cache hits and misses in the
-        ``DB32_REVERSE`` table can still leak information, the C implementations
-        of these functions still can't be considered constant-time; however,
-        Dbase32 1.2 is certainly a step in the right direction, and as such, all
-        Dbase32 users are strongly encouraged to upgrade, especially those who
-        might be encoding/decoding/validating security sensitive data
+        or validates the entire ID rather than stopping at the first base-32
+        "block" (8 bytes) containing an error; note that as cache hits and
+        misses in the ``DB32_REVERSE`` table can still leak information, the C
+        implementations of these functions still can't be considered
+        constant-time; however, Dbase32 1.2 is certainly a step in the right
+        direction, and as such, all Dbase32 users are strongly encouraged to
+        upgrade, especially those who might be encoding/decoding/validating
+        security sensitive data
 
     *   When an ID contains invalid characters, :func:`dbase32.db32dec()` and
         :func:`dbase32.check_db32()` now raise a ``ValueError`` containing a
