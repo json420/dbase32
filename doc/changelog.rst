@@ -5,6 +5,8 @@ Changelog
 1.3 (unreleased)
 ----------------
 
+`Download Dbase32 1.3`_
+
 .. note::
 
     Even if you doubt whether the data you're encoding/decoding/validating is
@@ -40,12 +42,6 @@ Security fixes:
 -----------------
 
 `Download Dbase32 1.2`_
-
-.. note::
-
-    Even if you doubt whether the data you're encoding/decoding/validating is
-    security sensitive, please err on the side of caution and upgrade to Dbase32
-    1.2 anyway!
 
 Security fixes:
 
@@ -114,6 +110,7 @@ Changes:
 
 
 
+.. _`Download Dbase32 1.3`: https://launchpad.net/dbase32/+milestone/1.3
 .. _`Download Dbase32 1.2`: https://launchpad.net/dbase32/+milestone/1.2
 .. _`Download Dbase32 1.1`: https://launchpad.net/dbase32/+milestone/1.1
 .. _`Download Dbase32 1.0`: https://launchpad.net/dbase32/+milestone/1.0
