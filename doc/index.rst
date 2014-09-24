@@ -53,7 +53,6 @@ Contents:
     :maxdepth: 2
 
     install
-    bugs
     dbase32
     security
     design
