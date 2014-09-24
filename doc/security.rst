@@ -126,6 +126,48 @@ contemporary architectures:
         well-formed, valid Dbase32 ID
 
 
+Using Dbase32 IDs in filenames, URLs
+------------------------------------
+
+Dbase32 has a nice security property in that a well-formed Dbase32 ID *should*
+be safe to use directly in filenames and URLs, without any special escaping or
+extra validation. 
+
+.. warning::
+
+    Please don't assume that *valid* Dbase32 IDs are safe to use without
+    escaping in all situations!  This Dbase32 security property has only been
+    well considered in the context of filenames and URLs, so don't carelessly
+    assume it applies elsewhere!
+
+This is a central concern for the `Dmedia FileStore`_, where file IDs from
+untrusted input are used to construct the full filenames by which data is read
+from the file-system.  Without properly validating this untrusted input, the
+``FileStore`` could easily be vulnerable to directory traversal attacks.
+
+:mod:`dbase32` is rather unique among base32 implementations in that its
+high-performance validation functions allow you to check whether some encoded
+text is well-formed without actually decoding it.
+
+You should *never* trust the :mod:`dbase32` validation functions as your sole
+security mechanism, but you're encouraged to use these validation functions
+liberally.  In particular, it's a good idea to use both :func:`dbase32.isdb32()`
+and :func:`dbase32.check_db32()` in different, independent security layers.  For
+example:
+
+>>> from dbase32 import isdb32, check_db32
+>>> isdb32('../very/naughty/')
+False
+>>> check_db32('../very/naughty/')
+Traceback (most recent call last):
+  ...
+ValueError: invalid Dbase32 letter: .
+
+The `C implementation`_ of these validation functions are *extremely*
+performant, so don't let performance concerns stop you from using them!
+
+
 .. _`C implementation`: http://bazaar.launchpad.net/~dmedia/dbase32/trunk/view/head:/dbase32/_dbase32.c
 .. _`Python implementation`: http://bazaar.launchpad.net/~dmedia/dbase32/trunk/view/head:/dbase32/_dbase32py.py
 .. _`file a bug against Dbase32`: https://bugs.launchpad.net/dbase32
+.. _`Dmedia FileStore`: https://launchpad.net/filestore
