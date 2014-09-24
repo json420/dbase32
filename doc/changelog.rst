@@ -36,6 +36,8 @@ Security fixes:
             else:
                 print('Rejected')
 
+        For more details, please see :doc:`security`.
+
 Other changes:
 
     *   Move ``_dbase32`` (the C implementation) to ``dbase32._dbase32``; using

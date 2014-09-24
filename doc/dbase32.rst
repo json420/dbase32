@@ -161,76 +161,6 @@ will raise a ``ValueError``.  Likewise, if this condition isn't met,
 
 
 
-Security
---------
-
-Dbase32 has a nice security property in that a well-formed Dbase32 ID *should*
-be safe to use directly in filenames and URLs, without any special escaping or
-extra validation. 
-
-.. warning::
-
-    Please don't assume that *valid* Dbase32 IDs are safe to use without
-    escaping in all situations!  This Dbase32 security property has only been
-    well considered in the context of filenames and URLs, so don't carelessly
-    assume it applies elsewhere!
-
-This is a central concern for the `Dmedia FileStore`_, where file IDs from
-untrusted input are used to construct the full filenames by which data is read
-from the file-system.  Without properly validating this untrusted input, the
-``FileStore`` could easily be vulnerable to directory traversal attacks.
-
-``dbase32`` is rather unique among base32 implementations in that its
-high-performance validation functions allow you to check whether some encoded
-text is well-formed without actually decoding it.
-
-You should *never* trust the ``dbase32`` validation functions as your sole
-security mechanism, but you're encouraged to use these validation functions
-liberally.  In particular, it's a good idea to use both :func:`isdb32()` and
-:func:`check_db32()` in different, independent security layers.  For example:
-
->>> isdb32('../very/naughty/')
-False
->>> check_db32('../very/naughty/')
-Traceback (most recent call last):
-  ...
-ValueError: invalid Dbase32 letter: .
-
-The C implementations of these validation functions are *extremely* performant,
-so don't let performance concerns stop you from using them!  For example, on a
-2.8GHz Intel® Core™ i7-4900MQ, :func:`isdb32()` and :func:`check_db32()` are
-each capable of over 10 million validations per second::
-
-    $ python3 -m dbase32.benchmark
-    dbase32: 1.0.0
-    Python: 3.4.0rc3, x86_64, Linux (Ubuntu 14.04)
-    data size: 30 bytes
-    Encodes/second:
-       2,799,549: base64.b64encode(data)
-       7,321,593: _dbase32.db32enc(data)
-          74,722: fallback.db32enc(data)
-    Decodes/second:
-       1,512,776: base64.b64decode(text_b64)
-       7,483,122: _dbase32.db32dec(text_db32)
-          69,053: fallback.db32dec(text_db32)
-    Validations/second:
-      10,545,821: _dbase32.isdb32(text_db32)
-         553,746: fallback.isdb32(text_db32)
-      10,488,811: _dbase32.check_db32(text_db32)
-         512,207: fallback.check_db32(text_db32)
-    Random IDs/second:
-         489,403: os.urandom(15)
-         478,284: _dbase32.random_id(15)
-         486,841: _dbase32.time_id()
-
-The encoding and decoding performance above is compared to the ``base64`` C
-implementation in the Python3 standard library, which, fast as it is, isn't
-nearly as fast as the ``dbase32`` C implementation.
-
-``:D``
-
-
-
 Functions
 ---------
 
@@ -398,4 +328,4 @@ A few handy constants:
 .. _`RFC-3548 Base32`: http://tools.ietf.org/html/rfc4648
 .. _`Novacut`: https://launchpad.net/novacut
 .. _`Dmedia`: https://launchpad.net/dmedia
-.. _`Dmedia FileStore`: https://launchpad.net/filestore
+
