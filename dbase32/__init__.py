@@ -44,7 +44,7 @@ except ImportError:
 log_id = time_id
 
 
-__version__ = '1.3.0'
+__version__ = '1.4.0'
 __all__ = ('db32enc', 'db32dec', 'isdb32', 'check_db32', 'random_id', 'time_id')
 
 DB32ALPHABET = '3456789ABCDEFGHIJKLMNOPQRSTUVWXY'
