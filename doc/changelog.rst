@@ -2,8 +2,8 @@ Changelog
 =========
 
 
-1.3 (September)
----------------
+1.3 (September 2014)
+--------------------
 
 `Download Dbase32 1.3`_
 
