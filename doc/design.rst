@@ -368,9 +368,9 @@ And the same with uppercase IDs::
 
 
 .. _`Dbase32`: https://launchpad.net/dbase32
-.. _`RFC-3548 Base32`: http://tools.ietf.org/html/rfc4648
+.. _`RFC-3548 Base32`: https://tools.ietf.org/html/rfc4648
 .. _`Novacut`: https://launchpad.net/novacut
 .. _`Dmedia`: https://launchpad.net/dmedia
 .. _`FileStore`: https://launchpad.net/filestore
-.. _`RFC-4648 base32hex`: http://tools.ietf.org/html/rfc4648#section-7
+.. _`RFC-4648 base32hex`: https://tools.ietf.org/html/rfc4648#section-7
 .. _`z-base-32`: http://philzimmermann.com/docs/human-oriented-base-32-encoding.txt

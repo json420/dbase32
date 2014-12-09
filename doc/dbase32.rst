@@ -70,11 +70,11 @@ And will raise a ``ValueError`` if the ID contains invalid letters or is the
 wrong length:
 
 >>> check_db32('AAAAAAAA')
->>> check_db32('AAAAAAAZ')
+>>> check_db32('AAAAAAAZ')  # doctest: -IGNORE_EXCEPTION_DETAIL
 Traceback (most recent call last):
   ...
-ValueError: invalid Dbase32 letter: Z
->>> check_db32('AAAAAAA')
+ValueError: invalid Dbase32: 'AAAAAAAZ'
+>>> check_db32('AAAAAAA')  # doctest: -IGNORE_EXCEPTION_DETAIL
 Traceback (most recent call last):
   ...
 ValueError: len(text) is 7, need 8 <= len(text) <= 96
@@ -223,10 +223,10 @@ Functions
     that are not in :data:`DB32ALPHABET`.  For example:
 
     >>> check_db32('39AYA9AY')
-    >>> check_db32('39AY27AZ')
+    >>> check_db32('39AY27AZ')  # doctest: -IGNORE_EXCEPTION_DETAIL
     Traceback (most recent call last):
       ...
-    ValueError: invalid Dbase32 letter: 2
+    ValueError: invalid Dbase32: '39AY27AZ'
 
     This function will likewise raise a ``ValueError`` if *text* doesn't meet
     the following condition::

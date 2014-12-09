@@ -158,10 +158,10 @@ example:
 >>> from dbase32 import isdb32, check_db32
 >>> isdb32('../very/naughty/')
 False
->>> check_db32('../very/naughty/')
+>>> check_db32('../very/naughty/')  # doctest: -IGNORE_EXCEPTION_DETAIL
 Traceback (most recent call last):
   ...
-ValueError: invalid Dbase32 letter: .
+ValueError: invalid Dbase32: '../very/naughty/'
 
 The `C implementation`_ of these validation functions are *extremely*
 performant, so don't let performance concerns stop you from using them!

@@ -87,8 +87,8 @@ Otherwise, please file a bug directly `through the web UI`_.
 
 .. _`Dbase32`: https://launchpad.net/dbase32
 .. _`Ubuntu`: http://www.ubuntu.com/
-.. _`Novacut Stable Releases PPA`: https://launchpad.net/~novacut/+archive/stable
-.. _`Novacut Daily Builds PPA`: https://launchpad.net/~novacut/+archive/daily
+.. _`Novacut Stable Releases PPA`: https://launchpad.net/~novacut/+archive/ubuntu/stable
+.. _`Novacut Daily Builds PPA`: https://launchpad.net/~novacut/+archive/ubuntu/daily
 .. _`from Launchpad`: https://launchpad.net/dbase32/+download
 .. _`bzr trunk`: https://code.launchpad.net/~dmedia/dbase32/trunk
 .. _`dbase32 Launchpad project`: https://launchpad.net/dbase32

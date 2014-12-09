@@ -2,6 +2,19 @@ Changelog
 =========
 
 
+1.4 (unreleased)
+----------------
+
+Changes:
+
+    *   Add ``doctest: -IGNORE_EXCEPTION_DETAIL`` to all Sphinx documentation
+        examples that raise exceptions, and also update a number of examples
+        that still used the exception messages from Dbase32 1.1 and earlier.
+
+    *   Build ``dbase32._dbase32`` `C extension`_ with ``'-std=gnu11'`` as this
+        will soon be the GCC default.
+
+
 1.3 (September 2014)
 --------------------
 
@@ -137,4 +150,4 @@ Changes:
 .. _`lp:1359828`: https://bugs.launchpad.net/dbase32/+bug/1359828
 .. _`Pyflakes`: https://launchpad.net/pyflakes
 .. _`Sphinx`: http://sphinx-doc.org/
-
+.. _`C extension`: http://bazaar.launchpad.net/~dmedia/dbase32/trunk/view/head:/dbase32/_dbase32.c

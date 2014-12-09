@@ -131,12 +131,32 @@ setup(
         'dbase32.tests',
     ],
     ext_modules=[
-        Extension('dbase32._dbase32', sources=['dbase32/_dbase32.c'],
-            extra_compile_args=['-Werror'],  # Make all warnings into errors 
+        Extension('dbase32._dbase32',
+            sources=['dbase32/_dbase32.c'],
+            extra_compile_args=[
+                '-Werror',  # Make all warnings into errors
+                '-std=gnu11',  # Soon to be gcc default
+            ],
         ),
     ],
     cmdclass={
         'test': Test,
         'benchmark': Benchmark,
     },
+    classifiers=[
+        'Development Status :: 5 - Production/Stable',
+        'Intended Audience :: Developers',
+        'License :: OSI Approved :: GNU Lesser General Public License v3 or later (LGPLv3+)',
+        'Natural Language :: English',
+        'Operating System :: POSIX',
+        'Operating System :: POSIX :: Linux',
+        'Programming Language :: C',
+        'Programming Language :: Python :: 3.3',
+        'Programming Language :: Python :: 3.4',
+        'Programming Language :: Python :: 3 :: Only',
+        'Programming Language :: Python :: Implementation :: CPython',
+        'Topic :: Database',
+        'Topic :: Software Development :: Libraries :: Python Modules',
+    ],
 )
+

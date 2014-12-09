@@ -9,8 +9,7 @@ Dbase32 uses an alphabet whose symbols are in ASCII/UTF-8 sorted order::
     3456789ABCDEFGHIJKLMNOPQRSTUVWXY
 
 This means that unlike `RFC-3548 Base32`_ encoding, the sort-order of the
-encoded data will match the sort-order of the binary data.  For details on
-why this alphabet was chosen, please see the :doc:`design`.
+encoded data will match the sort-order of the binary data.
 
 :mod:`dbase32` is a Python3 implementation of the encoding, with both a
 high-performance C extension and a pure-Python fallback.  The C extension is
@@ -33,10 +32,10 @@ True
 >>> isdb32('../very/naughty/')
 False
 >>> check_db32('FCNPVRELI7J9FUUI')
->>> check_db32('../very/naughty/')
+>>> check_db32('../very/naughty/')  # doctest: -IGNORE_EXCEPTION_DETAIL
 Traceback (most recent call last):
   ...
-ValueError: invalid Dbase32 letter: .
+ValueError: invalid Dbase32: '../very/naughty/'
 
 Dbase32 is being developed as part of the `Novacut`_ project. Packages are
 available for `Ubuntu`_ in the `Novacut Stable Releases PPA`_ and the
@@ -60,11 +59,12 @@ Contents:
 
 
 .. _`Dbase32`: https://launchpad.net/dbase32
-.. _`RFC-3548 Base32`: http://tools.ietf.org/html/rfc4648
-.. _`LGPLv3+`: http://www.gnu.org/licenses/lgpl-3.0.html
+.. _`RFC-3548 Base32`: https://tools.ietf.org/html/rfc4648
+.. _`LGPLv3+`: https://www.gnu.org/licenses/lgpl-3.0.html
 .. _`Novacut`: https://wiki.ubuntu.com/Novacut
-.. _`Novacut Stable Releases PPA`: https://launchpad.net/~novacut/+archive/stable
-.. _`Novacut Daily Builds PPA`: https://launchpad.net/~novacut/+archive/daily
-.. _`#novacut`: http://webchat.freenode.net/?channels=novacut
+.. _`Novacut Stable Releases PPA`: https://launchpad.net/~novacut/+archive/ubuntu/stable
+.. _`Novacut Daily Builds PPA`: https://launchpad.net/~novacut/+archive/ubuntu/daily
+.. _`#novacut`: https://webchat.freenode.net/?channels=novacut
 .. _`Ubuntu`: http://www.ubuntu.com/
-.. _`Python 3.3`: http://docs.python.org/3.3/
+.. _`Python 3.3`: https://docs.python.org/3.3/
+
