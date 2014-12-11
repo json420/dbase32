@@ -32,7 +32,7 @@ Decode the resulting ``str`` instance with :func:`db32dec()`:
 >>> db32dec('FCNPVRELI7J9FUUI')
 b'binary foo'
 
-:func:`db32dec()` can also directly decode UTF-8 ``bytes``:
+:func:`db32dec()` can also directly decode UTF-8 encoded ``bytes``:
 
 >>> db32dec(b'FCNPVRELI7J9FUUI')
 b'binary foo'
@@ -44,14 +44,14 @@ will return ``True`` if the ID is valid:
 >>> isdb32('FCNPVRELI7J9FUUI')
 True
 
-And will return ``False`` if the ID contains invalid letters or is the wrong
-length:
+And will return ``False`` if the ID contains invalid characters:
 
->>> isdb32('AAAAAAAA')
-True
->>> isdb32('AAAAAAAZ')
+>>> isdb32('FCNPVRELI7J9FUUZ')
 False
->>> isdb32('AAAAAAA')
+
+Or will also return ``False`` if the ID is the wrong length:
+
+>>> isdb32('FCNPVRELI7J9FUU')
 False
 
 You can likewise use :func:`check_db32()` to validate an ID.  It will return
@@ -60,18 +60,19 @@ You can likewise use :func:`check_db32()` to validate an ID.  It will return
 >>> from dbase32 import check_db32
 >>> check_db32('FCNPVRELI7J9FUUI')
 
-And will raise a ``ValueError`` if the ID contains invalid letters or is the
-wrong length:
+And will raise a ``ValueError`` if the ID contains invalid characters:
 
->>> check_db32('AAAAAAAA')
->>> check_db32('AAAAAAAZ')  # doctest: -IGNORE_EXCEPTION_DETAIL
+>>> check_db32('FCNPVRELI7J9FUUZ')  # doctest: -IGNORE_EXCEPTION_DETAIL
 Traceback (most recent call last):
   ...
-ValueError: invalid Dbase32: 'AAAAAAAZ'
->>> check_db32('AAAAAAA')  # doctest: -IGNORE_EXCEPTION_DETAIL
+ValueError: invalid Dbase32: 'FCNPVRELI7J9FUUZ'
+
+Or will also raise a ``ValueError`` if the ID is the wrong length:
+
+>>> check_db32('FCNPVRELI7J9FUU')  # doctest: -IGNORE_EXCEPTION_DETAIL
 Traceback (most recent call last):
   ...
-ValueError: len(text) is 7, need 8 <= len(text) <= 96
+ValueError: len(text) is 15, need len(text) % 8 == 0
 
 When you don't need the decoded ID, it's faster to validate with
 :func:`isdb32()` or :func:`check_db32()` than to validate with :func:`db32dec()`
@@ -86,9 +87,9 @@ Dbase32 encoded:
 'UGT6U75VTJL8IRBBPRFONKOQ'
 
 The *numbytes* keyword argument defaults to ``15``, but you can override this
-to get an ID with a different length.  Typically you would only do this for
-unit testing, for example to create a well-formed 240-bit (30-byte) Dmedia file
-ID, which will be 48 characters in length when Dbase32 encoded:
+to get an ID of a different length.  For example, you might want to create a
+well-formed 240-bit (30-byte) `Dmedia`_ file ID for unit testing, which will be
+48 characters in length when Dbase32 encoded:
 
 >>> random_id(30)  # doctest: +SKIP
 'AU8HC68B9IC6AY6B3NHWOGCI9VK4MTOUSFLWRD7TLQBC56MN'
@@ -162,7 +163,7 @@ Functions
 
     Encode *data* as Dbase32 text.
 
-    An ``str`` instance is returned:
+    A ``str`` instance is returned:
 
     >>> db32enc(b'Bytes')
     'BCVQBSEM'
@@ -183,7 +184,7 @@ Functions
     >>> db32dec('BCVQBSEM')
     b'Bytes'
 
-    *text* must be an ``str`` or ``bytes`` instance that meets the following
+    *text* must be a ``str`` or ``bytes`` instance that meets the following
     condition::
 
         8 <= len(text) <= 96 and len(text) % 8 == 0
@@ -293,14 +294,22 @@ The :mod:`dbase32` module defines several handy constants:
 
     Please see :doc:`security` for more details.
 
+    .. versionadded:: 1.4
+
 
 .. data:: DB32ALPHABET
 
-    An ``str`` containing the Dbase32 alphabet.
+    A ``str`` containing the Dbase32 alphabet.
 
     >>> import dbase32
     >>> dbase32.DB32ALPHABET
     '3456789ABCDEFGHIJKLMNOPQRSTUVWXY'
+
+    Note that the Dbase32 alphabet (encoding table) is in ASCII/UTF-8 sorted
+    order:
+
+    >>> dbase32.DB32ALPHABET == ''.join(sorted(dbase32.DB32ALPHABET))
+    True 
 
 
 .. data:: MAX_BIN_LEN

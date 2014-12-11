@@ -11,9 +11,8 @@ Dbase32 uses an alphabet whose symbols are in ASCII/UTF-8 sorted order::
 This means that unlike `RFC-3548 Base32`_ encoding, the sort-order of the
 encoded data will match the sort-order of the binary data.
 
-:mod:`dbase32` is a Python3 implementation of the encoding, with both a
-high-performance C extension and a pure-Python fallback.  The C extension is
-automatically selected when available.
+:mod:`dbase32` provides a Python3 implementation of the encoding, with both a
+high-performance C extension and a pure-Python fallback.
 
 Example encoding and decoding:
 
