@@ -11,8 +11,13 @@ Changes:
         examples that raise exceptions, and also update a number of examples
         that still used the exception messages from Dbase32 1.1 and earlier.
 
-    *   Build ``dbase32._dbase32`` `C extension`_ with ``'-std=gnu11'`` as this
+    *   Add new :attr:`dbase32.using_c_extension` attribute that 3rd party
+        software can use in their unit tests and/or runtime initalization to
+        verify that the Dbase32 `C extension`_ is being used.
+
+    *   Build ``dbase32._dbase32`` C extension with ``'-std=gnu11'`` as this
         will soon be the GCC default.
+
 
 
 1.3 (September 2014)
