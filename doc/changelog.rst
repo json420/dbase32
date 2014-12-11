@@ -7,13 +7,18 @@ Changelog
 
 Changes:
 
-    *   Add ``doctest: -IGNORE_EXCEPTION_DETAIL`` to all Sphinx documentation
-        examples that raise exceptions, and also update a number of examples
-        that still used the exception messages from Dbase32 1.1 and earlier.
+    *   Add ``"# doctest: -IGNORE_EXCEPTION_DETAIL"`` to all Sphinx
+        documentation examples that raise exceptions, plus fix several such
+        examples that still used the exception messages from Dbase32 v1.1.
 
     *   Add new :attr:`dbase32.using_c_extension` attribute that 3rd party
-        software can use in their unit tests and/or runtime initalization to
+        software can use in their unit tests and/or runtime initialization to
         verify that the Dbase32 `C extension`_ is being used.
+
+    *   :attr:`dbase32.DB32ALPHABET`, :attr:`dbase32.MAX_BIN_LEN`, and
+        :attr:`dbase32.MAX_TXT_LEN` are now imported from the specific backend
+        implementation being used (rather than being separately defined in
+        :mod:`dbase32`).
 
     *   Build ``dbase32._dbase32`` C extension with ``'-std=gnu11'`` as this
         will soon be the GCC default.
