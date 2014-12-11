@@ -15,12 +15,6 @@ The :mod:`dbase32` API consists of just six functions:
 
     * :func:`time_id()` generates random IDs that will sort by timestamp
 
-.. note::
-
-    :func:`time_id()` was previously named ``log_id``; for backward
-    compatibility there is a ``log_id`` alias for :func:`time_id()`, but this
-    may be dropped at some point in the future.
-
 
 
 Tutorial
