@@ -40,6 +40,7 @@ try:
     from dbase32 import _dbase32
     C_EXT_AVAIL = True
 except ImportError:
+    _dbase32 = None
     C_EXT_AVAIL = False
 
 
@@ -91,6 +92,10 @@ def make_bytes(ints):
 
 
 class TestConstants(TestCase):
+    def skip_if_no_c_ext(self):
+        if not C_EXT_AVAIL:
+            self.skipTest('cannot import `dbase32._dbase32` C extension')
+
     def test_version(self):
         self.assertIsInstance(dbase32.__version__, str)
         (major, minor, micro) = dbase32.__version__.split('.')
@@ -118,9 +123,61 @@ class TestConstants(TestCase):
         self.assertEqual(len(set(dbase32.DB32ALPHABET)), 32)
         self.assertEqual(dbase32.DB32ALPHABET, _dbase32py.DB32_FORWARD)
 
-    def test_MAX_BIN_LEN(self):
-        self.assertIsInstance(dbase32.MAX_BIN_LEN, int)
-        self.assertEqual(dbase32.MAX_BIN_LEN, _dbase32py.MAX_BIN_LEN)
+    def check_MAX_BIN_LEN(self, backend):
+        self.assertIn(backend, (_dbase32, _dbase32py))
+        value = backend.MAX_BIN_LEN
+        self.assertEqual(value, dbase32.MAX_BIN_LEN)
+        self.assertEqual(value, dbase32.MAX_TXT_LEN * 5 // 8)
+        self.assertIsInstance(value, int)
+        self.assertGreaterEqual(value, 5)
+        self.assertEqual(value % 5, 0)
+        self.assertLessEqual(value, 60)
+        return value
+
+    def test_MAX_BIN_LEN_py(self):
+        self.assertIs(
+            self.check_MAX_BIN_LEN(_dbase32py),
+            _dbase32py.MAX_BIN_LEN
+        )
+        if _dbase32 is None:
+            self.assertIs(_dbase32py.MAX_BIN_LEN, dbase32.MAX_BIN_LEN)
+
+    def test_MAX_BIN_LEN_c(self):
+        self.skip_if_no_c_ext()
+        self.assertIs(
+            self.check_MAX_BIN_LEN(_dbase32),
+            _dbase32.MAX_BIN_LEN
+        )
+        self.assertIs(_dbase32.MAX_BIN_LEN, dbase32.MAX_BIN_LEN)
+        self.assertEqual(_dbase32.MAX_BIN_LEN, _dbase32py.MAX_BIN_LEN)
+
+    def check_MAX_TXT_LEN(self, backend):
+        self.assertIn(backend, (_dbase32, _dbase32py))
+        value = backend.MAX_TXT_LEN
+        self.assertEqual(value, dbase32.MAX_TXT_LEN)
+        self.assertEqual(value, dbase32.MAX_BIN_LEN * 8 // 5)
+        self.assertIsInstance(value, int)
+        self.assertGreaterEqual(value, 8)
+        self.assertEqual(value % 8, 0)
+        self.assertLessEqual(value, 96)
+        return value
+
+    def test_MAX_TXT_LEN_py(self):
+        self.assertIs(
+            self.check_MAX_TXT_LEN(_dbase32py),
+            _dbase32py.MAX_TXT_LEN
+        )
+        if _dbase32 is None:
+            self.assertIs(_dbase32py.MAX_TXT_LEN, dbase32.MAX_TXT_LEN)
+
+    def test_MAX_TXT_LEN_c(self):
+        self.skip_if_no_c_ext()
+        self.assertIs(
+            self.check_MAX_TXT_LEN(_dbase32),
+            _dbase32.MAX_TXT_LEN
+        )
+        self.assertIs(_dbase32.MAX_TXT_LEN, dbase32.MAX_TXT_LEN)
+        self.assertEqual(_dbase32.MAX_TXT_LEN, _dbase32py.MAX_TXT_LEN)
 
     def test_MAX_TXT_LEN(self):
         self.assertIsInstance(dbase32.MAX_TXT_LEN, int)

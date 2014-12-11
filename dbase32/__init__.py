@@ -34,10 +34,28 @@ b'binary foo'
 """
 
 try:
-    from ._dbase32 import db32enc, db32dec, isdb32, check_db32, random_id, time_id
+    from ._dbase32 import (
+        MAX_BIN_LEN,
+        MAX_TXT_LEN,
+        db32enc,
+        db32dec,
+        isdb32,
+        check_db32,
+        random_id,
+        time_id,
+    )
     using_c_extension = True
 except ImportError:
-    from ._dbase32py import db32enc, db32dec, isdb32, check_db32, random_id, time_id
+    from ._dbase32py import (
+        MAX_BIN_LEN,
+        MAX_TXT_LEN,
+        db32enc,
+        db32dec,
+        isdb32,
+        check_db32,
+        random_id,
+        time_id,
+    )
     using_c_extension = False
 
 
@@ -47,11 +65,19 @@ log_id = time_id
 
 
 __version__ = '1.4.0'
-__all__ = ('db32enc', 'db32dec', 'isdb32', 'check_db32', 'random_id', 'time_id')
+__all__ = (
+    'MAX_BIN_LEN',
+    'MAX_TXT_LEN',
+    'db32enc',
+    'db32dec',
+    'isdb32',
+    'check_db32',
+    'random_id',
+    'time_id',
+)
+
 
 DB32ALPHABET = '3456789ABCDEFGHIJKLMNOPQRSTUVWXY'
-MAX_BIN_LEN = 60  # 480 bits
-MAX_TXT_LEN = 96
 RANDOM_BITS = 120
 RANDOM_BYTES = 15
 RANDOM_B32LEN = 24
