@@ -106,8 +106,8 @@ Although note that the C implementation of :func:`random_id()` is faster than
 the above because it does everything internally with no back-and-forth between
 Python and C.
 
-Lastly, use :func:`time_id()` to generate random IDs which will sort according
-to their Unix timestamp with a one second granularity.
+Lastly, use :func:`time_id()` to generate random IDs that will sort according to
+their Unix timestamp with a one second granularity.
 
 Similar to :func:`random_id()`, :func:`time_id()` returns a 120-bit (15-byte)
 ID, which will be 24 characters in length when Dbase32 encoded.  The difference
