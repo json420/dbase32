@@ -44,6 +44,7 @@ try:
         random_id,
         time_id,
     )
+    from ._dbase32 import DB32_FORWARD as DB32ALPHABET
     using_c_extension = True
 except ImportError:
     from ._dbase32py import (
@@ -56,18 +57,15 @@ except ImportError:
         random_id,
         time_id,
     )
+    from ._dbase32py import DB32_FORWARD as DB32ALPHABET
     using_c_extension = False
-
-
-# FIXME: For backward-compatability with Dbase32 <= 0.10; at some point in the
-# future we may want to drop this:
-log_id = time_id
 
 
 __version__ = '1.4.0'
 __all__ = (
     'MAX_BIN_LEN',
     'MAX_TXT_LEN',
+    'DB32ALPHABET',
     'db32enc',
     'db32dec',
     'isdb32',
@@ -76,9 +74,11 @@ __all__ = (
     'time_id',
 )
 
-
-DB32ALPHABET = '3456789ABCDEFGHIJKLMNOPQRSTUVWXY'
 RANDOM_BITS = 120
 RANDOM_BYTES = 15
 RANDOM_B32LEN = 24
+
+# FIXME: For backward-compatability with Dbase32 <= 0.10; at some point in the
+# future we may want to drop this:
+log_id = time_id
 

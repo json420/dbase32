@@ -197,6 +197,30 @@ class TestConstants(TestCase):
         self.assertEqual(dbase32.RANDOM_B32LEN, dbase32.RANDOM_BITS // 5)
         self.assertEqual(dbase32.RANDOM_B32LEN % 8, 0)
 
+    def test_MAX_BIN_LEN_alias(self):
+        if C_EXT_AVAIL:
+            self.assertIs(dbase32.MAX_BIN_LEN, _dbase32.MAX_BIN_LEN)
+            self.assertEqual(dbase32.MAX_BIN_LEN, _dbase32py.MAX_BIN_LEN)
+        else:
+            self.assertIs(dbase32.MAX_BIN_LEN, _dbase32py.MAX_BIN_LEN)
+            self.assertIsNone(_dbase32)
+
+    def test_MAX_TXT_LEN_alias(self):
+        if C_EXT_AVAIL:
+            self.assertIs(dbase32.MAX_TXT_LEN, _dbase32.MAX_TXT_LEN)
+            self.assertEqual(dbase32.MAX_TXT_LEN, _dbase32py.MAX_TXT_LEN)
+        else:
+            self.assertIs(dbase32.MAX_TXT_LEN, _dbase32py.MAX_TXT_LEN)
+            self.assertIsNone(_dbase32)
+
+    def test_DB32ALPHABET_alias(self):
+        if C_EXT_AVAIL:
+            self.assertIs(dbase32.DB32ALPHABET, _dbase32.DB32_FORWARD)
+            self.assertEqual(dbase32.DB32ALPHABET, _dbase32py.DB32_FORWARD)
+        else:
+            self.assertIs(dbase32.DB32ALPHABET, _dbase32py.DB32_FORWARD)
+            self.assertIsNone(_dbase32)
+
     def test_db32enc_alias(self):
         if C_EXT_AVAIL:
             self.assertIs(dbase32.db32enc, _dbase32.db32enc)
