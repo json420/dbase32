@@ -47,8 +47,8 @@ For security reasons, 3rd party applications may want to ensure that the Dbase32
 C implementation is being used, which they can do like this:
 
 >>> import dbase32
->>> assert hasattr(dbase32, '_dbase32')
->>> assert not hasattr(dbase32, '_dbase32py')
+>>> dbase32.using_c_extension is True
+True
 
 If the `C implementation`_ isn't working on a particular architecture, please
 `file a bug against Dbase32`_.

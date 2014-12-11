@@ -615,5 +615,13 @@ static struct PyModuleDef dbase32 = {
 PyMODINIT_FUNC
 PyInit__dbase32(void)
 {
-    return PyModule_Create(&dbase32);
+    PyObject *m = PyModule_Create(&dbase32);
+    if (m == NULL) {
+        return NULL;
+    }
+    PyModule_AddIntMacro(m, MAX_BIN_LEN);
+    PyModule_AddIntMacro(m, MAX_TXT_LEN);
+    PyModule_AddStringConstant(m, "DB32_FORWARD", (const char*)DB32_FORWARD);
+    return m;
 }
+

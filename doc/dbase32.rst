@@ -15,12 +15,6 @@ The :mod:`dbase32` API consists of just six functions:
 
     * :func:`time_id()` generates random IDs that will sort by timestamp
 
-.. note::
-
-    :func:`time_id()` was previously named ``log_id``; for backward
-    compatibility there is a ``log_id`` alias for :func:`time_id()`, but this
-    may be dropped at some point in the future.
-
 
 
 Tutorial
@@ -38,7 +32,7 @@ Decode the resulting ``str`` instance with :func:`db32dec()`:
 >>> db32dec('FCNPVRELI7J9FUUI')
 b'binary foo'
 
-:func:`db32dec()` can also directly decode UTF-8 ``bytes``:
+:func:`db32dec()` can also directly decode UTF-8 encoded ``bytes``:
 
 >>> db32dec(b'FCNPVRELI7J9FUUI')
 b'binary foo'
@@ -50,14 +44,14 @@ will return ``True`` if the ID is valid:
 >>> isdb32('FCNPVRELI7J9FUUI')
 True
 
-And will return ``False`` if the ID contains invalid letters or is the wrong
-length:
+And will return ``False`` if the ID contains invalid characters:
 
->>> isdb32('AAAAAAAA')
-True
->>> isdb32('AAAAAAAZ')
+>>> isdb32('FCNPVRELI7J9FUUZ')
 False
->>> isdb32('AAAAAAA')
+
+Or will also return ``False`` if the ID is the wrong length:
+
+>>> isdb32('FCNPVRELI7J9FUU')
 False
 
 You can likewise use :func:`check_db32()` to validate an ID.  It will return
@@ -66,18 +60,19 @@ You can likewise use :func:`check_db32()` to validate an ID.  It will return
 >>> from dbase32 import check_db32
 >>> check_db32('FCNPVRELI7J9FUUI')
 
-And will raise a ``ValueError`` if the ID contains invalid letters or is the
-wrong length:
+And will raise a ``ValueError`` if the ID contains invalid characters:
 
->>> check_db32('AAAAAAAA')
->>> check_db32('AAAAAAAZ')  # doctest: -IGNORE_EXCEPTION_DETAIL
+>>> check_db32('FCNPVRELI7J9FUUZ')  # doctest: -IGNORE_EXCEPTION_DETAIL
 Traceback (most recent call last):
   ...
-ValueError: invalid Dbase32: 'AAAAAAAZ'
->>> check_db32('AAAAAAA')  # doctest: -IGNORE_EXCEPTION_DETAIL
+ValueError: invalid Dbase32: 'FCNPVRELI7J9FUUZ'
+
+Or will also raise a ``ValueError`` if the ID is the wrong length:
+
+>>> check_db32('FCNPVRELI7J9FUU')  # doctest: -IGNORE_EXCEPTION_DETAIL
 Traceback (most recent call last):
   ...
-ValueError: len(text) is 7, need 8 <= len(text) <= 96
+ValueError: len(text) is 15, need len(text) % 8 == 0
 
 When you don't need the decoded ID, it's faster to validate with
 :func:`isdb32()` or :func:`check_db32()` than to validate with :func:`db32dec()`
@@ -92,9 +87,9 @@ Dbase32 encoded:
 'UGT6U75VTJL8IRBBPRFONKOQ'
 
 The *numbytes* keyword argument defaults to ``15``, but you can override this
-to get an ID with a different length.  Typically you would only do this for
-unit testing, for example to create a well-formed 240-bit (30-byte) Dmedia file
-ID, which will be 48 characters in length when Dbase32 encoded:
+to get an ID of a different length.  For example, you might want to create a
+well-formed 240-bit (30-byte) `Dmedia`_ file ID for unit testing, which will be
+48 characters in length when Dbase32 encoded:
 
 >>> random_id(30)  # doctest: +SKIP
 'AU8HC68B9IC6AY6B3NHWOGCI9VK4MTOUSFLWRD7TLQBC56MN'
@@ -112,8 +107,8 @@ Although note that the C implementation of :func:`random_id()` is faster than
 the above because it does everything internally with no back-and-forth between
 Python and C.
 
-Lastly, use :func:`time_id()` to generate random IDs which will sort according
-to their Unix timestamp with a one second granularity.
+Lastly, use :func:`time_id()` to generate random IDs that will sort according to
+their Unix timestamp with a one second granularity.
 
 Similar to :func:`random_id()`, :func:`time_id()` returns a 120-bit (15-byte)
 ID, which will be 24 characters in length when Dbase32 encoded.  The difference
@@ -168,7 +163,7 @@ Functions
 
     Encode *data* as Dbase32 text.
 
-    An ``str`` instance is returned:
+    A ``str`` instance is returned:
 
     >>> db32enc(b'Bytes')
     'BCVQBSEM'
@@ -189,7 +184,7 @@ Functions
     >>> db32dec('BCVQBSEM')
     b'Bytes'
 
-    *text* must be an ``str`` or ``bytes`` instance that meets the following
+    *text* must be a ``str`` or ``bytes`` instance that meets the following
     condition::
 
         8 <= len(text) <= 96 and len(text) % 8 == 0
@@ -278,54 +273,109 @@ Functions
 Constants
 ---------
 
-A few handy constants:
+The :mod:`dbase32` module defines several handy constants:
+
+.. data:: using_c_extension
+
+    A flag indicating whether the Dbase32 `C implementation`_ is being used.
+
+    >>> import dbase32
+    >>> dbase32.using_c_extension
+    True
+
+    This will be ``True`` when the ``dbase32._dbase32`` C extension is being
+    used, or ``False`` when the ``dbase32._dbase32py`` pure-Python fallback is
+    being used.
+
+    For both security and performance reasons, only the `C implementation`_ is
+    recommended for production use.  As such, 3rd party software might want to
+    use this attribute in their unit tests and/or runtime initialization to
+    verify that the Dbase32 C extension is in fact being used.
+
+    Please see :doc:`security` for more details.
+
+    .. versionadded:: 1.4
 
 
 .. data:: DB32ALPHABET
 
-    An ``str`` with the Dbase32 alphabet.
+    A ``str`` containing the Dbase32 alphabet.
 
-    >>> DB32ALPHABET = '3456789ABCDEFGHIJKLMNOPQRSTUVWXY'
+    >>> import dbase32
+    >>> dbase32.DB32ALPHABET
+    '3456789ABCDEFGHIJKLMNOPQRSTUVWXY'
+
+    Note that the Dbase32 alphabet (encoding table) is in ASCII/UTF-8 sorted
+    order:
+
+    >>> dbase32.DB32ALPHABET == ''.join(sorted(set(dbase32.DB32ALPHABET)))
+    True 
 
 
 .. data:: MAX_BIN_LEN
 
-    Max length of binary data that :func:`db32enc()` accepts for encoding.
+    Max length of data (in bytes) accepted for encoding.
 
-    >>> MAX_BIN_LEN = 60  # 480 bits
+    >>> import dbase32
+    >>> dbase32.MAX_BIN_LEN
+    60
+    >>> dbase32.MAX_BIN_LEN * 8  # 480 bits
+    480
+
+    This constraint is used by :func:`db32enc()`, :func:`random_id()`, and
+    :func:`time_id()`.
 
 
 .. data:: MAX_TXT_LEN
 
-    Max length of text data that :func:`db32dec` accepts for decoding.
+    Max length of text (in characters) accepted for decoding or validation.
 
-    >>> MAX_TXT_LEN = 96
+    >>> import dbase32
+    >>> dbase32.MAX_TXT_LEN
+    96
+    >>> dbase32.MAX_TXT_LEN * 5 // 8 == dbase32.MAX_BIN_LEN
+    True
+
+    This constraint is used by :func:`db32dec()`, :func:`isdb32()`, and
+    :func:`check_db32()`.
 
 
 .. data:: RANDOM_BITS
 
-    Default size (in bits) of the *decoded* ID generated by :func:`random_id()`
+    Default size (in bits) of the *decoded* ID generated by :func:`random_id()`.
 
-    >>> RANDOM_BITS = 120
+    >>> import dbase32
+    >>> dbase32.RANDOM_BITS
+    120
 
 
 .. data:: RANDOM_BYTES
 
-    Default size (in bytes) of the *decoded* ID generated by :func:`random_id()`
+    Default size (in bytes) of the *decoded* ID generated by :func:`random_id()`.
 
-    >>> RANDOM_BYTES = 15
+    >>> import dbase32
+    >>> dbase32.RANDOM_BYTES
+    15
+    >>> dbase32.RANDOM_BYTES * 8 == dbase32.RANDOM_BITS
+    True
 
 
 .. data:: RANDOM_B32LEN
 
-    Default size (in characters) of the ID generated by :func:`random_id()`
+    Default size (in characters) of the ID generated by :func:`random_id()`.
 
-    >>> RANDOM_B32LEN = 24
+    >>> import dbase32
+    >>> dbase32.RANDOM_B32LEN
+    24
+    >>> dbase32.RANDOM_B32LEN * 5 // 8 == dbase32.RANDOM_BYTES
+    True
 
 
 
 .. _`Dbase32`: https://launchpad.net/dbase32
-.. _`RFC-3548 Base32`: http://tools.ietf.org/html/rfc4648
+.. _`RFC-3548 Base32`: https://tools.ietf.org/html/rfc4648
 .. _`Novacut`: https://launchpad.net/novacut
 .. _`Dmedia`: https://launchpad.net/dmedia
+
+.. _`C implementation`: http://bazaar.launchpad.net/~dmedia/dbase32/trunk/view/head:/dbase32/_dbase32.c
 
