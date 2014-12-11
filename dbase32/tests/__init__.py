@@ -104,6 +104,14 @@ class TestConstants(TestCase):
         self.assertTrue(p3 >= 0)
         self.assertEqual(str(p3), micro)
 
+    def test_using_c_extension(self):
+        self.assertIsInstance(dbase32.using_c_extension, bool)
+        self.assertIn(dbase32.using_c_extension, (True, False))
+        if C_EXT_AVAIL:
+            self.assertIs(dbase32.using_c_extension, True)
+        else:
+            self.assertIs(dbase32.using_c_extension, False)
+
     def test_DB32ALPHABET(self):
         self.assertIsInstance(dbase32.DB32ALPHABET, str)
         self.assertEqual(len(dbase32.DB32ALPHABET), 32)

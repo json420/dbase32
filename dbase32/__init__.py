@@ -35,8 +35,10 @@ b'binary foo'
 
 try:
     from ._dbase32 import db32enc, db32dec, isdb32, check_db32, random_id, time_id
+    using_c_extension = True
 except ImportError:
     from ._dbase32py import db32enc, db32dec, isdb32, check_db32, random_id, time_id
+    using_c_extension = False
 
 
 # FIXME: For backward-compatability with Dbase32 <= 0.10; at some point in the
