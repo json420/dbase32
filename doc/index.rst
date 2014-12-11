@@ -26,11 +26,8 @@ b'binary foo'
 you to sanitize untrusted input without decoding the IDs.  For example:
 
 >>> from dbase32 import isdb32, check_db32
->>> isdb32('FCNPVRELI7J9FUUI')
-True
 >>> isdb32('../very/naughty/')
 False
->>> check_db32('FCNPVRELI7J9FUUI')
 >>> check_db32('../very/naughty/')  # doctest: -IGNORE_EXCEPTION_DETAIL
 Traceback (most recent call last):
   ...

@@ -308,7 +308,7 @@ The :mod:`dbase32` module defines several handy constants:
     Note that the Dbase32 alphabet (encoding table) is in ASCII/UTF-8 sorted
     order:
 
-    >>> dbase32.DB32ALPHABET == ''.join(sorted(dbase32.DB32ALPHABET))
+    >>> dbase32.DB32ALPHABET == ''.join(sorted(set(dbase32.DB32ALPHABET)))
     True 
 
 
