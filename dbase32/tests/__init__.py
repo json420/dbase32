@@ -117,11 +117,33 @@ class TestConstants(TestCase):
         else:
             self.assertIs(dbase32.using_c_extension, False)
 
-    def test_DB32ALPHABET(self):
-        self.assertIsInstance(dbase32.DB32ALPHABET, str)
-        self.assertEqual(len(dbase32.DB32ALPHABET), 32)
-        self.assertEqual(len(set(dbase32.DB32ALPHABET)), 32)
-        self.assertEqual(dbase32.DB32ALPHABET, _dbase32py.DB32_FORWARD)
+    def check_DB32_FORWARD(self, backend):
+        self.assertIn(backend, (_dbase32, _dbase32py))
+        value = backend.DB32_FORWARD
+        self.assertIsInstance(value, str)
+        self.assertEqual(len(value), 32)
+        self.assertEqual(len(set(value)), 32)
+        self.assertEqual(''.join(sorted(value)), value)
+        self.assertEqual(value, _dbase32py.DB32_FORWARD)
+        self.assertEqual(value, dbase32.DB32ALPHABET)
+        return value
+
+    def test_DB32_FORWARD_py(self):
+        self.assertIs(
+            self.check_DB32_FORWARD(_dbase32py),
+            _dbase32py.DB32_FORWARD
+        )
+        if _dbase32 is None:
+            self.assertIs(_dbase32py.DB32_FORWARD, dbase32.DB32ALPHABET)
+
+    def test_DB32_FORWARD_c(self):
+        self.skip_if_no_c_ext()
+        self.assertIs(
+            self.check_DB32_FORWARD(_dbase32),
+            _dbase32.DB32_FORWARD
+        )
+        self.assertIs(_dbase32.DB32_FORWARD, dbase32.DB32ALPHABET)
+        self.assertEqual(_dbase32.DB32_FORWARD, _dbase32py.DB32_FORWARD)
 
     def check_MAX_BIN_LEN(self, backend):
         self.assertIn(backend, (_dbase32, _dbase32py))
