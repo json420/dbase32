@@ -22,6 +22,7 @@
 
 #include <Python.h>
 
+#define DB32ALPHABET "3456789ABCDEFGHIJKLMNOPQRSTUVWXY"
 #define MAX_BIN_LEN 60
 #define MAX_TXT_LEN 96
 #define DB32_END 89
@@ -33,7 +34,7 @@
  * we explicitly request 32-byte alignment:
  */
 static const uint8_t DB32_FORWARD[32] __attribute__ ((aligned (32))) \
-    = "3456789ABCDEFGHIJKLMNOPQRSTUVWXY";
+    = DB32ALPHABET;
 
 
 /* 
@@ -621,7 +622,7 @@ PyInit__dbase32(void)
     }
     PyModule_AddIntMacro(m, MAX_BIN_LEN);
     PyModule_AddIntMacro(m, MAX_TXT_LEN);
-    PyModule_AddStringConstant(m, "DB32_FORWARD", (const char*)DB32_FORWARD);
+    PyModule_AddStringMacro(m, DB32ALPHABET);
     return m;
 }
 

@@ -34,8 +34,8 @@ b'binary foo'
 """
 
 try:
-    from ._dbase32 import DB32_FORWARD as DB32ALPHABET
     from ._dbase32 import (
+        DB32ALPHABET,
         MAX_BIN_LEN,
         MAX_TXT_LEN,
         db32enc,
@@ -47,8 +47,8 @@ try:
     )
     using_c_extension = True
 except ImportError:
-    from ._dbase32py import DB32_FORWARD as DB32ALPHABET
     from ._dbase32py import (
+        DB32ALPHABET,
         MAX_BIN_LEN,
         MAX_TXT_LEN,
         db32enc,
