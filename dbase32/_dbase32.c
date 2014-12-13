@@ -242,7 +242,7 @@ dbase32_decode(const uint8_t *txt_buf, const size_t txt_len,
  * Any return value other than 0 or 224 should be treated as an internal error.
  */
 static inline uint8_t
-dbase32_validate(const size_t txt_len, const uint8_t *txt_buf)
+dbase32_validate(const uint8_t *txt_buf, const size_t txt_len)
 {
     size_t block, count;
     uint8_t r;
@@ -404,7 +404,7 @@ dbase32_isdb32(PyObject *self, PyObject *args)
     }
 
     /* dbase32_validate() returns 0 on success, 224 on invalid Dbase32 */
-    status = dbase32_validate(txt_len, txt_buf);
+    status = dbase32_validate(txt_buf, txt_len);
     if (status == 0) {
         Py_RETURN_TRUE;
     }
@@ -447,7 +447,7 @@ dbase32_check_db32(PyObject *self, PyObject *args)
     }
 
     /* dbase32_validate() returns 0 on success, 224 on invalid Dbase32 */
-    status = dbase32_validate(txt_len, txt_buf);
+    status = dbase32_validate(txt_buf, txt_len);
     if (status == 0) {
         Py_RETURN_NONE;
     }
