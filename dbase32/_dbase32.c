@@ -129,8 +129,8 @@ static const uint8_t DB32_REVERSE[256] __attribute__ ((aligned (64))) = {
  * Any return value other than 0 should be treated as an internal error.
  */
 static inline uint8_t
-dbase32_encode(const size_t bin_len, const uint8_t *bin_buf,
-               const size_t txt_len,       uint8_t *txt_buf)
+dbase32_encode(const uint8_t *bin_buf, const size_t bin_len,
+                     uint8_t *txt_buf, const size_t txt_len)
 {
     size_t block, count;
     uint64_t taxi;
@@ -318,7 +318,7 @@ dbase32_db32enc(PyObject *self, PyObject *args)
     txt_buf = (uint8_t *)PyUnicode_1BYTE_DATA(ret);
 
     /* dbase32_encode() returns 0 on success */
-    if (dbase32_encode(bin_len, bin_buf, txt_len, txt_buf) != 0) {
+    if (dbase32_encode(bin_buf, bin_len, txt_buf, txt_len) != 0) {
         Py_FatalError("internal error in `_dbase32.db32enc()`");
     }
     return ret;
@@ -520,7 +520,7 @@ dbase32_random_id(PyObject *self, PyObject *args, PyObject *kw)
     txt_buf = (uint8_t *)PyUnicode_1BYTE_DATA(ret);
 
     /* dbase32_encode() returns 0 on success */
-    status = dbase32_encode(bin_len, bin_buf, txt_len, txt_buf);
+    status = dbase32_encode(bin_buf, bin_len, txt_buf, txt_len);
     free(bin_buf);
     if (status != 0) {
         /* Any status other than 0 means an internal error occurred */
@@ -581,7 +581,7 @@ dbase32_time_id(PyObject *self, PyObject *args, PyObject *kw)
     txt_buf = (uint8_t *)PyUnicode_1BYTE_DATA(ret);
 
     /* dbase32_encode() returns 0 on success */
-    status = dbase32_encode(15, bin_buf, 24, txt_buf);
+    status = dbase32_encode(bin_buf, 15, txt_buf, 24);
     free(bin_buf);
     if (status != 0) {
         /* Any status other than 0 means an internal error occurred */
