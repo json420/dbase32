@@ -194,11 +194,17 @@ dbase32_decode(const uint8_t *txt_buf, const size_t txt_len,
         return 2;
     }
 
-    /* To mitigate timing attacks, we always decode the entire buffer, and then
-     * do a single error check on the final value of `r`.
+    /* To mitigate timing attacks, we optimistically decode the entire `txt_buf`
+     * and then do a single error check on the final value of `r`.
      *
-     * However, use of the DB32_REVERSE table means this function still leaks
-     * information through cache misses, etc.
+     * Assuming two conditions are met, this function is constant-time with
+     * respect to the content of `txt_buf`:
+     *
+     *     1. The CPU has a 64-byte (or larger) cache line size
+     *     2. `txt_buf` contains a valid Dbase32 ID
+     *
+     * Otherwise this function leaks exploitable timing information that could
+     * provide insight into the content of `txt_buf`.
      */
     count = txt_len / 8;
     for (r = block = 0; block < count; block++) {
