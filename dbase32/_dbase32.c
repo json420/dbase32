@@ -27,11 +27,14 @@
 #define MAX_TXT_LEN 96
 #define DB32_END 89
 
+
 /*
  * DB32_FORWARD: table for encoding.
- * 
- * So that the forward-table fits in a single 64-byte (or 32-byte) cache line,
- * we explicitly request 32-byte alignment:
+ *
+ * Used by `dbase32_encode()`.
+ *
+ * So that this table fits in a single 32-byte (or larger) cache line, we
+ * explicitly request 32-byte alignment.
  */
 static const uint8_t DB32_FORWARD[32] __attribute__ ((aligned (32))) \
     = DB32ALPHABET;
@@ -40,27 +43,32 @@ static const uint8_t DB32_FORWARD[32] __attribute__ ((aligned (32))) \
 /* 
  * DB32_REVERSE: table for decoding and validating.
  *
- * To prevent timing attacks when decoding or validating *valid* Dbase32 IDs,
- * we rotate the DB32_REVERSE table to the left by 42 bytes.
+ * Used by `dbase32_decode()` and `dbase32_validate()`
+ *
+ * To mitigate timing attacks when decoding or validating a *valid* Dbase32 ID,
+ * this table is rotated to the left by 42 bytes.
  *
  * This allows all valid entries to fit within a single 64-byte cache line,
- * which means that on machines with a 64-byte (or larger) cache line size,
- * cache hits and misses can't leak any information about the contents of a
- * *valid* Dbase32 ID.  However, note that hits an misses can still leak
- * information about what invalid bytes are in an ID, as the entire table will
- * still span 4 64-byte cache lines.
+ * which means that on CPUs with a 64-byte (or larger) cache line size, cache
+ * hits and misses can't leak any information about the content of a *valid*
+ * Dbase32 ID.
+ * 
+ * However, cache hits an misses can still leak information about the content of
+ * an invalid ID, as the entire table spans four 64-byte cache lines.  Likewise,
+ * on CPUs with a 32-byte (or smaller) cache line size, cache hits and misses
+ * can leak information about the content of *any* ID being decoded or
+ * validated, even when it's a valid Dbase32 ID.
  *
- * The 42 byte left rotation was chosen as it allows the table to at least be
- * balanced between two 32-byte cache lines (ARM Cortex-A9, for example), which
- * helps make cache hits and misses at least a bit more difficult to exploit in
- * some scenarios.  With the 42 byte left rotation, 16 valid entries will be in
- * each 32-byte cache line:
+ * The 42 byte left rotation was chosen because it at least balances the valid
+ * entries between two 32-byte cache lines, which helps make cache hits and
+ * misses a bit more difficult to exploit in some scenarios.  With the 42 byte
+ * left rotation, 16 valid entries will be in each 32-byte cache line:
  *
  *              3456789       ABCDEFGHI    JKLMNOPQRSTUVWXY                
  *     --------------------------------    --------------------------------
  *     ^ 1st 32-byte cache line ^          ^ 2nd 32-byte cache line ^
  *
- * We also explicitly request 64-byte alignment, so that the start of the table
+ * We also explicitly request 64-byte alignment, so that the start of this table
  * will actually be at the start of a cache line.
  */
 static const uint8_t DB32_REVERSE[256] __attribute__ ((aligned (64))) = {
@@ -122,7 +130,7 @@ static const uint8_t DB32_REVERSE[256] __attribute__ ((aligned (64))) = {
 /* 
  * dbase32_encode(): internal Dbase32 encoding function.
  *
- * This function is used by `db32enc()`, `random_id()`, and `time_id()`.
+ * Used by `db32enc()`, `random_id()`, and `time_id()`.
  *
  * Returns 0 on success.
  *
@@ -141,6 +149,7 @@ dbase32_encode(const uint8_t *bin_buf, const size_t bin_len,
     if (txt_len != bin_len * 8 / 5) {
         return 2;
     }
+
     count = bin_len / 5;
     for (block = 0; block < count; block++) {
         /* Pack 40 bits into the taxi (8 bits at a time) */
@@ -164,16 +173,26 @@ dbase32_encode(const uint8_t *bin_buf, const size_t bin_len,
         bin_buf += 5;
         txt_buf += 8;
     }
+
     return 0;
 }
 
+
+/*
+ * ROTATE(): macro for lookup in the rotated `DB32_REVERSE` table.
+ *
+ * Used by `dbase32_decode()` and `dbase32_validate()`.
+ *
+ * Note this macro assumes a `txt_buf` local function variable.
+ */
 #define ROTATE(i) \
     DB32_REVERSE[(uint8_t)(txt_buf[i] - 42)]
+
 
 /* 
  * dbase32_decode(): internal Dbase32 decoding function.
  *
- * This function is used by `db32dec()`.
+ * Used by `db32dec()`.
  *
  * Returns 0 on success, 224 when txt_buf contains invalid characters.
  *
@@ -241,7 +260,7 @@ dbase32_decode(const uint8_t *txt_buf, const size_t txt_len,
 /* 
  * dbase32_validate(): internal Dbase32 validation function.
  *
- * This function is used by `isdb32()` and `check_db32()`.
+ * Used by `isdb32()` and `check_db32()`.
  *
  * Returns 0 when valid, 224 when invalid.
  *
