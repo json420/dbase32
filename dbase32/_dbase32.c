@@ -136,7 +136,7 @@ static const uint8_t DB32_REVERSE[256] __attribute__ ((aligned (64))) = {
  *
  * Any return value other than 0 should be treated as an internal error.
  */
-static inline uint8_t
+static uint8_t
 dbase32_encode(const uint8_t *bin_buf, const size_t bin_len,
                      uint8_t *txt_buf, const size_t txt_len)
 {
@@ -198,7 +198,7 @@ dbase32_encode(const uint8_t *bin_buf, const size_t bin_len,
  *
  * Any return value other than 0 or 224 should be treated as an internal error.
  */
-static inline uint8_t
+static uint8_t
 dbase32_decode(const uint8_t *txt_buf, const size_t txt_len,
                      uint8_t *bin_buf, const size_t bin_len)
 {
@@ -266,7 +266,7 @@ dbase32_decode(const uint8_t *txt_buf, const size_t txt_len,
  *
  * Any return value other than 0 or 224 should be treated as an internal error.
  */
-static inline uint8_t
+static uint8_t
 dbase32_validate(const uint8_t *txt_buf, const size_t txt_len)
 {
     size_t block, count;
