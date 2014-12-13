@@ -180,8 +180,8 @@ dbase32_encode(const uint8_t *bin_buf, const size_t bin_len,
  * Any return value other than 0 or 224 should be treated as an internal error.
  */
 static inline uint8_t
-dbase32_decode(const size_t txt_len, const uint8_t *txt_buf,
-               const size_t bin_len,       uint8_t *bin_buf)
+dbase32_decode(const uint8_t *txt_buf, const size_t txt_len,
+                     uint8_t *bin_buf, const size_t bin_len)
 {
     size_t block, count;
     uint8_t r;
@@ -367,7 +367,7 @@ dbase32_db32dec(PyObject *self, PyObject *args)
     bin_buf = (uint8_t *)PyBytes_AS_STRING(ret);
 
     /* dbase32_decode() returns 0 on success, 224 on invalid Dbase32 */
-    status = dbase32_decode(txt_len, txt_buf, bin_len, bin_buf);
+    status = dbase32_decode(txt_buf, txt_len, bin_buf, bin_len);
     if (status == 224) {
         Py_CLEAR(ret);
         borrowed = PyTuple_GetItem(args, 0);
