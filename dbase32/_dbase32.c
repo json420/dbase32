@@ -53,10 +53,11 @@ static const uint8_t DB32_FORWARD[32] __attribute__ ((aligned (32))) \
  * hits and misses can't leak any information about the content of a *valid*
  * Dbase32 ID.
  * 
- * However, cache hits an misses can still leak information about the content of
- * an invalid ID, as the entire table spans four 64-byte cache lines.  Likewise,
- * on CPUs with a 32-byte (or smaller) cache line size, cache hits and misses
- * can leak information about the content of *any* ID being decoded or
+ * However, cache hits and misses can still leak information about the content
+ * of an invalid ID, as the entire table spans four 64-byte cache lines.
+ *
+ * Likewise, on CPUs with a 32-byte (or smaller) cache line size, cache hits and
+ * misses can leak information about the content of *any* ID being decoded or
  * validated, even when it's a valid Dbase32 ID.
  *
  * The 42 byte left rotation was chosen because it at least balances the valid
