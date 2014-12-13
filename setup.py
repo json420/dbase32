@@ -41,6 +41,8 @@ from dbase32.tests.run import run_tests
 
 
 TREE = path.dirname(path.abspath(__file__))
+with open(path.join(TREE, 'README'), 'r') as fp:
+    LONG_DESCRIPTION = fp.read()
 
 
 def run_under_same_interpreter(opname, script, args):
@@ -120,12 +122,14 @@ class Benchmark(Command):
 
 setup(
     name='dbase32',
-    description='base32-encoding with a sorted-order alphabet',
+    description='A base32 encoding with a sorted-order alphabet',
+    long_description=LONG_DESCRIPTION,
     url='https://launchpad.net/dbase32',
     version=dbase32.__version__,
     author='Jason Gerard DeRose',
     author_email='jderose@novacut.com',
     license='LGPLv3+',
+    platforms=['POSIX'],
     packages=[
         'dbase32',
         'dbase32.tests',
