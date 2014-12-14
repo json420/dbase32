@@ -38,6 +38,18 @@ Traceback (most recent call last):
   ...
 ValueError: invalid Dbase32: '../very/naughty/'
 
+Generating Dbase32 encoded random IDs:
+
+>>> from dbase32 import random_id, time_id
+>>> random_id()
+'FOLQCPOFDVADYMVGQDI49Y7F'
+>>> random_id()
+'IFL63RNSQ9NN5ANMUQD6BQSJ'
+>>> time_id()
+'DL9J76KCEED9MHAN7SW5HYJH'
+>>> time_id()
+'DL9J77ILUDK3A6VGX9BN9TWT'
+
 
 Dbase32 resources
 -----------------
