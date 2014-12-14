@@ -42,22 +42,22 @@ from os import urandom
 from base64 import b64encode, b64decode
 from dbase32 import db32dec, db32enc, isdb32, check_db32, random_id, time_id
 
-text_db32 = {!r}
-data = dbase32.db32dec(text_db32)
+text = {!r}
+data = dbase32.db32dec(text)
 text_b64 = base64.b64encode(data)
-not_db32 = text_db32[:-1] + 'Z'
+not_db32 = text[:-1] + 'Z'
 
 assert base64.b64decode(text_b64) == data
-assert dbase32.db32dec(text_db32) == data
+assert dbase32.db32dec(text) == data
 
-assert dbase32.isdb32(text_db32) is True
+assert dbase32.isdb32(text) is True
 assert dbase32.isdb32(not_db32) is False
 """
 
 
 def run_benchmark(numbytes=30):
-    text_db32 = dbase32.random_id(numbytes)
-    setup = SETUP.format(text_db32)
+    text = dbase32.random_id(numbytes)
+    setup = SETUP.format(text)
 
     def run(statement, k=1000):
         count = k * 1000
@@ -82,11 +82,11 @@ def run_benchmark(numbytes=30):
 
     yield 'Decodes/second compared to base64.b64decode():'
     yield run('b64decode(text_b64)')
-    yield run('db32dec(text_db32)')
+    yield run('db32dec(text)')
 
     yield 'Validations/second:'
-    yield run('isdb32(text_db32)')
-    yield run('check_db32(text_db32)')
+    yield run('isdb32(text)')
+    yield run('check_db32(text)')
 
     yield 'Random IDs/second compared to os.urandom():'
     yield run('urandom(15)', 200)
