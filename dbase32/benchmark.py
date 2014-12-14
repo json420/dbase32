@@ -36,26 +36,22 @@ import dbase32
 SETUP = """
 import os
 import base64
-from dbase32 import _dbase32, _dbase32py
+import dbase32
+
+from os import urandom
+from base64 import b64encode, b64decode
+from dbase32 import db32dec, db32enc, isdb32, check_db32, random_id, time_id
 
 text_db32 = {!r}
-data = _dbase32.db32dec(text_db32)
+data = dbase32.db32dec(text_db32)
 text_b64 = base64.b64encode(data)
 not_db32 = text_db32[:-1] + 'Z'
 
 assert base64.b64decode(text_b64) == data
-assert _dbase32.db32dec(text_db32) == data
+assert dbase32.db32dec(text_db32) == data
 
-assert _dbase32py.isdb32(text_db32) is True
-assert _dbase32.isdb32(text_db32) is True
-assert _dbase32py.isdb32(not_db32) is False
-assert _dbase32.isdb32(not_db32) is False
-
-def timing_test(text):
-    try:
-        _dbase32.check_db32(text)
-    except ValueError:
-        pass
+assert dbase32.isdb32(text_db32) is True
+assert dbase32.isdb32(not_db32) is False
 """
 
 
@@ -63,7 +59,7 @@ def run_benchmark(numbytes=30):
     text_db32 = dbase32.random_id(numbytes)
     setup = SETUP.format(text_db32)
 
-    def run(statement, k=750):
+    def run(statement, k=1000):
         count = k * 1000
         t = timeit.Timer(statement, setup)
         elapsed = t.timeit(count)
@@ -80,33 +76,22 @@ def run_benchmark(numbytes=30):
     )
     yield 'data size: {} bytes'.format(numbytes)
 
-    yield 'Encodes/second:'
-    yield run('base64.b64encode(data)')
-    yield run('_dbase32.db32enc(data)')
-    yield run('_dbase32py.db32enc(data)', 25)
+    yield 'Encodes/second compared to base64.b64encode():'
+    yield run('b64encode(data)')
+    yield run('db32enc(data)')
 
-    yield 'Decodes/second:'
-    yield run('base64.b64decode(text_b64)')
-    yield run('_dbase32.db32dec(text_db32)')
-    yield run('_dbase32py.db32dec(text_db32)', 25)
+    yield 'Decodes/second compared to base64.b64decode():'
+    yield run('b64decode(text_b64)')
+    yield run('db32dec(text_db32)')
 
     yield 'Validations/second:'
-    yield run('_dbase32.isdb32(text_db32)')
-    yield run('_dbase32py.isdb32(text_db32)', 100)
-    yield run('_dbase32.check_db32(text_db32)')
-    yield run('_dbase32py.check_db32(text_db32)', 100)
+    yield run('isdb32(text_db32)')
+    yield run('check_db32(text_db32)')
 
-    yield 'Random IDs/second:'
-    yield run('os.urandom(15)', 100)
-    yield run('_dbase32.random_id(15)', 100)
-    yield run('_dbase32.time_id()', 100)
-
-    yield 'Timing attack test:'
-    for index in (0, 8, 16):
-        letters = ['A' for i in range(24)]
-        letters[index] = 'a'
-        text = ''.join(letters)
-        yield run('timing_test({!r})'.format(text))
+    yield 'Random IDs/second compared to os.urandom():'
+    yield run('urandom(15)', 200)
+    yield run('random_id(15)', 200)
+    yield run('time_id()', 200)
 
 
 if __name__ == '__main__':
