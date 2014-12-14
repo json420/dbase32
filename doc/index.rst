@@ -40,7 +40,7 @@ available for `Ubuntu`_ in the `Novacut Stable Releases PPA`_ and the
 If you have questions or need help getting started with Dbase32, please stop
 by the `#novacut`_ IRC channel on freenode.
 
-Dbase32 is licensed `LGPLv3+`_, and requires `Python 3.3`_ or newer.
+Dbase32 is licensed `LGPLv3+`_ and requires `Python 3.3`_ or newer.
 
 Contents:
 
