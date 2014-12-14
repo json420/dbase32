@@ -43,7 +43,7 @@ static const uint8_t DB32_FORWARD[32] __attribute__ ((aligned (32))) \
 /* 
  * DB32_REVERSE: table for decoding and validating.
  *
- * Used by `dbase32_decode()` and `dbase32_validate()`
+ * Used by `dbase32_decode()` and `dbase32_validate()`.
  *
  * To mitigate timing attacks when decoding or validating a *valid* Dbase32 ID,
  * this table is rotated to the left by 42 bytes.

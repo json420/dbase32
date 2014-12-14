@@ -33,7 +33,7 @@ Validation:
 >>> from dbase32 import isdb32, check_db32
 >>> isdb32('../very/naughty/')
 False
->>> check_db32('../very/naughty/')  # doctest: -IGNORE_EXCEPTION_DETAIL
+>>> check_db32('../very/naughty/')
 Traceback (most recent call last):
   ...
 ValueError: invalid Dbase32: '../very/naughty/'
