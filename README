@@ -38,17 +38,13 @@ Traceback (most recent call last):
   ...
 ValueError: invalid Dbase32: '../very/naughty/'
 
-Generating Dbase32 encoded random IDs:
+Generating 120-bit Dbase32-encoded random IDs:
 
->>> from dbase32 import random_id, time_id
+>>> from dbase32 import random_id
 >>> random_id()
 'FOLQCPOFDVADYMVGQDI49Y7F'
 >>> random_id()
 'IFL63RNSQ9NN5ANMUQD6BQSJ'
->>> time_id()
-'DL9J76KCEED9MHAN7SW5HYJH'
->>> time_id()
-'DL9J77ILUDK3A6VGX9BN9TWT'
 
 
 Dbase32 resources
@@ -72,7 +68,7 @@ by the `#novacut`_ IRC channel on freenode.
 
 
 .. _`RFC-3548 Base32`: https://tools.ietf.org/html/rfc4648
-.. _`dbase32 package`: http://docs.novacut.com/dbase32/index.html
+.. _`dbase32 package`: http://docs.novacut.com/dbase32/dbase32.html
 .. _`C implementation`: http://bazaar.launchpad.net/~dmedia/dbase32/trunk/view/head:/dbase32/_dbase32.c
 .. _`LGPLv3+`: https://www.gnu.org/licenses/lgpl-3.0.html
 .. _`Python 3.3`: https://docs.python.org/3.3/
