@@ -1,5 +1,5 @@
-dbase32 (1.4.0~pre0) utopic; urgency=low
+dbase32 (1.4.0) trusty; urgency=low
 
   * Upstream pre-release
 
- -- Jason Gerard DeRose <jderose@novacut.com>  Sun, 26 Oct 2014 20:36:07 -0600
+ -- Jason Gerard DeRose <jderose@novacut.com>  Sat, 13 Dec 2014 17:39:05 -0700

@@ -2,8 +2,10 @@ Changelog
 =========
 
 
-1.4 (unreleased)
-----------------
+1.4 (December 2014)
+-------------------
+
+`Download Dbase32 1.4`_
 
 Changes:
 
@@ -11,17 +13,42 @@ Changes:
         documentation examples that raise exceptions, plus fix several such
         examples that still used the exception messages from Dbase32 v1.1.
 
-    *   Add new :attr:`dbase32.using_c_extension` attribute that 3rd party
-        software can use in their unit tests and/or runtime initialization to
-        verify that the Dbase32 `C extension`_ is being used.
-
     *   :attr:`dbase32.DB32ALPHABET`, :attr:`dbase32.MAX_BIN_LEN`, and
         :attr:`dbase32.MAX_TXT_LEN` are now imported from the specific backend
         implementation being used (rather than being separately defined in
-        :mod:`dbase32`).
+        ``dbase32/__init__.py``).
 
-    *   Build ``dbase32._dbase32`` C extension with ``'-std=gnu11'`` as this
-        will soon be the GCC default.
+    *   Add new :attr:`dbase32.using_c_extension` attribute that 3rd party
+        software can use in their unit tests and/or runtime initialization to
+        verify that the Dbase32 C extension is being used.
+
+    *   The `dbase32._dbase32.c`_ internal API functions now use the same
+        ``(buf, len)`` argument ordering as standard C library functions like
+        ``memmem()``, etc::
+
+            static uint8_t
+            dbase32_encode(const uint8_t *bin_buf, const size_t bin_len,
+                                 uint8_t *txt_buf, const size_t txt_len)
+
+            static uint8_t
+            dbase32_decode(const uint8_t *txt_buf, const size_t txt_len,
+                                 uint8_t *bin_buf, const size_t bin_len)
+
+            static uint8_t
+            dbase32_validate(const uint8_t *txt_buf, const size_t txt_len)
+
+        (Previously ``(len, buf)`` argument ordering was used.)
+
+    *   The above internal C API functions are no longer declared as ``inline``
+        because it provides almost no measurable performance improvement, plus
+        inlining will carry a larger code-size penalty when more public Dbase32
+        API is added in the future (ie., when there are more consumers of these
+        internal API functions).
+
+    *   Build the C extension with ``'-std=gnu11'`` as this will soon be the GCC
+        default.
+
+    *   Sundry fixes and improvements in documentation and comments.
 
 
 
@@ -50,14 +77,21 @@ Security fixes:
         is seemingly not exploitable when applications directly Dbase32-encode
         secret data, but this certainly could be exploited when attacker
         controlled input interacts with secret data such that when the secret is
-        known, a valid Dbase32 ID should be produced; for example, this is an
-        exploitable pattern that should be avoided::
+        known, a valid Dbase32 ID should be produced.
 
-            # Don't do this!  isdb32() timing can leak information about secret!
-            if isdb32(somehash(secret + attacker_controlled_input)):
+        For example, this is an exploitable pattern that should be avoided::
+
+            # Don't do this!  Cache hit/miss will leak information about secret!
+            if isdb32(standard_xor(secret, attacker_controlled_input)):
                 print('Authorized')
             else:
                 print('Rejected')
+
+        Although the above example is rather contrived, it still demonstrates
+        how decoding and validating with Dbase32, if done carelessly, can leak
+        exploitable timing information that could allow an attacker to
+        incrementally guess a secret, thereby dramatically reducing the
+        effective search space of said secret.
 
         For more details, please see :doc:`security`.
 
@@ -151,6 +185,7 @@ Changes:
 
 
 
+.. _`Download Dbase32 1.4`: https://launchpad.net/dbase32/+milestone/1.4
 .. _`Download Dbase32 1.3`: https://launchpad.net/dbase32/+milestone/1.3
 .. _`Download Dbase32 1.2`: https://launchpad.net/dbase32/+milestone/1.2
 .. _`Download Dbase32 1.1`: https://launchpad.net/dbase32/+milestone/1.1
@@ -160,4 +195,4 @@ Changes:
 .. _`lp:1359828`: https://bugs.launchpad.net/dbase32/+bug/1359828
 .. _`Pyflakes`: https://launchpad.net/pyflakes
 .. _`Sphinx`: http://sphinx-doc.org/
-.. _`C extension`: http://bazaar.launchpad.net/~dmedia/dbase32/trunk/view/head:/dbase32/_dbase32.c
+.. _`dbase32._dbase32.c`: http://bazaar.launchpad.net/~dmedia/dbase32/trunk/view/head:/dbase32/_dbase32.c
