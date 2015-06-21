@@ -3,10 +3,11 @@ Section: python
 Priority: optional
 Maintainer: Jason Gerard DeRose <jderose@novacut.com>
 Build-Depends: debhelper (>= 9),
+    dh-python,
     python3-all-dev (>= 3.4~rc1),
     python3-sphinx,
     pyflakes,
-Standards-Version: 3.9.5
+Standards-Version: 3.9.6
 X-Python3-Version: >= 3.4
 Homepage: https://launchpad.net/dbase32
 
