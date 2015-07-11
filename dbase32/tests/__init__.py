@@ -395,7 +395,7 @@ class TestFunctions(TestCase):
         # Python >= 3.5 uses different buffer-related TypeError messages:
         if sys.version_info >= (3, 5):
             error1 = 'a bytes-like object is required, not {!r}'
-            error2 = 'must be read-only pinned buffer, not bytearray'
+            error2 = 'must be read-only bytes-like object, not bytearray'
         else:
             error1 = '{!r} does not support the buffer interface'
             error2 = 'must be read-only pinned buffer, not bytearray'
