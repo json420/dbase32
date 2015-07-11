@@ -26,6 +26,7 @@ Unit tests for `dbase32._dbase32py` module.
 
 from unittest import TestCase
 from collections import Counter
+import sys
 
 from dbase32 import _dbase32py, gen
 
@@ -124,26 +125,25 @@ class TestConstants(TestCase):
 
 class TestFunctions(TestCase):
     def test_text_to_bytes(self):
+        # Python >= 3.5 uses different buffer-related TypeError messages:
+        if sys.version_info >= (3, 5):
+            error1 = 'a bytes-like object is required, not {!r}'
+            error2 = 'must be read-only bytes-like object, not bytearray'
+        else:
+            error1 = '{!r} does not support the buffer interface'
+            error2 = 'must be read-only pinned buffer, not bytearray'
+
         with self.assertRaises(TypeError) as cm:
             _dbase32py._text_to_bytes(17)
-        self.assertEqual(
-            str(cm.exception), 
-            "'int' does not support the buffer interface"
-        )
+        self.assertEqual(str(cm.exception), error1.format('int'))
 
         with self.assertRaises(TypeError) as cm:
             _dbase32py._text_to_bytes(18.5)
-        self.assertEqual(
-            str(cm.exception), 
-            "'float' does not support the buffer interface"
-        )
+        self.assertEqual(str(cm.exception), error1.format('float'))
 
         with self.assertRaises(TypeError) as cm:
             _dbase32py._text_to_bytes(bytearray(b'3399AAYY'))
-        self.assertEqual(
-            str(cm.exception), 
-            'must be read-only pinned buffer, not bytearray'
-        )
+        self.assertEqual(str(cm.exception), error2)
 
         self.assertEqual(_dbase32py._text_to_bytes('3399AAYY'), b'3399AAYY')
         self.assertEqual(_dbase32py._text_to_bytes(b'3399AAYY'), b'3399AAYY')
