@@ -354,16 +354,22 @@ class TestFunctions(TestCase):
             'YXWVUTSRQPONMLKJIHGFEDCBA9876543'
         )
 
+        # Python >= 3.5 uses different buffer-related TypeError messages:
+        if sys.version_info >= (3, 5):
+            error = 'a bytes-like object is required, not {!r}'
+        else:
+            error = '{!r} does not support the buffer interface'
+
         # Test with wrong type:
         good = b'Bytes'
         self.assertEqual(db32enc(good), 'BCVQBSEM')
-        bad = good.decode('utf-8')
-        with self.assertRaises(TypeError) as cm:
-            db32enc(bad)
-        self.assertEqual(
-            str(cm.exception),
-            "'str' does not support the buffer interface"
-        )
+        for bad in [good.decode(), 17, 18.5]:
+            with self.assertRaises(TypeError) as cm:
+                db32enc(bad)
+            self.assertEqual(
+                str(cm.exception),
+                error.format(type(bad).__name__)
+            )
 
     def test_db32enc_p(self):
         """
