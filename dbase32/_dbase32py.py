@@ -28,6 +28,7 @@ from os import urandom
 import time
 import sys
 
+
 DB32ALPHABET = '3456789ABCDEFGHIJKLMNOPQRSTUVWXY'
 MAX_BIN_LEN = 60  # 480 bits
 MAX_TXT_LEN = 96
