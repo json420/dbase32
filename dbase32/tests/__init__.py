@@ -396,7 +396,7 @@ class TestFunctions(TestCase):
     def check_text_type(self, func):
         """
         Common TypeError tests for `db32dec()`, `check_db32()`, and `isdb32()`.
-        """
+        """         
 
         # Python >= 3.5 uses different buffer-related TypeError messages:
         if sys.version_info >= (3, 5):
