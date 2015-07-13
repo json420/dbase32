@@ -120,6 +120,33 @@ class Benchmark(Command):
             print(line)
 
 
+ext_kw = {
+    'sources': ['dbase32/_dbase32.c'],
+    'extra_compile_args': [
+        '-std=gnu11',  # Default in gcc 5.0
+        '-Werror',  # Make all warnings into errors
+        '-pedantic-errors',
+        '-Wsign-compare',
+        '-Wsign-conversion',
+    ],
+}
+if os.environ.get('DBASE32_INSTRUMENT_BUILD') == 'true':
+    ext_kw['extra_compile_args'].append('-fsanitize=address')
+    ext_kw['libraries'] = ['asan']
+    if platform.dist()[1] >= '15.04':
+        ext_kw['extra_compile_args'].extend([
+            '-fsanitize=undefined',
+            '-fsanitize=shift',
+            '-fsanitize=integer-divide-by-zero',
+            '-fsanitize=unreachable',
+            '-fsanitize=vla-bound',
+            '-fsanitize=null',
+            '-fsanitize=return',
+            '-fsanitize=signed-integer-overflow',
+        ])
+        ext_kw['libraries'].append('ubsan')
+
+
 setup(
     name='dbase32',
     description='A base32 encoding with a sorted-order alphabet',
@@ -135,13 +162,7 @@ setup(
         'dbase32.tests',
     ],
     ext_modules=[
-        Extension('dbase32._dbase32',
-            sources=['dbase32/_dbase32.c'],
-            extra_compile_args=[
-                '-Werror',  # Make all warnings into errors
-                '-std=gnu11',  # Soon to be gcc default
-            ],
-        ),
+        Extension('dbase32._dbase32', **ext_kw),
     ],
     cmdclass={
         'test': Test,
