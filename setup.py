@@ -32,6 +32,7 @@ if sys.version_info < (3, 3):
 
 import os
 from os import path
+import platform
 import subprocess
 from distutils.core import setup, Extension
 from distutils.cmd import Command
