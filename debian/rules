@@ -18,8 +18,11 @@ override_dh_auto_build:
 
 override_dh_auto_test:
 	set -ex; for python in $(shell py3versions -r); do \
-		$$python setup.py test --skip-sphinx; \
-		$$python setup.py build_ext -i; \
+		$$python -c "import dbase32; assert dbase32.using_c_extension is False"; \
+		$$python setup.py test; \
+		DBASE32_INSTRUMENT_BUILD=true scan-build --status-bugs -analyze-headers \
+			$$python setup.py build_ext -i; \
+		$$python -c "import dbase32; assert dbase32.using_c_extension is True"; \
 		$$python setup.py test; \
 		$$python setup.py benchmark; \
 	done

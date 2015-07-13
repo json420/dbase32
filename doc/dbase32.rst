@@ -280,7 +280,7 @@ The :mod:`dbase32` module defines several handy constants:
     A flag indicating whether the Dbase32 `C implementation`_ is being used.
 
     >>> import dbase32
-    >>> dbase32.using_c_extension
+    >>> dbase32.using_c_extension  # doctest: +SKIP
     True
 
     This will be ``True`` when the ``dbase32._dbase32`` C extension is being

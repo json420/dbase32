@@ -343,7 +343,7 @@ dbase32_db32enc(PyObject *self, PyObject *args)
 
     /* Allocate destination buffer */
     txt_len = bin_len * 8 / 5;
-    ret = PyUnicode_New(txt_len, DB32_END);
+    ret = PyUnicode_New((ssize_t)txt_len, DB32_END);
     if (ret == NULL) {
         return NULL;
     }
@@ -392,7 +392,7 @@ dbase32_db32dec(PyObject *self, PyObject *args)
 
     /* Allocate destination buffer */
     bin_len = txt_len * 5 / 8;
-    ret = PyBytes_FromStringAndSize(NULL, bin_len);
+    ret = PyBytes_FromStringAndSize(NULL, (ssize_t)bin_len);
     if (ret == NULL) {
         return NULL;
     }
@@ -537,14 +537,14 @@ dbase32_random_id(PyObject *self, PyObject *args, PyObject *kw)
     }
 
     /* Get random bytes from /dev/urandom */
-    if (_PyOS_URandom(bin_buf, bin_len) != 0) {
+    if (_PyOS_URandom(bin_buf, (ssize_t)bin_len) != 0) {
         free(bin_buf);
         return NULL;
     }
 
     /* Allocate destination buffer */
     txt_len = bin_len * 8 / 5;
-    ret = PyUnicode_New(txt_len, DB32_END);
+    ret = PyUnicode_New((ssize_t)txt_len, DB32_END);
     if (ret == NULL ) {
         free(bin_buf);
         return NULL;
