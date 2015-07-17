@@ -354,16 +354,22 @@ class TestFunctions(TestCase):
             'YXWVUTSRQPONMLKJIHGFEDCBA9876543'
         )
 
+        # Python >= 3.5 uses different buffer-related TypeError messages:
+        if sys.version_info >= (3, 5):
+            error = 'a bytes-like object is required, not {!r}'
+        else:
+            error = '{!r} does not support the buffer interface'
+
         # Test with wrong type:
         good = b'Bytes'
         self.assertEqual(db32enc(good), 'BCVQBSEM')
-        bad = good.decode('utf-8')
-        with self.assertRaises(TypeError) as cm:
-            db32enc(bad)
-        self.assertEqual(
-            str(cm.exception),
-            "'str' does not support the buffer interface"
-        )
+        for bad in [good.decode(), 17, 18.5]:
+            with self.assertRaises(TypeError) as cm:
+                db32enc(bad)
+            self.assertEqual(
+                str(cm.exception),
+                error.format(type(bad).__name__)
+            )
 
     def test_db32enc_p(self):
         """
@@ -391,24 +397,27 @@ class TestFunctions(TestCase):
         """
         Common TypeError tests for `db32dec()`, `check_db32()`, and `isdb32()`.
         """         
+
+        # Python >= 3.5 uses different buffer-related TypeError messages:
+        if sys.version_info >= (3, 5):
+            error1 = 'a bytes-like object is required, not {!r}'
+            error2 = 'must be read-only bytes-like object, not bytearray'
+        else:
+            error1 = '{!r} does not support the buffer interface'
+            error2 = 'must be read-only pinned buffer, not bytearray'
+
+        # Check that appropriate TypeError is raised:
         with self.assertRaises(TypeError) as cm:
             func(17)
-        self.assertEqual(
-            str(cm.exception), 
-            "'int' does not support the buffer interface"
-        )
+        self.assertEqual(str(cm.exception), error1.format('int'))
         with self.assertRaises(TypeError) as cm:
             func(18.5)
-        self.assertEqual(
-            str(cm.exception), 
-            "'float' does not support the buffer interface"
-        )
+        self.assertEqual(str(cm.exception), error1.format('float'))
         with self.assertRaises(TypeError) as cm:
             func(bytearray(b'3399AAYY'))
-        self.assertEqual(
-            str(cm.exception), 
-            'must be read-only pinned buffer, not bytearray'
-        )
+        self.assertEqual(str(cm.exception), error2)
+
+        # Sanity check to make sure both str and bytes can be decoded/validated:
         func('3399AAYY')
         func(b'3399AAYY')
 
