@@ -1,5 +1,5 @@
 /* dbase32: base32-encoding with a sorted-order alphabet (for databases)
- * Copyright (C) 2013 Novacut Inc
+ * Copyright (C) 2013-2015 Novacut Inc
  *
  * This file is part of `dbase32`.
  *

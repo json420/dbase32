@@ -9,7 +9,7 @@ import dbase32
 
 # Project info
 project = 'Dbase32'
-copyright = '2013, Novacut Inc'
+copyright = '2013-2015, Novacut Inc'
 version = dbase32.__version__
 release = version
 
