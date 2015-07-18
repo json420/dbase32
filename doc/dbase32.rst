@@ -309,7 +309,7 @@ The :mod:`dbase32` module defines several handy constants:
     order:
 
     >>> dbase32.DB32ALPHABET == ''.join(sorted(set(dbase32.DB32ALPHABET)))
-    True 
+    True
 
 
 .. data:: MAX_BIN_LEN

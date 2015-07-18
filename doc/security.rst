@@ -131,7 +131,7 @@ Using Dbase32 IDs in filenames, URLs
 
 Dbase32 has a nice security property in that a well-formed Dbase32 ID *should*
 be safe to use directly in filenames and URLs, without any special escaping or
-extra validation. 
+extra validation.
 
 .. warning::
 
@@ -171,3 +171,4 @@ performant, so don't let performance concerns stop you from using them!
 .. _`Python implementation`: http://bazaar.launchpad.net/~dmedia/dbase32/trunk/view/head:/dbase32/_dbase32py.py
 .. _`file a bug against Dbase32`: https://bugs.launchpad.net/dbase32
 .. _`Dmedia FileStore`: https://launchpad.net/filestore
+

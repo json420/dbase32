@@ -62,7 +62,7 @@ def string_iter(index, count, a, b, c):
         elif i == index:
             yield b
         else:
-            yield c 
+            yield c
 
 
 def make_string(index, count, a, b, c=None):
@@ -305,7 +305,7 @@ class TestFunctions(TestCase):
     def check_db32enc(self, db32enc):
         """
         Encoder tests both the Python and the C implementations must pass.
-        """ 
+        """
         # Test when len(data) is too small:
         with self.assertRaises(ValueError) as cm:
             db32enc(b'')
@@ -396,7 +396,7 @@ class TestFunctions(TestCase):
     def check_text_type(self, func):
         """
         Common TypeError tests for `db32dec()`, `check_db32()`, and `isdb32()`.
-        """         
+        """
 
         # Python >= 3.5 uses different buffer-related TypeError messages:
         if sys.version_info >= (3, 5):
@@ -424,7 +424,7 @@ class TestFunctions(TestCase):
     def check_text_value(self, func):
         """
         Common ValueError tests for `db32dec()` and `check_db32()`.
-        """  
+        """
         # Test when len(text) is too small:
         with self.assertRaises(ValueError) as cm:
             func('')
@@ -534,7 +534,7 @@ class TestFunctions(TestCase):
         self.assertEqual(len(bad_b), 24)
         for value in [bad_s, bad_b]:
             refcount = sys.getrefcount(value)
-            with self.assertRaises(ValueError) as cm:        
+            with self.assertRaises(ValueError) as cm:
                 func(value)
             self.assertEqual(str(cm.exception),
                 'invalid Dbase32: {!r}'.format(value)
@@ -546,7 +546,7 @@ class TestFunctions(TestCase):
         self.assertEqual(len(bad_b), 10)
         for value in [bad_s, bad_b]:
             refcount = sys.getrefcount(value)
-            with self.assertRaises(ValueError) as cm:        
+            with self.assertRaises(ValueError) as cm:
                 func(value)
             self.assertEqual(
                 str(cm.exception),
@@ -559,7 +559,7 @@ class TestFunctions(TestCase):
         self.assertEqual(len(bad_b), 8)
         for value in [bad_s, bad_b]:
             refcount = sys.getrefcount(value)
-            with self.assertRaises(ValueError) as cm:        
+            with self.assertRaises(ValueError) as cm:
                 func(value)
             self.assertEqual(str(cm.exception),
                 'invalid Dbase32: {!r}'.format(value)
@@ -737,13 +737,13 @@ class TestFunctions(TestCase):
         self.check_check_db32(_dbase32.check_db32)
 
     def check_random_id(self, random_id):
-        with self.assertRaises(TypeError) as cm:        
+        with self.assertRaises(TypeError) as cm:
             random_id(15.0)
         self.assertEqual(
             str(cm.exception),
             'integer argument expected, got float'
         )
-        with self.assertRaises(TypeError) as cm:        
+        with self.assertRaises(TypeError) as cm:
             random_id('15')
         self.assertEqual(
             str(cm.exception),
@@ -803,7 +803,7 @@ class TestFunctions(TestCase):
 
     def test_random_id_p(self):
         self.check_random_id(_dbase32py.random_id)
-        with self.assertRaises(TypeError) as cm:        
+        with self.assertRaises(TypeError) as cm:
             _dbase32py.random_id([])
         self.assertEqual(
             str(cm.exception),

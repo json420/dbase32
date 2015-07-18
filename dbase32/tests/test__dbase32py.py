@@ -193,3 +193,4 @@ class TestFunctions(TestCase):
 
         text = b'F' * 48
         self.assertIs(_dbase32py._check_length(text), text)
+

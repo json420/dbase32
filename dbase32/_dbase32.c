@@ -40,7 +40,7 @@ static const uint8_t DB32_FORWARD[32] __attribute__ ((aligned (32))) \
     = DB32ALPHABET;
 
 
-/* 
+/*
  * DB32_REVERSE: table for decoding and validating.
  *
  * Used by `dbase32_decode()` and `dbase32_validate()`.
@@ -52,7 +52,7 @@ static const uint8_t DB32_FORWARD[32] __attribute__ ((aligned (32))) \
  * which means that on CPUs with a 64-byte (or larger) cache line size, cache
  * hits and misses can't leak any information about the content of a *valid*
  * Dbase32 ID.
- * 
+ *
  * However, cache hits and misses can still leak information about the content
  * of an invalid ID, as the entire table spans four 64-byte cache lines.
  *
@@ -65,7 +65,7 @@ static const uint8_t DB32_FORWARD[32] __attribute__ ((aligned (32))) \
  * misses a bit more difficult to exploit in some scenarios.  With the 42 byte
  * left rotation, 16 valid entries will be in each 32-byte cache line:
  *
- *              3456789       ABCDEFGHI    JKLMNOPQRSTUVWXY                
+ *              3456789       ABCDEFGHI    JKLMNOPQRSTUVWXY
  *     --------------------------------    --------------------------------
  *     ^ 1st 32-byte cache line ^          ^ 2nd 32-byte cache line ^
  *
@@ -128,7 +128,7 @@ static const uint8_t DB32_REVERSE[256] __attribute__ ((aligned (64))) = {
 };
 
 
-/* 
+/*
  * dbase32_encode(): internal Dbase32 encoding function.
  *
  * Used by `db32enc()`, `random_id()`, and `time_id()`.
@@ -190,7 +190,7 @@ dbase32_encode(const uint8_t *bin_buf, const size_t bin_len,
     DB32_REVERSE[(uint8_t)(txt_buf[i] - 42)]
 
 
-/* 
+/*
  * dbase32_decode(): internal Dbase32 decoding function.
  *
  * Used by `db32dec()`.
@@ -258,7 +258,7 @@ dbase32_decode(const uint8_t *txt_buf, const size_t txt_len,
 }
 
 
-/* 
+/*
  * dbase32_validate(): internal Dbase32 validation function.
  *
  * Used by `isdb32()` and `check_db32()`.
@@ -630,9 +630,9 @@ static struct PyMethodDef dbase32_functions[] = {
     {"db32dec", dbase32_db32dec, METH_VARARGS, "db32dec(text)"},
     {"isdb32", dbase32_isdb32, METH_VARARGS, "isdb32(text)"},
     {"check_db32", dbase32_check_db32, METH_VARARGS, "check_db32(text)"},
-    {"random_id", (PyCFunction)dbase32_random_id, METH_VARARGS | METH_KEYWORDS, 
+    {"random_id", (PyCFunction)dbase32_random_id, METH_VARARGS | METH_KEYWORDS,
         "random_id(numbytes=15)"},
-    {"time_id", (PyCFunction)dbase32_time_id, METH_VARARGS | METH_KEYWORDS, 
+    {"time_id", (PyCFunction)dbase32_time_id, METH_VARARGS | METH_KEYWORDS,
         "time_id(timestamp=-1)"},
     {NULL, NULL, 0, NULL}
 };

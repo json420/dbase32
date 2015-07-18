@@ -54,7 +54,7 @@ def string_iter(index, count, a, b, c):
         elif i == index:
             yield b
         else:
-            yield c 
+            yield c
 
 
 def make_string(index, count, a, b, c=None):
@@ -132,7 +132,7 @@ class TestFunctions(TestCase):
     def check_text_type(self, func):
         """
         Common TypeError tests for `b32dec()`, `check_b32()`, and `isb32()`.
-        """         
+        """
 
         # Python >= 3.5 uses different buffer-related TypeError messages:
         if sys.version_info >= (3, 5):
@@ -160,7 +160,7 @@ class TestFunctions(TestCase):
     def check_text_value(self, func):
         """
         Common ValueError tests for `b32dec()` and `check_b32()`.
-        """  
+        """
         # Test when len(text) is too small:
         with self.assertRaises(ValueError) as cm:
             func('')
@@ -259,7 +259,7 @@ class TestFunctions(TestCase):
         self.assertEqual(len(bad_s), 8)
         self.assertEqual(len(bad_b), 24)
         for value in [bad_s, bad_b]:
-            with self.assertRaises(ValueError) as cm:        
+            with self.assertRaises(ValueError) as cm:
                 func(value)
             self.assertEqual(str(cm.exception),
                 'invalid Dbase32: {!r}'.format(value)
@@ -269,7 +269,7 @@ class TestFunctions(TestCase):
         self.assertEqual(len(bad_s), 8)
         self.assertEqual(len(bad_b), 10)
         for value in [bad_s, bad_b]:
-            with self.assertRaises(ValueError) as cm:        
+            with self.assertRaises(ValueError) as cm:
                 func(value)
             self.assertEqual(
                 str(cm.exception),
@@ -280,7 +280,7 @@ class TestFunctions(TestCase):
         self.assertEqual(len(bad_s), 6)
         self.assertEqual(len(bad_b), 8)
         for value in [bad_s, bad_b]:
-            with self.assertRaises(ValueError) as cm:        
+            with self.assertRaises(ValueError) as cm:
                 func(value)
             self.assertEqual(str(cm.exception),
                 'invalid Dbase32: {!r}'.format(value)
@@ -413,19 +413,19 @@ class TestFunctions(TestCase):
                 self.assertIs(rfc3548.isb32(bad_b), False)
 
     def test_random_id(self):
-        with self.assertRaises(TypeError) as cm:        
+        with self.assertRaises(TypeError) as cm:
             rfc3548.random_id(15.0)
         self.assertEqual(
             str(cm.exception),
             'integer argument expected, got float'
         )
-        with self.assertRaises(TypeError) as cm:        
+        with self.assertRaises(TypeError) as cm:
             rfc3548.random_id('15')
         self.assertEqual(
             str(cm.exception),
             "'str' object cannot be interpreted as an integer"
         )
-        with self.assertRaises(TypeError) as cm:        
+        with self.assertRaises(TypeError) as cm:
             rfc3548.random_id([])
         self.assertEqual(
             str(cm.exception),

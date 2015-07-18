@@ -17,7 +17,7 @@ Or the daily PPA::
 
     sudo apt-add-repository ppa:novacut/daily
     sudo apt-get update
-    
+
 And then install the ``python3-dbase32`` package::
 
     sudo apt-get install python3-dbase32
