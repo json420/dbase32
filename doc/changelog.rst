@@ -2,6 +2,42 @@ Changelog
 =========
 
 
+1.5 (unreleased)
+----------------
+
+Changes:
+
+    *   `lp:1473688`_ --- Update unit tests for Python 3.5 compatibility ---
+        Python 3.5 makes some changes in the exact ``TypeError`` messages used
+        when it comes to the Python Buffer Protocol.  The unit tests now use the
+        newer ``TypeError`` format for Python >= 3.5, otherwise use the older
+        format.  A small update was also made in the pure-Python reference
+        implementation as it emulates the ``TypeError`` behavior of the C
+        implementation (and both are subject to the same unit tests).
+
+    *   ``dbase32/benchmark.py`` now imports the functions in question from
+        their containing module, eliminating the overhead of module attribute
+        access.  As such, the benchmark is now more representative.  Also, the
+        pure-Python Dbase32 functions have been dropped from the benchmark, as
+        have the timing attack tests.
+
+    *   ``DBASE32_INSTRUMENT_BUILD=true ./setup.py build_ext`` will now
+        instrument the C extension with asan, ubsan.
+
+    *   Build C extensions with the following extra compile args:
+
+        *   -pedantic-errors
+        *   -Wsign-compare
+        *   -Wsign-conversion
+
+        Some small changes were also made in the C extension as needed for
+        ``-Wsign-conversion``.
+
+    *   A number of small fixes where made in the comments, doc-strings, and
+        documentation.
+
+
+
 1.4 (December 2014)
 -------------------
 
@@ -193,6 +229,7 @@ Changes:
 
 .. _`lp:1359862`: https://bugs.launchpad.net/dbase32/+bug/1359862
 .. _`lp:1359828`: https://bugs.launchpad.net/dbase32/+bug/1359828
+.. _`lp:1473688`: https://bugs.launchpad.net/dbase32/+bug/1473688
 .. _`Pyflakes`: https://launchpad.net/pyflakes
 .. _`Sphinx`: http://sphinx-doc.org/
 .. _`dbase32._dbase32.c`: http://bazaar.launchpad.net/~dmedia/dbase32/trunk/view/head:/dbase32/_dbase32.c
