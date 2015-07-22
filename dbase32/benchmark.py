@@ -35,23 +35,21 @@ import dbase32
 
 SETUP = """
 import os
-import base64
-import dbase32
-
 from os import urandom
+
 from base64 import b64encode, b64decode
 from dbase32 import db32dec, db32enc, isdb32, check_db32, random_id, time_id
 
 text = {!r}
-data = dbase32.db32dec(text)
-text_b64 = base64.b64encode(data)
+data = db32dec(text)
+text_b64 = b64encode(data)
 not_db32 = text[:-1] + 'Z'
 
-assert base64.b64decode(text_b64) == data
-assert dbase32.db32dec(text) == data
+assert b64decode(text_b64) == data
+assert db32dec(text) == data
 
-assert dbase32.isdb32(text) is True
-assert dbase32.isdb32(not_db32) is False
+assert isdb32(text) is True
+assert isdb32(not_db32) is False
 """
 
 
