@@ -14,7 +14,7 @@ encoded data will match the sort-order of the binary data.
 The `dbase32 package`_ provides a high-performance `C implementation`_ of the
 encoding, plus a pure-Python fallback.
 
-Dbase32 is licensed `LGPLv3+`_ and requires `Python 3.3`_ or newer.
+Dbase32 is licensed `LGPLv3+`_ and requires `Python 3.4`_ or newer.
 
 
 Examples
@@ -71,7 +71,7 @@ by the `#novacut`_ IRC channel on freenode.
 .. _`dbase32 package`: http://docs.novacut.com/dbase32/dbase32.html
 .. _`C implementation`: http://bazaar.launchpad.net/~dmedia/dbase32/trunk/view/head:/dbase32/_dbase32.c
 .. _`LGPLv3+`: https://www.gnu.org/licenses/lgpl-3.0.html
-.. _`Python 3.3`: https://docs.python.org/3.3/
+.. _`Python 3.4`: https://docs.python.org/3.4/
 
 .. _`Documentation`: http://docs.novacut.com/dbase32/index.html
 .. _`Report a bug`: https://bugs.launchpad.net/dbase32

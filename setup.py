@@ -27,8 +27,8 @@ Install `dbase32`.
 """
 
 import sys
-if sys.version_info < (3, 3):
-    sys.exit('ERROR: dbase32 requires Python 3.3 or newer')
+if sys.version_info < (3, 4):
+    sys.exit('ERROR: dbase32 requires Python 3.4 or newer')
 
 import os
 from os import path
@@ -177,8 +177,8 @@ setup(
         'Operating System :: POSIX',
         'Operating System :: POSIX :: Linux',
         'Programming Language :: C',
-        'Programming Language :: Python :: 3.3',
         'Programming Language :: Python :: 3.4',
+        'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3 :: Only',
         'Programming Language :: Python :: Implementation :: CPython',
         'Topic :: Database',
