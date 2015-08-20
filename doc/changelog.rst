@@ -2,8 +2,8 @@ Changelog
 =========
 
 
-1.5 (unreleased)
-----------------
+1.5 (August 2015)
+-----------------
 
 `Download Dbase32 1.5`_
 
