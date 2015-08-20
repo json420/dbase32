@@ -38,8 +38,8 @@ Changes:
     *   A number of small fixes where made in the comments, doc-strings, and
         documentation.
 
-    *   Drop "official" support for Python 3.3 as Dbase32 hasn't been actively
-        tested under 3.3 for some time.
+    *   Drop support for Python 3.3 as Dbase32 hasn't been actively tested under
+        3.3 for some time.
 
 
 
