@@ -5,6 +5,8 @@ Changelog
 1.5 (unreleased)
 ----------------
 
+`Download Dbase32 1.5`_
+
 Changes:
 
     *   `lp:1473688`_ --- Update unit tests for Python 3.5 compatibility ---
@@ -35,6 +37,9 @@ Changes:
 
     *   A number of small fixes where made in the comments, doc-strings, and
         documentation.
+
+    *   Drop "official" support for Python 3.3 as Dbase32 hasn't been actively
+        tested under 3.3 for some time.
 
 
 
@@ -221,6 +226,7 @@ Changes:
 
 
 
+.. _`Download Dbase32 1.5`: https://launchpad.net/dbase32/+milestone/1.5
 .. _`Download Dbase32 1.4`: https://launchpad.net/dbase32/+milestone/1.4
 .. _`Download Dbase32 1.3`: https://launchpad.net/dbase32/+milestone/1.3
 .. _`Download Dbase32 1.2`: https://launchpad.net/dbase32/+milestone/1.2
