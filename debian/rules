@@ -16,12 +16,17 @@ override_dh_auto_build:
 	dh_auto_build
 	sphinx-build -EW -b html doc/ doc/_build/html/
 
+# FIXME: for now, build without DBASE32_INSTRUMENT_BUILD=true as on Wily it's
+# failing with this error:
+#     ASan runtime does not come first in initial library list; you should
+#     either link runtime to your application or manually preload it with 
+#     LD_PRELOAD.
 override_dh_auto_test:
 	set -ex; for python in $(shell py3versions -r); do \
 		$$python -c "import dbase32; assert dbase32.using_c_extension is False"; \
 		$$python setup.py test; \
 		$$python setup.py benchmark; \
-		DBASE32_INSTRUMENT_BUILD=true scan-build --status-bugs -analyze-headers \
+		scan-build --status-bugs -analyze-headers \
 			$$python setup.py build_ext -i; \
 		$$python -c "import dbase32; assert dbase32.using_c_extension is True"; \
 		$$python setup.py test; \
