@@ -1,5 +1,5 @@
-dbase32 (1.5.1~alpha) trusty; urgency=low
+dbase32 (1.6.0~alpha) xenial; urgency=low
 
   * Upstream pre-release
 
- -- Jason Gerard DeRose <jderose@novacut.com>  Sat, 13 Dec 2014 17:39:05 -0700
+ -- Jason Gerard DeRose <jderose@novacut.com>  Wed, 27 Jan 2016 16:51:12 -0700
