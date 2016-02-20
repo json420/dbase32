@@ -129,6 +129,23 @@ static const uint8_t DB32_REVERSE[256] __attribute__ ((aligned (64))) = {
 
 
 /*
+ * For correctness, we declare the three internal dbase32 C functions with
+ * "__attribute__ ((warn_unused_result))":
+ */
+static uint8_t
+dbase32_encode(const uint8_t *, const size_t, uint8_t *, const size_t)
+    __attribute__ ((warn_unused_result));
+
+static uint8_t
+dbase32_decode(const uint8_t *, const size_t, uint8_t *, const size_t)
+    __attribute__ ((warn_unused_result));
+
+static uint8_t
+dbase32_validate(const uint8_t *, const size_t)
+    __attribute__ ((warn_unused_result));
+
+
+/*
  * dbase32_encode(): internal Dbase32 encoding function.
  *
  * Used by `db32enc()`, `random_id()`, and `time_id()`.
