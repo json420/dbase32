@@ -43,7 +43,7 @@ static const uint8_t DB32_FORWARD[32] __attribute__ ((aligned (32))) \
 /*
  * DB32_REVERSE: table for decoding and validating.
  *
- * Used by `dbase32_decode()` and `dbase32_validate()`.
+ * Used by `_decode()` and `dbase32_validate()`.
  *
  * To mitigate timing attacks when decoding or validating a *valid* Dbase32 ID,
  * this table is rotated to the left by 42 bytes.
@@ -135,8 +135,7 @@ static const uint8_t DB32_REVERSE[256] __attribute__ ((aligned (64))) = {
 static uint8_t _encode(const uint8_t *, const size_t, uint8_t *, const size_t)
     __attribute__ ((warn_unused_result));
 
-static uint8_t
-dbase32_decode(const uint8_t *, const size_t, uint8_t *, const size_t)
+static uint8_t _decode(const uint8_t *, const size_t, uint8_t *, const size_t)
     __attribute__ ((warn_unused_result));
 
 static uint8_t
@@ -198,7 +197,7 @@ _encode(const uint8_t *bin_buf, const size_t bin_len,
 /*
  * ROTATE(): macro for lookup in the rotated `DB32_REVERSE` table.
  *
- * Used by `dbase32_decode()` and `dbase32_validate()`.
+ * Used by `_decode()` and `dbase32_validate()`.
  *
  * Note this macro assumes a `txt_buf` local function variable.
  */
@@ -207,7 +206,7 @@ _encode(const uint8_t *bin_buf, const size_t bin_len,
 
 
 /*
- * dbase32_decode(): internal Dbase32 decoding function.
+ * _decode(): internal Dbase32 decoding function.
  *
  * Used by `db32dec()`.
  *
@@ -216,8 +215,8 @@ _encode(const uint8_t *bin_buf, const size_t bin_len,
  * Any return value other than 0 or 224 should be treated as an internal error.
  */
 static uint8_t
-dbase32_decode(const uint8_t *txt_buf, const size_t txt_len,
-                     uint8_t *bin_buf, const size_t bin_len)
+_decode(const uint8_t *txt_buf, const size_t txt_len,
+              uint8_t *bin_buf, const size_t bin_len)
 {
     size_t block, count;
     uint8_t r;
@@ -414,8 +413,8 @@ dbase32_db32dec(PyObject *self, PyObject *args)
     }
     bin_buf = (uint8_t *)PyBytes_AS_STRING(ret);
 
-    /* dbase32_decode() returns 0 on success, 224 on invalid Dbase32 */
-    status = dbase32_decode(txt_buf, txt_len, bin_buf, bin_len);
+    /* _decode() returns 0 on success, 224 on invalid Dbase32 */
+    status = _decode(txt_buf, txt_len, bin_buf, bin_len);
     if (status == 224) {
         Py_CLEAR(ret);
         borrowed = PyTuple_GetItem(args, 0);
