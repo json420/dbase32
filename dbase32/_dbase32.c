@@ -43,7 +43,7 @@ static const uint8_t DB32_FORWARD[32] __attribute__ ((aligned (32))) \
 /*
  * DB32_REVERSE: table for decoding and validating.
  *
- * Used by `_decode()` and `dbase32_validate()`.
+ * Used by `_decode()` and `_validate()`.
  *
  * To mitigate timing attacks when decoding or validating a *valid* Dbase32 ID,
  * this table is rotated to the left by 42 bytes.
@@ -138,8 +138,7 @@ static uint8_t _encode(const uint8_t *, const size_t, uint8_t *, const size_t)
 static uint8_t _decode(const uint8_t *, const size_t, uint8_t *, const size_t)
     __attribute__ ((warn_unused_result));
 
-static uint8_t
-dbase32_validate(const uint8_t *, const size_t)
+static uint8_t _validate(const uint8_t *, const size_t)
     __attribute__ ((warn_unused_result));
 
 
@@ -197,7 +196,7 @@ _encode(const uint8_t *bin_buf, const size_t bin_len,
 /*
  * ROTATE(): macro for lookup in the rotated `DB32_REVERSE` table.
  *
- * Used by `_decode()` and `dbase32_validate()`.
+ * Used by `_decode()` and `_validate()`.
  *
  * Note this macro assumes a `txt_buf` local function variable.
  */
@@ -274,7 +273,7 @@ _decode(const uint8_t *txt_buf, const size_t txt_len,
 
 
 /*
- * dbase32_validate(): internal Dbase32 validation function.
+ * _validate(): internal Dbase32 validation function.
  *
  * Used by `isdb32()` and `check_db32()`.
  *
@@ -283,7 +282,7 @@ _decode(const uint8_t *txt_buf, const size_t txt_len,
  * Any return value other than 0 or 224 should be treated as an internal error.
  */
 static uint8_t
-dbase32_validate(const uint8_t *txt_buf, const size_t txt_len)
+_validate(const uint8_t *txt_buf, const size_t txt_len)
 {
     size_t block, count;
     uint8_t r;
@@ -450,8 +449,8 @@ dbase32_isdb32(PyObject *self, PyObject *args)
         Py_RETURN_FALSE;
     }
 
-    /* dbase32_validate() returns 0 on success, 224 on invalid Dbase32 */
-    status = dbase32_validate(txt_buf, txt_len);
+    /* _validate() returns 0 on success, 224 on invalid Dbase32 */
+    status = _validate(txt_buf, txt_len);
     if (status == 0) {
         Py_RETURN_TRUE;
     }
@@ -493,8 +492,8 @@ dbase32_check_db32(PyObject *self, PyObject *args)
         return NULL;
     }
 
-    /* dbase32_validate() returns 0 on success, 224 on invalid Dbase32 */
-    status = dbase32_validate(txt_buf, txt_len);
+    /* _validate() returns 0 on success, 224 on invalid Dbase32 */
+    status = _validate(txt_buf, txt_len);
     if (status == 0) {
         Py_RETURN_NONE;
     }
