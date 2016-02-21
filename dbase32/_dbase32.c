@@ -425,7 +425,8 @@ db32enc(PyObject *self, PyObject *args)
 
     /* `_encode()` returns 0 on success */
     if (_encode(bin_buf, bin_len, txt_buf, txt_len) != 0) {
-        Py_FatalError("internal error in `_dbase32.db32enc()`");
+        Py_FatalError("dbase32 internal error in db32enc()");
+        Py_CLEAR(ret);  /* Should not be reached */
     }
     return ret;
 }
@@ -502,7 +503,7 @@ isdb32(PyObject *self, PyObject *args)
     }
     else {
         /* Any status other than 0 or 224 means an internal error occurred */
-        Py_FatalError("internal error in `_dbase32.isdb32()`");
+        Py_FatalError("dbase32 internal error in isdb32()");
         return NULL;
     }
 }
@@ -597,7 +598,7 @@ random_id(PyObject *self, PyObject *args, PyObject *kw)
     free(bin_buf);
     if (status != 0) {
         /* Any status other than 0 means an internal error occurred */
-        Py_FatalError("internal error in `_dbase32.random_id()`");
+        Py_FatalError("dbase32 internal error in random_id()");
         Py_CLEAR(ret);  /* Should not be reached */
     }
     return ret;
@@ -658,7 +659,7 @@ time_id(PyObject *self, PyObject *args, PyObject *kw)
     free(bin_buf);
     if (status != 0) {
         /* Any status other than 0 means an internal error occurred */
-        Py_FatalError("internal error in `_dbase32.time_id()`");
+        Py_FatalError("dbase32 internal error in time_id()");
         Py_CLEAR(ret);  /* Should not be reached */
     }
     return ret;
