@@ -500,11 +500,14 @@ isdb32(PyObject *self, PyObject *args)
     if (status == 0) {
         Py_RETURN_TRUE;
     }
-    if (status != 224) {
-        /* Any status other than 0 and 224 means an internal error occurred */
-        Py_FatalError("internal error in `_dbase32.isdb32()`");
+    else if (status == 224) {
+        Py_RETURN_FALSE;
     }
-    Py_RETURN_FALSE;
+    else {
+        /* Any status other than 0 or 224 means an internal error occurred */
+        Py_FatalError("internal error in `_dbase32.isdb32()`");
+        return NULL;
+    }
 }
 
 
