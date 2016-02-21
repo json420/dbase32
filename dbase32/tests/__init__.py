@@ -828,9 +828,7 @@ class TestFunctions(TestCase):
                 self.assertEqual(_dbase32.db32dec(db32.encode('utf-8')), data)
 
 
-class TestFunctions_Py(TestCase):
-    backend = _dbase32py
-
+class BackendTestCase(TestCase):
     def setUp(self):
         backend = self.backend
         cls = self.__class__
@@ -839,7 +837,7 @@ class TestFunctions_Py(TestCase):
         self.assertEqual(len(bases), 1)
         if name.endswith('_Py'):
             self.assertIs(backend, _dbase32py)
-            self.assertIs(bases[0], TestCase)
+            self.assertIs(bases[0], BackendTestCase)
         elif name.endswith('_C'):
             self.assertIs(backend, _dbase32)
             self.assertIs(bases[0], TestFunctions_Py)
@@ -1063,6 +1061,16 @@ class TestFunctions_Py(TestCase):
                 )
                 self.assertEqual(sys.getrefcount(bad), 2)
 
+
+class TestFunctions_Py(BackendTestCase):
+    """
+    Unit tests for the pure-Python implementation.
+
+    These tests should be run in full against the C implementation as well.
+    """
+
+    backend = _dbase32py
+
     def test_db32enc(self):
         db32enc = self.getattr('db32enc')
 
@@ -1131,6 +1139,9 @@ class TestFunctions_Py(TestCase):
                 error.format(type(bad).__name__)
             )
 
+        # For override in TestFunctions_C:
+        return db32enc
+
     def test_db32dec(self):
         db32dec = self.getattr('db32dec')
 
@@ -1144,6 +1155,9 @@ class TestFunctions_Py(TestCase):
         self.assertEqual(db32dec('3' * 96), b'\x00' * 60)
         self.assertEqual(db32dec('Y' * 96), b'\xff' * 60)
 
+        # For override in TestFunctions_C:
+        return db32dec
+
     def test_db32_relpath(self):
         db32_relpath = self.getattr('db32_relpath')
         self.check_text_type(db32_relpath)
@@ -1152,22 +1166,29 @@ class TestFunctions_Py(TestCase):
 
 
 class TestFunctions_C(TestFunctions_Py):
+    """
+    Unit tests for the C implementation.
+
+    If overrides are needed, these tests should run the full Python
+    implementation test by calling the super() method of the same name, plus
+    then run any additional C-specific tests.
+    """
+
     backend = _dbase32
 
     def test_db32enc(self):
-        super().test_db32enc()
+        db32enc = super().test_db32enc()
+        self.assertIs(db32enc, _dbase32.db32enc)
 
         # Compare against the Python version of db32enc
         for size in BIN_SIZES:
             for i in range(5000):
                 data = os.urandom(size)
-                self.assertEqual(
-                    _dbase32.db32enc(data),
-                    _dbase32py.db32enc(data)
-                )
+                self.assertEqual(db32enc(data), _dbase32py.db32enc(data))
 
     def test_db32dec(self):
-        super().test_db32dec()
+        db32dec = super().test_db32dec()
+        self.assertIs(db32dec, _dbase32.db32dec)
 
         # Compare against the _dbase32py.db32dec Python version:
         for size in TXT_SIZES:
@@ -1182,6 +1203,6 @@ class TestFunctions_C(TestFunctions_Py):
                 data = _dbase32py.db32dec(text_s)
                 self.assertEqual(len(data), size * 5 // 8)
                 self.assertEqual(_dbase32py.db32dec(text_b), data)
-                self.assertEqual(_dbase32.db32dec(text_s), data)
-                self.assertEqual(_dbase32.db32dec(text_b), data)
+                self.assertEqual(db32dec(text_s), data)
+                self.assertEqual(db32dec(text_b), data)
 
