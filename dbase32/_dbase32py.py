@@ -271,3 +271,7 @@ def db32_relpath(text):
         text = text.decode()
     return '/'.join([text[0:2], text[2:]])
 
+
+def db32_path(parent, text):
+    return '/'.join([parent, db32_relpath(text)])
+

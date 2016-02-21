@@ -401,7 +401,7 @@ class BackendTestCase(TestCase):
             )
         return getattr(backend, name)
 
-    def check_text_type(self, func):
+    def check_text_type(self, func, *args):
         """
         Common TypeError tests for `db32dec()`, `check_db32()`, and `isdb32()`.
         """
@@ -416,32 +416,36 @@ class BackendTestCase(TestCase):
 
         # Check that appropriate TypeError is raised:
         with self.assertRaises(TypeError) as cm:
-            func(17)
+            func(*(args + (17,)))
         self.assertEqual(str(cm.exception), error1.format('int'))
         with self.assertRaises(TypeError) as cm:
-            func(18.5)
+            func(*(args + (18.5,)))
         self.assertEqual(str(cm.exception), error1.format('float'))
         with self.assertRaises(TypeError) as cm:
-            func(bytearray(b'3399AAYY'))
+            func(*(args + (bytearray(b'3399AAYY'),)))
         self.assertEqual(str(cm.exception), error2)
 
         # Sanity check to make sure both str and bytes can be decoded/validated:
-        func('3399AAYY')
-        func(b'3399AAYY')
+        func(*(args + ('3399AAYY',)))
+        func(*(args + (b'3399AAYY',)))
 
-    def check_text_value(self, func):
+    def check_text_value(self, func, *args):
         """
         Common ValueError tests for `db32dec()` and `check_db32()`.
         """
+
+        def mk_args(text):
+            return args + (text,)
+
         # Test when len(text) is too small:
         with self.assertRaises(ValueError) as cm:
-            func('')
+            func(*mk_args(''))
         self.assertEqual(
             str(cm.exception),
             'len(text) is 0, need 8 <= len(text) <= 96'
         )
         with self.assertRaises(ValueError) as cm:
-            func('-seven-')
+            func(*mk_args('-seven-'))
         self.assertEqual(
             str(cm.exception),
             'len(text) is 7, need 8 <= len(text) <= 96'
@@ -449,7 +453,7 @@ class BackendTestCase(TestCase):
 
         # Test when len(text) is too big:
         with self.assertRaises(ValueError) as cm:
-            func('A' * 97)
+            func(*mk_args('A' * 97))
         self.assertEqual(
             str(cm.exception),
             'len(text) is 97, need 8 <= len(text) <= 96'
@@ -457,7 +461,7 @@ class BackendTestCase(TestCase):
 
         # Test when len(text) % 8 != 0:
         with self.assertRaises(ValueError) as cm:
-            func('A' * 65)
+            func(*mk_args('A' * 65))
         self.assertEqual(
             str(cm.exception),
             'len(text) is 65, need len(text) % 8 == 0'
@@ -465,24 +469,24 @@ class BackendTestCase(TestCase):
 
         # Test with invalid base32 characters:
         with self.assertRaises(ValueError) as cm:
-            func('CDEFCDE2')
+            func(*mk_args('CDEFCDE2'))
         self.assertEqual(str(cm.exception), "invalid Dbase32: 'CDEFCDE2'")
         with self.assertRaises(ValueError) as cm:
-            func('CDEFCDE=')
+            func(*mk_args('CDEFCDE='))
         self.assertEqual(str(cm.exception), "invalid Dbase32: 'CDEFCDE='")
         with self.assertRaises(ValueError) as cm:
-            func('CDEFCDEZ')
+            func(*mk_args('CDEFCDEZ'))
         self.assertEqual(str(cm.exception), "invalid Dbase32: 'CDEFCDEZ'")
 
         # Test that it stops at the first invalid letter:
         with self.assertRaises(ValueError) as cm:
-            func('2ZZZZZZZ')
+            func(*mk_args('2ZZZZZZZ'))
         self.assertEqual(str(cm.exception), "invalid Dbase32: '2ZZZZZZZ'")
         with self.assertRaises(ValueError) as cm:
-            func('AAAAAA=Z')
+            func(*mk_args('AAAAAA=Z'))
         self.assertEqual(str(cm.exception), "invalid Dbase32: 'AAAAAA=Z'")
         with self.assertRaises(ValueError) as cm:
-            func('CDEZ=2=2')
+            func(*mk_args('CDEZ=2=2'))
         self.assertEqual(str(cm.exception), "invalid Dbase32: 'CDEZ=2=2'")
 
         # Test invalid letter at each possible position in the string
@@ -491,13 +495,13 @@ class BackendTestCase(TestCase):
                 # Test when there is a single invalid letter:
                 txt = make_string(i, size, 'A', '/')
                 with self.assertRaises(ValueError) as cm:
-                    func(txt)
+                    func(*mk_args(txt))
                 self.assertEqual(str(cm.exception),
                     'invalid Dbase32: {!r}'.format(txt)
                 )
                 txt = make_string(i, size, 'A', '.')
                 with self.assertRaises(ValueError) as cm:
-                    func(txt)
+                    func(*mk_args(txt))
                 self.assertEqual(str(cm.exception),
                     'invalid Dbase32: {!r}'.format(txt)
                 )
@@ -505,13 +509,13 @@ class BackendTestCase(TestCase):
                 # Test that it stops at the *first* invalid letter:
                 txt = make_string(i, size, 'A', '/', '.')
                 with self.assertRaises(ValueError) as cm:
-                    func(txt)
+                    func(*mk_args(txt))
                 self.assertEqual(str(cm.exception),
                     'invalid Dbase32: {!r}'.format(txt)
                 )
                 txt = make_string(i, size, 'A', '.', '/')
                 with self.assertRaises(ValueError) as cm:
-                    func(txt)
+                    func(*mk_args(txt))
                 self.assertEqual(str(cm.exception),
                     'invalid Dbase32: {!r}'.format(txt)
                 )
@@ -521,7 +525,7 @@ class BackendTestCase(TestCase):
             text = ('A' * 7) + L
             self.assertEqual(sys.getrefcount(text), 2)
             with self.assertRaises(ValueError) as cm:
-                func(text)
+                func(*mk_args(text))
             self.assertEqual(str(cm.exception),
                 'invalid Dbase32: {!r}'.format(text)
             )
@@ -529,7 +533,7 @@ class BackendTestCase(TestCase):
             data = text.encode()
             self.assertEqual(sys.getrefcount(data), 2)
             with self.assertRaises(ValueError) as cm:
-                func(data)
+                func(*mk_args(data))
             self.assertEqual(str(cm.exception),
                 'invalid Dbase32: {!r}'.format(data)
             )
@@ -543,7 +547,7 @@ class BackendTestCase(TestCase):
         for value in [bad_s, bad_b]:
             refcount = sys.getrefcount(value)
             with self.assertRaises(ValueError) as cm:
-                func(value)
+                func(*mk_args(value))
             self.assertEqual(str(cm.exception),
                 'invalid Dbase32: {!r}'.format(value)
             )
@@ -555,7 +559,7 @@ class BackendTestCase(TestCase):
         for value in [bad_s, bad_b]:
             refcount = sys.getrefcount(value)
             with self.assertRaises(ValueError) as cm:
-                func(value)
+                func(*mk_args(value))
             self.assertEqual(
                 str(cm.exception),
                 'len(text) is 10, need len(text) % 8 == 0'
@@ -568,7 +572,7 @@ class BackendTestCase(TestCase):
         for value in [bad_s, bad_b]:
             refcount = sys.getrefcount(value)
             with self.assertRaises(ValueError) as cm:
-                func(value)
+                func(*mk_args(value))
             self.assertEqual(str(cm.exception),
                 'invalid Dbase32: {!r}'.format(value)
             )
@@ -581,7 +585,7 @@ class BackendTestCase(TestCase):
                 bad = os.urandom(badsize)
                 self.assertEqual(sys.getrefcount(bad), 2)
                 with self.assertRaises(ValueError) as cm:
-                    func(bad)
+                    func(*mk_args(bad))
                 if 8 <= badsize <= 96:
                     self.assertEqual(str(cm.exception),
                         'len(text) is {}, need len(text) % 8 == 0'.format(badsize)
@@ -598,7 +602,7 @@ class BackendTestCase(TestCase):
                 bad = os.urandom(size)
                 self.assertEqual(sys.getrefcount(bad), 2)
                 with self.assertRaises(ValueError) as cm:
-                    func(bad)
+                    func(*mk_args(bad))
                 self.assertEqual(str(cm.exception),
                     'invalid Dbase32: {!r}'.format(bad)
                 )
@@ -957,15 +961,48 @@ class TestFunctions_Py(BackendTestCase):
 
         # Test with random values:
         for size in BIN_SIZES:
+            length = (size * 8 // 5) + 1
             for i in range(1000):
                 text = random_id(size)
-                self.assertEqual(len(text), size * 8 // 5)
                 for arg in (text, text.encode()):  # Test both str and bytes
                     rp = db32_relpath(arg)
                     self.assertIs(type(rp), str)
-                    self.assertEqual(len(rp), len(text) + 1)
+                    self.assertEqual(len(rp), length)
                     self.assertEqual(rp[2], '/')
                     self.assertEqual(rp, '/'.join([text[:2], text[2:]]))
+
+    def test_db32_path(self):
+        db32_path = self.getattr('db32_path')
+        db32_relpath = self.getattr('db32_relpath')
+        parent = '/'.join(['/tmp', dbase32.random_id(), dbase32.random_id()])
+
+        # Common tests for text args:
+        self.check_text_type(db32_path, parent)
+        self.check_text_value(db32_path, parent)
+
+        # Sanity check with a few static values:
+        self.assertEqual(db32_path('/PP', 'AABBBBBB'), '/PP/AA/BBBBBB')
+        self.assertEqual(
+            db32_path('/PP', 'AABBBBBBCCCCCCCC'),
+            '/PP/AA/BBBBBBCCCCCCCC'
+        )
+
+        # Use fastest random_id() implementation regardless of backend:
+        fastest = (_dbase32 if C_EXT_AVAIL else _dbase32py)
+        random_id = fastest.random_id
+
+        # Test with random values:
+        for size in BIN_SIZES:
+            length = len(parent) + (size * 8 // 5) + 2
+            for i in range(1000):
+                text = random_id(size)
+                rp = db32_relpath(text)
+                expected = '/'.join([parent, rp])
+                for arg in (text, text.encode()):  # Test both str and bytes
+                    p = db32_path(parent, text)
+                    self.assertIs(type(p), str)
+                    self.assertEqual(len(p), length)
+                    self.assertEqual(p, expected)
 
 
 class TestFunctions_C(TestFunctions_Py):
