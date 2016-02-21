@@ -505,110 +505,6 @@ class TestFunctions(TestCase):
                 )
                 self.assertEqual(sys.getrefcount(bad), 2)
 
-    def check_check_db32(self, check_db32):
-        """
-        Tests both Python and C versions of `check_db32()` must pass.
-        """
-        self.check_text_type(check_db32)
-        self.check_text_value(check_db32)
-
-        # Test a few handy static values:
-        self.assertIsNone(check_db32('33333333'))
-        self.assertIsNone(check_db32('YYYYYYYY'))
-        self.assertIsNone(check_db32('3' * 96))
-        self.assertIsNone(check_db32('Y' * 96))
-
-        # Same, but bytes this time:
-        self.assertIsNone(check_db32(b'33333333'))
-        self.assertIsNone(check_db32(b'YYYYYYYY'))
-        self.assertIsNone(check_db32(b'3' * 96))
-        self.assertIsNone(check_db32(b'Y' * 96))
-
-    def test_check_db32_p(self):
-        self.check_check_db32(_dbase32py.check_db32)
-
-    def test_check_db32_c(self):
-        self.skip_if_no_c_ext()
-        self.check_check_db32(_dbase32.check_db32)
-
-    def check_random_id(self, random_id):
-        with self.assertRaises(TypeError) as cm:
-            random_id(15.0)
-        self.assertEqual(
-            str(cm.exception),
-            'integer argument expected, got float'
-        )
-        with self.assertRaises(TypeError) as cm:
-            random_id('15')
-        self.assertEqual(
-            str(cm.exception),
-            "'str' object cannot be interpreted as an integer"
-        )
-
-        with self.assertRaises(ValueError) as cm:
-            random_id(4)
-        self.assertEqual(
-            str(cm.exception),
-            'numbytes is 4, need 5 <= numbytes <= 60'
-        )
-        with self.assertRaises(ValueError) as cm:
-            random_id(29)
-        self.assertEqual(
-            str(cm.exception),
-            'numbytes is 29, need numbytes % 5 == 0'
-        )
-
-        _id = random_id()
-        self.assertIsInstance(_id, str)
-        self.assertEqual(len(_id), dbase32.RANDOM_B32LEN)
-        data = dbase32.db32dec(_id)
-        self.assertIsInstance(data, bytes)
-        self.assertEqual(len(data), dbase32.RANDOM_BYTES)
-        self.assertEqual(dbase32.db32enc(data), _id)
-
-        _id = random_id(dbase32.RANDOM_BYTES)
-        self.assertIsInstance(_id, str)
-        self.assertEqual(len(_id), dbase32.RANDOM_B32LEN)
-        data = dbase32.db32dec(_id)
-        self.assertIsInstance(data, bytes)
-        self.assertEqual(len(data), dbase32.RANDOM_BYTES)
-        self.assertEqual(dbase32.db32enc(data), _id)
-
-        _id = random_id(numbytes=dbase32.RANDOM_BYTES)
-        self.assertIsInstance(_id, str)
-        self.assertEqual(len(_id), dbase32.RANDOM_B32LEN)
-        data = dbase32.db32dec(_id)
-        self.assertIsInstance(data, bytes)
-        self.assertEqual(len(data), dbase32.RANDOM_BYTES)
-        self.assertEqual(dbase32.db32enc(data), _id)
-
-        for size in BIN_SIZES:
-            _id = random_id(size)
-            self.assertIsInstance(_id, str)
-            self.assertEqual(len(_id), size * 8 // 5)
-            data = dbase32.db32dec(_id)
-            self.assertIsInstance(data, bytes)
-            self.assertEqual(len(data), size)
-            self.assertEqual(dbase32.db32enc(data), _id)
-
-        # Sanity check on their randomness:
-        count = 25000
-        accum = set(random_id() for i in range(count))
-        self.assertEqual(len(accum), count)
-
-    def test_random_id_p(self):
-        self.check_random_id(_dbase32py.random_id)
-        with self.assertRaises(TypeError) as cm:
-            _dbase32py.random_id([])
-        self.assertEqual(
-            str(cm.exception),
-            "numbytes must be an int; got <class 'list'>"
-        )
-
-    def test_random_id_c(self):
-        self.skip_if_no_c_ext()
-        self.check_random_id(_dbase32.random_id)
-
     def check_time_id(self, time_id):
         def ts_bin(timestamp):
             assert isinstance(timestamp, (int, float))
@@ -757,6 +653,10 @@ class TestFunctions(TestCase):
 
 
 class BackendTestCase(TestCase):
+    """
+    Base class for test cases for both Python and C implementations.
+    """
+
     def setUp(self):
         backend = self.backend
         cls = self.__class__
@@ -1089,7 +989,7 @@ class TestFunctions_Py(BackendTestCase):
     def test_isdb32(self):
         isdb32 = self.getattr('isdb32')
 
-        # Common tests for text args (type only):
+        # Common tests for text args (only check type in this case):
         self.check_text_type(isdb32)
 
         for size in TXT_SIZES:
@@ -1154,10 +1054,108 @@ class TestFunctions_Py(BackendTestCase):
                 self.assertIs(isdb32(bad_s), False)
                 self.assertIs(isdb32(bad_b), False)
 
+    def test_check_db32(self):
+        check_db32 = self.getattr('check_db32')
+
+        # Common tests for text args:
+        self.check_text_type(check_db32)
+        self.check_text_value(check_db32)
+
+        # Test a few handy static values:
+        self.assertIsNone(check_db32('33333333'))
+        self.assertIsNone(check_db32('YYYYYYYY'))
+        self.assertIsNone(check_db32('3' * 96))
+        self.assertIsNone(check_db32('Y' * 96))
+
+        # Same, but bytes this time:
+        self.assertIsNone(check_db32(b'33333333'))
+        self.assertIsNone(check_db32(b'YYYYYYYY'))
+        self.assertIsNone(check_db32(b'3' * 96))
+        self.assertIsNone(check_db32(b'Y' * 96))
+
+    def test_random_id(self):
+        random_id = self.getattr('random_id')
+
+        with self.assertRaises(TypeError) as cm:
+            random_id(15.0)
+        self.assertEqual(
+            str(cm.exception),
+            'integer argument expected, got float'
+        )
+        with self.assertRaises(TypeError) as cm:
+            random_id('15')
+        self.assertEqual(
+            str(cm.exception),
+            "'str' object cannot be interpreted as an integer"
+        )
+
+        with self.assertRaises(ValueError) as cm:
+            random_id(4)
+        self.assertEqual(
+            str(cm.exception),
+            'numbytes is 4, need 5 <= numbytes <= 60'
+        )
+        with self.assertRaises(ValueError) as cm:
+            random_id(29)
+        self.assertEqual(
+            str(cm.exception),
+            'numbytes is 29, need numbytes % 5 == 0'
+        )
+
+        _id = random_id()
+        self.assertIsInstance(_id, str)
+        self.assertEqual(len(_id), dbase32.RANDOM_B32LEN)
+        data = dbase32.db32dec(_id)
+        self.assertIsInstance(data, bytes)
+        self.assertEqual(len(data), dbase32.RANDOM_BYTES)
+        self.assertEqual(dbase32.db32enc(data), _id)
+
+        _id = random_id(dbase32.RANDOM_BYTES)
+        self.assertIsInstance(_id, str)
+        self.assertEqual(len(_id), dbase32.RANDOM_B32LEN)
+        data = dbase32.db32dec(_id)
+        self.assertIsInstance(data, bytes)
+        self.assertEqual(len(data), dbase32.RANDOM_BYTES)
+        self.assertEqual(dbase32.db32enc(data), _id)
+
+        _id = random_id(numbytes=dbase32.RANDOM_BYTES)
+        self.assertIsInstance(_id, str)
+        self.assertEqual(len(_id), dbase32.RANDOM_B32LEN)
+        data = dbase32.db32dec(_id)
+        self.assertIsInstance(data, bytes)
+        self.assertEqual(len(data), dbase32.RANDOM_BYTES)
+        self.assertEqual(dbase32.db32enc(data), _id)
+
+        for size in BIN_SIZES:
+            _id = random_id(size)
+            self.assertIsInstance(_id, str)
+            self.assertEqual(len(_id), size * 8 // 5)
+            data = dbase32.db32dec(_id)
+            self.assertIsInstance(data, bytes)
+            self.assertEqual(len(data), size)
+            self.assertEqual(dbase32.db32enc(data), _id)
+
+        # Sanity check on their randomness:
+        count = 25000
+        accum = set(random_id() for i in range(count))
+        self.assertEqual(len(accum), count)
+
+        # Type check on numbytes:
+        with self.assertRaises(TypeError) as cm:
+            random_id([])
+        if self.backend is _dbase32py:
+            msg = "numbytes must be an int; got <class 'list'>"
+        else:
+            msg = "'list' object cannot be interpreted as an integer"
+        self.assertEqual(str(cm.exception), msg)
+
     def test_db32_relpath(self):
         db32_relpath = self.getattr('db32_relpath')
+
+        # Common tests for text args:
         self.check_text_type(db32_relpath)
-        self.check_text_value(db32_relpath)  
+        self.check_text_value(db32_relpath)
+
         self.assertEqual(db32_relpath('BBAAAAAA'), 'BB/AAAAAA')
 
 
