@@ -400,7 +400,7 @@ db32enc(PyObject *self, PyObject *args)
         return NULL;
     }
 
-    /* Only encode well-formed IDs */
+    /* Validate length of binary ID */
     if (bin_len < 5 || bin_len > MAX_BIN_LEN) {
         PyErr_Format(PyExc_ValueError,
             "len(data) is %u, need 5 <= len(data) <= %u", bin_len, MAX_BIN_LEN
@@ -420,8 +420,8 @@ db32enc(PyObject *self, PyObject *args)
     if (ret != NULL) {
         txt_buf = (uint8_t *)PyUnicode_1BYTE_DATA(ret);
         if (_encode(bin_buf, bin_len, txt_buf, txt_len) != 0) {
+            Py_CLEAR(ret);
             Py_FatalError("dbase32 internal error in db32enc()");
-            Py_CLEAR(ret);  /* Should not be reached */
         }
     }
     return ret;
@@ -446,24 +446,21 @@ db32dec(PyObject *self, PyObject *args)
         return NULL;
     }
 
-    /* Ensure that txt_len is valid for well-formed IDs */
+    /* Validate length of ID */
     if (! _check_txt_len(txt_len)) {
         return NULL;
     }
 
-    /* Allocate destination buffer */
+    /* Allocate destination buffer and decode */
     bin_len = txt_len * 5 / 8;
     ret = PyBytes_FromStringAndSize(NULL, (ssize_t)bin_len);
-    if (ret == NULL) {
-        return NULL;
-    }
-    bin_buf = (uint8_t *)PyBytes_AS_STRING(ret);
-
-    /* `_decode()` returns 0 on success, 224 on invalid Dbase32 */
-    status = _decode(txt_buf, txt_len, bin_buf, bin_len);
-    if (status != 0) {
-        Py_CLEAR(ret);
-        _handle_invalid_dbase32(status, PyTuple_GetItem(args, 0));
+    if (ret != NULL) {
+        bin_buf = (uint8_t *)PyBytes_AS_STRING(ret);
+        status = _decode(txt_buf, txt_len, bin_buf, bin_len);
+        if (status != 0) {
+            Py_CLEAR(ret);
+            _handle_invalid_dbase32(status, PyTuple_GetItem(args, 0));
+        }
     }
     return ret;
 }
@@ -484,12 +481,12 @@ isdb32(PyObject *self, PyObject *args)
         return NULL;
     }
 
-    /* Ensure that txt_len is valid for well-formed IDs */
+    /* Validate length of ID */
     if (txt_len < 8 || txt_len > MAX_TXT_LEN || txt_len % 8 != 0) {
         Py_RETURN_FALSE;
     }
 
-    /* `_validate()` returns 0 on success, 224 on invalid Dbase32 */
+    /* Validate content of ID */
     status = _validate(txt_buf, txt_len);
     if (status == 0) {
         Py_RETURN_TRUE;
@@ -498,7 +495,6 @@ isdb32(PyObject *self, PyObject *args)
         Py_RETURN_FALSE;
     }
     else {
-        /* Any status other than 0 or 224 means an internal error occurred */
         Py_FatalError("dbase32 internal error in isdb32()");
         return NULL;
     }
@@ -520,12 +516,12 @@ check_db32(PyObject *self, PyObject *args)
         return NULL;
     }
 
-    /* Ensure that txt_len is valid for well-formed IDs */
+    /* Validate length of ID */
     if (! _check_txt_len(txt_len)) {
         return NULL;
     }
 
-    /* `_validate()` returns 0 on success, 224 on invalid Dbase32 */
+    /* Validate content of ID */
     status = _validate(txt_buf, txt_len);
     if (status != 0) {
         _handle_invalid_dbase32(status, PyTuple_GetItem(args, 0));
@@ -589,13 +585,12 @@ random_id(PyObject *self, PyObject *args, PyObject *kw)
     }
     txt_buf = (uint8_t *)PyUnicode_1BYTE_DATA(ret);
 
-    /* `_encode()` returns 0 on success */
+    /* Encode random ID */
     status = _encode(bin_buf, bin_len, txt_buf, txt_len);
     free(bin_buf);
     if (status != 0) {
-        /* Any status other than 0 means an internal error occurred */
+        Py_CLEAR(ret);
         Py_FatalError("dbase32 internal error in random_id()");
-        Py_CLEAR(ret);  /* Should not be reached */
     }
     return ret;
 }
@@ -650,13 +645,12 @@ time_id(PyObject *self, PyObject *args, PyObject *kw)
     }
     txt_buf = (uint8_t *)PyUnicode_1BYTE_DATA(ret);
 
-    /* `_encode()` returns 0 on success */
+    /* Encode time ID */
     status = _encode(bin_buf, 15, txt_buf, 24);
     free(bin_buf);
     if (status != 0) {
-        /* Any status other than 0 means an internal error occurred */
+        Py_CLEAR(ret);
         Py_FatalError("dbase32 internal error in time_id()");
-        Py_CLEAR(ret);  /* Should not be reached */
     }
     return ret;
 }
@@ -679,12 +673,12 @@ db32_relpath(PyObject *self, PyObject *args)
         return NULL;
     }
 
-    /* Ensure that txt_len is valid for well-formed IDs */
+    /* Validate length of ID */
     if (! _check_txt_len(txt_len)) {
         return NULL;
     }
 
-    /* `_validate()` returns 0 on success, 224 on invalid Dbase32 */
+    /* Validate content of ID */
     status = _validate(txt_buf, txt_len);
     if (status != 0) {
         _handle_invalid_dbase32(status, PyTuple_GetItem(args, 0));
@@ -723,12 +717,12 @@ db32_path(PyObject *self, PyObject *args)
         return NULL;
     }
 
-    /* Ensure that txt_len is valid for well-formed IDs */
+    /* Validate length of ID */
     if (! _check_txt_len(txt_len)) {
         return NULL;
     }
 
-    /* `_validate()` returns 0 on success, 224 on invalid Dbase32 */
+    /* Validate content of ID */
     status = _validate(txt_buf, txt_len);
     if (status != 0) {
         _handle_invalid_dbase32(status, PyTuple_GetItem(args, 1));
