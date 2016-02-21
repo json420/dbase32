@@ -705,6 +705,53 @@ db32_relpath(PyObject *self, PyObject *args)
 }
 
 
+/*
+ * C implementation of `dbase32.db32_path()`.
+ */
+static PyObject *
+db32_path(PyObject *self, PyObject *args)
+{
+    PyObject *parent = NULL;
+    size_t txt_len = 0;
+    const uint8_t *txt_buf = NULL;
+    uint8_t status = 1;
+    PyObject *end = NULL;
+    uint8_t *end_buf = NULL;
+    PyObject *ret = NULL;
+
+    /* Parse args */
+    if (!PyArg_ParseTuple(args, "Us#:db32_path", &parent, &txt_buf, &txt_len)) {
+        return NULL;
+    }
+
+    /* Ensure that txt_len is valid for well-formed IDs */
+    if (! _check_txt_len(txt_len)) {
+        return NULL;
+    }
+
+    /* `_validate()` returns 0 on success, 224 on invalid Dbase32 */
+    status = _validate(txt_buf, txt_len);
+    if (status != 0) {
+        _handle_invalid_dbase32(status, PyTuple_GetItem(args, 1));
+        return NULL;
+    }
+
+    /* Build the absolute path */
+    end = PyUnicode_New((ssize_t)(txt_len + 2), DB32_END);
+    if (end != NULL ) {
+        end_buf = PyUnicode_1BYTE_DATA(end);
+        end_buf[0] = '/';
+        end_buf[1] = txt_buf[0];
+        end_buf[2] = txt_buf[1];
+        end_buf[3] = '/';
+        memcpy(end_buf + 4, txt_buf + 2, txt_len - 2);
+        ret = PyUnicode_Concat(parent, end);
+        Py_CLEAR(end);
+    }
+    return ret;
+}
+
+
 /* module init */
 static struct PyMethodDef dbase32_functions[] = {
     {"db32enc", db32enc, METH_VARARGS, "db32enc(data)"},
@@ -716,6 +763,7 @@ static struct PyMethodDef dbase32_functions[] = {
     {"time_id", (PyCFunction)time_id, METH_VARARGS | METH_KEYWORDS,
         "time_id(timestamp=-1)"},
     {"db32_relpath", db32_relpath, METH_VARARGS, "db32_relpath(text)"},
+    {"db32_path", db32_path, METH_VARARGS, "db32_path(text)"},
     {NULL, NULL, 0, NULL}
 };
 
