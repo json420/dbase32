@@ -296,7 +296,7 @@ class TestConstants(TestCase):
         self.assertIs(dbase32.log_id, dbase32.time_id)
 
 
-class TestFunctions(TestCase):
+class TestMisc(TestCase):
     def skip_if_no_c_ext(self):
         if not C_EXT_AVAIL:
             self.skipTest('cannot import `_dbase32` C extension')
