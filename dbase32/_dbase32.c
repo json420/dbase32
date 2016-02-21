@@ -692,7 +692,7 @@ db32_relpath(PyObject *self, PyObject *args)
         return NULL;
     }
 
-    /* Build the relpath */
+    /* Build the relative path */
     ret = PyUnicode_New((ssize_t)(txt_len + 1), DB32_END);
     if (ret != NULL ) {
         ret_buf = PyUnicode_1BYTE_DATA(ret);
