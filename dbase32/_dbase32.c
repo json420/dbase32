@@ -328,7 +328,7 @@ _validate(const uint8_t *txt_buf, const size_t txt_len)
  * C implementation of `dbase32.db32enc()`
  */
 static PyObject *
-dbase32_db32enc(PyObject *self, PyObject *args)
+db32enc(PyObject *self, PyObject *args)
 {
     size_t bin_len = 0;
     size_t txt_len = 0;
@@ -363,7 +363,7 @@ dbase32_db32enc(PyObject *self, PyObject *args)
     }
     txt_buf = (uint8_t *)PyUnicode_1BYTE_DATA(ret);
 
-    /* _encode() returns 0 on success */
+    /* `_encode()` returns 0 on success */
     if (_encode(bin_buf, bin_len, txt_buf, txt_len) != 0) {
         Py_FatalError("internal error in `_dbase32.db32enc()`");
     }
@@ -640,7 +640,7 @@ dbase32_time_id(PyObject *self, PyObject *args, PyObject *kw)
 
 /* module init */
 static struct PyMethodDef dbase32_functions[] = {
-    {"db32enc", dbase32_db32enc, METH_VARARGS, "db32enc(data)"},
+    {"db32enc", db32enc, METH_VARARGS, "db32enc(data)"},
     {"db32dec", dbase32_db32dec, METH_VARARGS, "db32dec(text)"},
     {"isdb32", dbase32_isdb32, METH_VARARGS, "isdb32(text)"},
     {"check_db32", dbase32_check_db32, METH_VARARGS, "check_db32(text)"},
