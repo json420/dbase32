@@ -130,8 +130,8 @@ static const uint8_t DB32_REVERSE[256] __attribute__ ((aligned (64))) = {
 
 
 /*
- * For correctness, we declare the four internal dbase32 C functions with
- * "__attribute__ ((warn_unused_result))":
+ * For correctness, we declare the four internal dbase32 C functions that need
+ * their return values checked using "__attribute__ ((warn_unused_result))":
  */
 static uint8_t _encode(const uint8_t *, const size_t, uint8_t *, const size_t)
     __attribute__ ((warn_unused_result));
@@ -279,7 +279,7 @@ _decode(const uint8_t *txt_buf, const size_t txt_len,
 /*
  * _validate(): internal Dbase32 validation function.
  *
- * Used by `isdb32()` and `check_db32()`.
+ * Used by `isdb32()`, `check_db32()`, and `db32_relpath()`.
  *
  * Returns 0 when valid, 224 when invalid.
  *
@@ -336,8 +336,7 @@ _validate(const uint8_t *txt_buf, const size_t txt_len)
  * If *txt_len* fits the requirements for a well-formed Dbase32-encoded ID, this
  * function returns `true`.
  *
- * Otherwise this function sets an appropriate Python exception and returns
- * `false`.
+ * Otherwise this function sets a Python exception and returns `false`.
  */
 static bool
 _check_txt_len(const size_t txt_len)
@@ -355,6 +354,36 @@ _check_txt_len(const size_t txt_len)
         return false;
     }
     return true;
+}
+
+
+/*
+ * _handle_invalid_dbase32(): handle a decoding or validation error.
+ *
+ * Used by `db32dec()`, `check_db32()`, and `db32_relpath()`.
+ *
+ * Both `_decode()` and `_validate()` return 0 on success or 224 when the text
+ * in question contains invalid Dbase32 characters.  Any other status should be
+ * treated as an internal error.
+ *
+ * When `_decode()` or `_validate()` do not return 0, their caller should call
+ * this function, which will either set a Python exception or terminate the
+ * process as appropriate.
+ */
+static void
+_handle_invalid_dbase32(const uint8_t status, PyObject *args)
+{
+    PyObject *borrowed = NULL;
+
+    if (status != 224 || args == NULL || Py_TYPE(args) != &PyTuple_Type) {
+        Py_FatalError("dbase32 internal error in _handle_invalid_dbase32()");
+    }
+    else {
+        borrowed = PyTuple_GetItem(args, 0);
+        if (borrowed != NULL) {
+            PyErr_Format(PyExc_ValueError, "invalid Dbase32: %R", borrowed);
+        }
+    }
 }
 
 
@@ -416,7 +445,6 @@ db32dec(PyObject *self, PyObject *args)
     const uint8_t *txt_buf = NULL;
     uint8_t *bin_buf = NULL;
     uint8_t status = 1;
-    PyObject *borrowed = NULL;  /* Borrowed reference only used in error */
     PyObject *ret = NULL;
 
     /* Parse args */
@@ -439,16 +467,9 @@ db32dec(PyObject *self, PyObject *args)
 
     /* `_decode()` returns 0 on success, 224 on invalid Dbase32 */
     status = _decode(txt_buf, txt_len, bin_buf, bin_len);
-    if (status == 224) {
+    if (status != 0) {
         Py_CLEAR(ret);
-        borrowed = PyTuple_GetItem(args, 0);
-        if (borrowed != NULL) {
-            PyErr_Format(PyExc_ValueError, "invalid Dbase32: %R", borrowed);
-        }
-    }
-    else if (status != 0) {
-        /* Any status other than 0 and 224 means an internal error occurred */
-        Py_FatalError("internal error in `_dbase32.db32dec()`");
+        _handle_invalid_dbase32(status, args);
     }
     return ret;
 }
@@ -496,7 +517,6 @@ check_db32(PyObject *self, PyObject *args)
     size_t txt_len = 0;
     const uint8_t *txt_buf = NULL;
     uint8_t status = 1;
-    PyObject *borrowed = NULL;  /* Borrowed reference only used in error */
 
     /* Parse args */
     if (!PyArg_ParseTuple(args, "s#:check_db32", &txt_buf, &txt_len)) {
@@ -510,20 +530,11 @@ check_db32(PyObject *self, PyObject *args)
 
     /* `_validate()` returns 0 on success, 224 on invalid Dbase32 */
     status = _validate(txt_buf, txt_len);
-    if (status == 0) {
-        Py_RETURN_NONE;
+    if (status != 0) {
+        _handle_invalid_dbase32(status, args);
+        return NULL;
     }
-    if (status == 224) {
-        borrowed = PyTuple_GetItem(args, 0);
-        if (borrowed != NULL) {
-            PyErr_Format(PyExc_ValueError, "invalid Dbase32: %R", borrowed);
-        }
-    }
-    else {
-        /* Any status other than 0 and 224 means an internal error occurred */
-        Py_FatalError("internal error in `_dbase32.check_db32()`");
-    }
-    return NULL;
+    Py_RETURN_NONE;
 }
 
 
@@ -663,7 +674,6 @@ db32_relpath(PyObject *self, PyObject *args)
     size_t txt_len = 0;
     const uint8_t *txt_buf = NULL;
     uint8_t status = 1;
-    PyObject *borrowed = NULL;  /* Borrowed reference only used in error */
     PyObject *ret = NULL;
     uint8_t *ret_buf = NULL;
 
@@ -679,29 +689,19 @@ db32_relpath(PyObject *self, PyObject *args)
 
     /* `_validate()` returns 0 on success, 224 on invalid Dbase32 */
     status = _validate(txt_buf, txt_len);
-    if (status == 224) {
-        borrowed = PyTuple_GetItem(args, 0);
-        if (borrowed != NULL) {
-            PyErr_Format(PyExc_ValueError, "invalid Dbase32: %R", borrowed);
-        }
-        return NULL;
-    }
-    else if (status != 0) {
-        /* Any status other than 0 or 224 means an internal error occurred */
-        Py_FatalError("internal error in `_dbase32.check_db32()`");
+    if (status != 0) {
+        _handle_invalid_dbase32(status, args);
         return NULL;
     }
 
     ret = PyUnicode_New((ssize_t)(txt_len + 1), DB32_END);
-    if (ret == NULL ) {
-        return NULL;
+    if (ret != NULL ) {
+        ret_buf = PyUnicode_1BYTE_DATA(ret);
+        ret_buf[0] = txt_buf[0];
+        ret_buf[1] = txt_buf[1];
+        ret_buf[2] = '/';
+        memcpy(ret_buf + 3, txt_buf + 2, txt_len - 2);
     }
-    ret_buf = PyUnicode_1BYTE_DATA(ret);
-    ret_buf[0] = txt_buf[0];
-    ret_buf[1] = txt_buf[1];
-    ret_buf[2] = '/';
-    memcpy(ret_buf + 3, txt_buf + 2, txt_len - 2);
-
     return ret;
 }
 
