@@ -505,78 +505,6 @@ class TestFunctions(TestCase):
                 )
                 self.assertEqual(sys.getrefcount(bad), 2)
 
-    def check_isdb32(self, isdb32):
-        self.check_text_type(isdb32)
-
-        for size in TXT_SIZES:
-            self.assertIs(isdb32('A' * (size - 1)), False)
-            self.assertIs(isdb32('A' * (size + 1)), False)
-            self.assertIs(isdb32('A' * size), True)
-            self.assertIs(isdb32('Z' * size), False)
-
-            self.assertIs(isdb32(b'A' * (size - 1)), False)
-            self.assertIs(isdb32(b'A' * (size + 1)), False)
-            self.assertIs(isdb32(b'A' * size), True)
-            self.assertIs(isdb32(b'Z' * size), False)
-
-            good = ''.join(
-                random.choice(_dbase32py.DB32_FORWARD)
-                for n in range(size)
-            )
-            self.assertIs(isdb32(good), True)
-            self.assertIs(isdb32(good.encode('utf-8')), True)
-
-            for L in BAD_LETTERS:
-                bad = good[:-1] + L
-                for value in [bad, bad.encode('utf-8')]:
-                    self.assertEqual(len(value), size)
-                    self.assertIs(isdb32(value), False)
-
-            for i in range(size):
-                bad = make_string(i, size, 'A', '/')
-                for value in [bad, bad.encode('utf-8')]:
-                    self.assertEqual(len(value), size)
-                    self.assertIs(isdb32(value), False)
-                g = make_string(i, size, 'A', 'B')
-                self.assertIs(isdb32(g), True)
-                self.assertIs(isdb32(g.encode('utf-8')), True)
-
-            for i in range(size):
-                for L in BAD_LETTERS:
-                    bad = make_string(i, size, 'A', L)
-                    for value in [bad, bad.encode('utf-8')]:
-                        self.assertEqual(len(value), size)
-                        self.assertIs(isdb32(value), False)
-
-            # Multi-byte UTF-8 characters:
-            bad_s = '™' * size
-            bad_b = bad_s.encode('utf-8')
-            self.assertEqual(len(bad_s), size)
-            self.assertEqual(len(bad_b), size * 3)
-            self.assertIs(isdb32(bad_s), False)
-            self.assertIs(isdb32(bad_b), False)
-            for i in range(size):
-                bad_s = make_string(i, size, 'A', '™')
-                bad_b = bad_s.encode('utf-8')
-                self.assertEqual(len(bad_s), size)
-                self.assertEqual(len(bad_b), size + 2)
-                self.assertIs(isdb32(bad_s), False)
-                self.assertIs(isdb32(bad_b), False)
-            for i in range(size - 2):
-                bad_s = make_string(i, size - 2, 'A', '™')
-                bad_b = bad_s.encode('utf-8')
-                self.assertEqual(len(bad_s), size - 2)
-                self.assertEqual(len(bad_b), size)
-                self.assertIs(isdb32(bad_s), False)
-                self.assertIs(isdb32(bad_b), False)
-
-    def test_isdb32_p(self):
-        self.check_isdb32(_dbase32py.isdb32)
-
-    def test_isdb32_c(self):
-        self.skip_if_no_c_ext()
-        self.check_isdb32(_dbase32.isdb32)
-
     def check_check_db32(self, check_db32):
         """
         Tests both Python and C versions of `check_db32()` must pass.
@@ -1158,6 +1086,74 @@ class TestFunctions_Py(BackendTestCase):
         # For override in TestFunctions_C:
         return db32dec
 
+    def test_isdb32(self):
+        isdb32 = self.getattr('isdb32')
+
+        # Common tests for text args (type only):
+        self.check_text_type(isdb32)
+
+        for size in TXT_SIZES:
+            self.assertIs(isdb32('A' * (size - 1)), False)
+            self.assertIs(isdb32('A' * (size + 1)), False)
+            self.assertIs(isdb32('A' * size), True)
+            self.assertIs(isdb32('Z' * size), False)
+
+            self.assertIs(isdb32(b'A' * (size - 1)), False)
+            self.assertIs(isdb32(b'A' * (size + 1)), False)
+            self.assertIs(isdb32(b'A' * size), True)
+            self.assertIs(isdb32(b'Z' * size), False)
+
+            good = ''.join(
+                random.choice(_dbase32py.DB32_FORWARD)
+                for n in range(size)
+            )
+            self.assertIs(isdb32(good), True)
+            self.assertIs(isdb32(good.encode('utf-8')), True)
+
+            for L in BAD_LETTERS:
+                bad = good[:-1] + L
+                for value in [bad, bad.encode('utf-8')]:
+                    self.assertEqual(len(value), size)
+                    self.assertIs(isdb32(value), False)
+
+            for i in range(size):
+                bad = make_string(i, size, 'A', '/')
+                for value in [bad, bad.encode('utf-8')]:
+                    self.assertEqual(len(value), size)
+                    self.assertIs(isdb32(value), False)
+                g = make_string(i, size, 'A', 'B')
+                self.assertIs(isdb32(g), True)
+                self.assertIs(isdb32(g.encode('utf-8')), True)
+
+            for i in range(size):
+                for L in BAD_LETTERS:
+                    bad = make_string(i, size, 'A', L)
+                    for value in [bad, bad.encode('utf-8')]:
+                        self.assertEqual(len(value), size)
+                        self.assertIs(isdb32(value), False)
+
+            # Multi-byte UTF-8 characters:
+            bad_s = '™' * size
+            bad_b = bad_s.encode('utf-8')
+            self.assertEqual(len(bad_s), size)
+            self.assertEqual(len(bad_b), size * 3)
+            self.assertIs(isdb32(bad_s), False)
+            self.assertIs(isdb32(bad_b), False)
+            for i in range(size):
+                bad_s = make_string(i, size, 'A', '™')
+                bad_b = bad_s.encode('utf-8')
+                self.assertEqual(len(bad_s), size)
+                self.assertEqual(len(bad_b), size + 2)
+                self.assertIs(isdb32(bad_s), False)
+                self.assertIs(isdb32(bad_b), False)
+            for i in range(size - 2):
+                bad_s = make_string(i, size - 2, 'A', '™')
+                bad_b = bad_s.encode('utf-8')
+                self.assertEqual(len(bad_s), size - 2)
+                self.assertEqual(len(bad_b), size)
+                self.assertIs(isdb32(bad_s), False)
+                self.assertIs(isdb32(bad_b), False)
+
     def test_db32_relpath(self):
         db32_relpath = self.getattr('db32_relpath')
         self.check_text_type(db32_relpath)
@@ -1179,30 +1175,35 @@ class TestFunctions_C(TestFunctions_Py):
     def test_db32enc(self):
         db32enc = super().test_db32enc()
         self.assertIs(db32enc, _dbase32.db32enc)
+        py_db32enc = _dbase32py.db32enc
+        self.assertIsNot(db32enc, py_db32enc)
 
         # Compare against the Python version of db32enc
         for size in BIN_SIZES:
             for i in range(5000):
                 data = os.urandom(size)
-                self.assertEqual(db32enc(data), _dbase32py.db32enc(data))
+                self.assertEqual(db32enc(data), py_db32enc(data))
 
     def test_db32dec(self):
         db32dec = super().test_db32dec()
         self.assertIs(db32dec, _dbase32.db32dec)
+        py_db32dec = _dbase32py.db32dec
+        self.assertIsNot(db32dec, py_db32dec)
+        DB32_FORWARD = _dbase32py.DB32_FORWARD
 
-        # Compare against the _dbase32py.db32dec Python version:
+        # Compare against the Python version db32dec:
         for size in TXT_SIZES:
             for i in range(1000):
                 text_s = ''.join(
-                    random.choice(_dbase32py.DB32_FORWARD)
+                    random.choice(DB32_FORWARD)
                     for n in range(size)
                 )
                 text_b = text_s.encode('utf-8')
                 self.assertEqual(len(text_s), size)
                 self.assertEqual(len(text_b), size)
-                data = _dbase32py.db32dec(text_s)
+                data = py_db32dec(text_s)
                 self.assertEqual(len(data), size * 5 // 8)
-                self.assertEqual(_dbase32py.db32dec(text_b), data)
+                self.assertEqual(py_db32dec(text_b), data)
                 self.assertEqual(db32dec(text_s), data)
                 self.assertEqual(db32dec(text_b), data)
 
