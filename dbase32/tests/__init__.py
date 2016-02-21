@@ -505,70 +505,6 @@ class TestFunctions(TestCase):
                 )
                 self.assertEqual(sys.getrefcount(bad), 2)
 
-    def check_time_id(self, time_id):
-        def ts_bin(timestamp):
-            assert isinstance(timestamp, (int, float))
-            ts = int(timestamp)
-            assert ts >= 0
-            buf = bytearray()
-            buf.append((ts >> 24) & 255)
-            buf.append((ts >> 16) & 255)
-            buf.append((ts >>  8) & 255)
-            buf.append(ts & 255)
-            return bytes(buf)
-
-        accum = set()
-        for n in range(250):
-            # Don't provide timestamp:
-            start = int(time.time())
-            _id = time_id()
-            end = int(time.time())
-            self.assertIsInstance(_id, str)
-            self.assertEqual(len(_id), 24)
-            self.assertTrue(set(_id).issubset(_dbase32py.DB32_FORWARD))
-            possible = set(ts_bin(i) for i in range(start - 1, end + 2))
-            data = _dbase32py.db32dec(_id)
-            self.assertIn(data[:4], possible)
-            accum.add(data[4:])
-
-            # Current timestamp:
-            timestamp = time.time()
-            _id = time_id(timestamp)
-            self.assertIsInstance(_id, str)
-            self.assertEqual(len(_id), 24)
-            self.assertTrue(set(_id).issubset(_dbase32py.DB32_FORWARD))
-            data = _dbase32py.db32dec(_id)
-            self.assertEqual(data[:4], ts_bin(timestamp))
-            accum.add(data[4:])
-
-            # Smallest timestamp:
-            _id = time_id(0)
-            self.assertIsInstance(_id, str)
-            self.assertEqual(len(_id), 24)
-            self.assertTrue(set(_id).issubset(_dbase32py.DB32_FORWARD))
-            data = _dbase32py.db32dec(_id)
-            self.assertEqual(data[:4], bytes([0, 0, 0, 0]))
-            accum.add(data[4:])
-
-            # Largest timestamp:
-            _id = time_id(2**32 - 1)
-            self.assertIsInstance(_id, str)
-            self.assertEqual(len(_id), 24)
-            self.assertTrue(set(_id).issubset(_dbase32py.DB32_FORWARD))
-            data = _dbase32py.db32dec(_id)
-            self.assertEqual(data[:4], bytes([255, 255, 255, 255]))
-            accum.add(data[4:])
-
-        # Make sure final 80 bits are actually random:
-        self.assertEqual(len(accum), 1000)
-
-    def test_time_id_p(self):
-        self.check_time_id(_dbase32py.time_id)
-
-    def test_time_id_c(self):
-        self.skip_if_no_c_ext()
-        self.check_time_id(_dbase32.time_id)
-
     def test_sort_p(self):
         """
         Confirm assumptions about RFC-3548 sort-order, test Dbase32 sort-order.
@@ -1148,6 +1084,68 @@ class TestFunctions_Py(BackendTestCase):
         else:
             msg = "'list' object cannot be interpreted as an integer"
         self.assertEqual(str(cm.exception), msg)
+
+        # FIXME: test with float too, possibly sync up error message from
+        # Python and C implementations
+
+    def test_time_id(self):
+        time_id = self.getattr('time_id')
+
+        def ts_bin(timestamp):
+            assert isinstance(timestamp, (int, float))
+            ts = int(timestamp)
+            assert ts >= 0
+            buf = bytearray()
+            buf.append((ts >> 24) & 255)
+            buf.append((ts >> 16) & 255)
+            buf.append((ts >>  8) & 255)
+            buf.append(ts & 255)
+            return bytes(buf)
+
+        accum = set()
+        for n in range(250):
+            # Don't provide timestamp:
+            start = int(time.time())
+            _id = time_id()
+            end = int(time.time())
+            self.assertIsInstance(_id, str)
+            self.assertEqual(len(_id), 24)
+            self.assertTrue(set(_id).issubset(_dbase32py.DB32_FORWARD))
+            possible = set(ts_bin(i) for i in range(start - 1, end + 2))
+            data = _dbase32py.db32dec(_id)
+            self.assertIn(data[:4], possible)
+            accum.add(data[4:])
+
+            # Current timestamp:
+            timestamp = time.time()
+            _id = time_id(timestamp)
+            self.assertIsInstance(_id, str)
+            self.assertEqual(len(_id), 24)
+            self.assertTrue(set(_id).issubset(_dbase32py.DB32_FORWARD))
+            data = _dbase32py.db32dec(_id)
+            self.assertEqual(data[:4], ts_bin(timestamp))
+            accum.add(data[4:])
+
+            # Smallest timestamp:
+            _id = time_id(0)
+            self.assertIsInstance(_id, str)
+            self.assertEqual(len(_id), 24)
+            self.assertTrue(set(_id).issubset(_dbase32py.DB32_FORWARD))
+            data = _dbase32py.db32dec(_id)
+            self.assertEqual(data[:4], bytes([0, 0, 0, 0]))
+            accum.add(data[4:])
+
+            # Largest timestamp:
+            _id = time_id(2**32 - 1)
+            self.assertIsInstance(_id, str)
+            self.assertEqual(len(_id), 24)
+            self.assertTrue(set(_id).issubset(_dbase32py.DB32_FORWARD))
+            data = _dbase32py.db32dec(_id)
+            self.assertEqual(data[:4], bytes([255, 255, 255, 255]))
+            accum.add(data[4:])
+
+        # Make sure final 80 bits are actually random:
+        self.assertEqual(len(accum), 1000)
 
     def test_db32_relpath(self):
         db32_relpath = self.getattr('db32_relpath')
