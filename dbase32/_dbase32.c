@@ -375,7 +375,7 @@ db32enc(PyObject *self, PyObject *args)
  * C implementation of `dbase32.db32dec()`
  */
 static PyObject *
-dbase32_db32dec(PyObject *self, PyObject *args)
+db32dec(PyObject *self, PyObject *args)
 {
     size_t txt_len = 0;
     size_t bin_len = 0;
@@ -412,7 +412,7 @@ dbase32_db32dec(PyObject *self, PyObject *args)
     }
     bin_buf = (uint8_t *)PyBytes_AS_STRING(ret);
 
-    /* _decode() returns 0 on success, 224 on invalid Dbase32 */
+    /* `_decode()` returns 0 on success, 224 on invalid Dbase32 */
     status = _decode(txt_buf, txt_len, bin_buf, bin_len);
     if (status == 224) {
         Py_CLEAR(ret);
@@ -641,7 +641,7 @@ dbase32_time_id(PyObject *self, PyObject *args, PyObject *kw)
 /* module init */
 static struct PyMethodDef dbase32_functions[] = {
     {"db32enc", db32enc, METH_VARARGS, "db32enc(data)"},
-    {"db32dec", dbase32_db32dec, METH_VARARGS, "db32dec(text)"},
+    {"db32dec", db32dec, METH_VARARGS, "db32dec(text)"},
     {"isdb32", dbase32_isdb32, METH_VARARGS, "isdb32(text)"},
     {"check_db32", dbase32_check_db32, METH_VARARGS, "check_db32(text)"},
     {"random_id", (PyCFunction)dbase32_random_id, METH_VARARGS | METH_KEYWORDS,
