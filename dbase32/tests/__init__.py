@@ -505,48 +505,6 @@ class TestFunctions(TestCase):
                 )
                 self.assertEqual(sys.getrefcount(bad), 2)
 
-    def check_db32dec(self, db32dec):
-        """
-        Decoder tests both the Python and the C implementations must pass.
-        """
-        self.check_text_type(db32dec)
-        self.check_text_value(db32dec)
-
-        # Test a few handy static values:
-        self.assertEqual(db32dec('33333333'), b'\x00\x00\x00\x00\x00')
-        self.assertEqual(db32dec('YYYYYYYY'), b'\xff\xff\xff\xff\xff')
-        self.assertEqual(db32dec('3' * 96), b'\x00' * 60)
-        self.assertEqual(db32dec('Y' * 96), b'\xff' * 60)
-
-    def test_db32dec_p(self):
-        """
-        Test the pure-Python implementation of db32enc().
-        """
-        self.check_db32dec(_dbase32py.db32dec)
-
-    def test_db32dec_c(self):
-        """
-        Test the C implementation of db32enc().
-        """
-        self.skip_if_no_c_ext()
-        self.check_db32dec(_dbase32.db32dec)
-
-        # Compare against the _dbase32py.db32dec Python version:
-        for size in TXT_SIZES:
-            for i in range(1000):
-                text_s = ''.join(
-                    random.choice(_dbase32py.DB32_FORWARD)
-                    for n in range(size)
-                )
-                text_b = text_s.encode('utf-8')
-                self.assertEqual(len(text_s), size)
-                self.assertEqual(len(text_b), size)
-                data = _dbase32py.db32dec(text_s)
-                self.assertEqual(len(data), size * 5 // 8)
-                self.assertEqual(_dbase32py.db32dec(text_b), data)
-                self.assertEqual(_dbase32.db32dec(text_s), data)
-                self.assertEqual(_dbase32.db32dec(text_b), data)
-
     def check_isdb32(self, isdb32):
         self.check_text_type(isdb32)
 
@@ -900,7 +858,6 @@ class TestFunctions_Py(TestCase):
             raise Exception(
                 '{!r} has no attribute {!r}'.format(backend.__name__, name)
             )
-        # FIXME: check imported alias in dbase32 (when needed)
         return getattr(backend, name)
 
     def check_text_type(self, func):
@@ -1174,6 +1131,19 @@ class TestFunctions_Py(TestCase):
                 error.format(type(bad).__name__)
             )
 
+    def test_db32dec(self):
+        db32dec = self.getattr('db32dec')
+
+        # Common tests for text args:
+        self.check_text_type(db32dec)
+        self.check_text_value(db32dec)
+
+        # Test a few handy static values:
+        self.assertEqual(db32dec('33333333'), b'\x00\x00\x00\x00\x00')
+        self.assertEqual(db32dec('YYYYYYYY'), b'\xff\xff\xff\xff\xff')
+        self.assertEqual(db32dec('3' * 96), b'\x00' * 60)
+        self.assertEqual(db32dec('Y' * 96), b'\xff' * 60)
+
     def test_db32_relpath(self):
         db32_relpath = self.getattr('db32_relpath')
         self.check_text_type(db32_relpath)
@@ -1195,4 +1165,23 @@ class TestFunctions_C(TestFunctions_Py):
                     _dbase32.db32enc(data),
                     _dbase32py.db32enc(data)
                 )
+
+    def test_db32dec(self):
+        super().test_db32dec()
+
+        # Compare against the _dbase32py.db32dec Python version:
+        for size in TXT_SIZES:
+            for i in range(1000):
+                text_s = ''.join(
+                    random.choice(_dbase32py.DB32_FORWARD)
+                    for n in range(size)
+                )
+                text_b = text_s.encode('utf-8')
+                self.assertEqual(len(text_s), size)
+                self.assertEqual(len(text_b), size)
+                data = _dbase32py.db32dec(text_s)
+                self.assertEqual(len(data), size * 5 // 8)
+                self.assertEqual(_dbase32py.db32dec(text_b), data)
+                self.assertEqual(_dbase32.db32dec(text_s), data)
+                self.assertEqual(_dbase32.db32dec(text_b), data)
 
