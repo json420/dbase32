@@ -302,97 +302,6 @@ class TestFunctions(TestCase):
         self.assertEqual(make_string(4, 8, 'A', 'B', 'C'), 'AAAABCCC')
         self.assertEqual(make_string(7, 8, 'A', 'B', 'C'), 'AAAAAAAB')
 
-    def check_db32enc(self, db32enc):
-        """
-        Encoder tests both the Python and the C implementations must pass.
-        """
-        # Test when len(data) is too small:
-        with self.assertRaises(ValueError) as cm:
-            db32enc(b'')
-        self.assertEqual(
-            str(cm.exception),
-            'len(data) is 0, need 5 <= len(data) <= 60'
-        )
-        with self.assertRaises(ValueError) as cm:
-            db32enc(b'four')
-        self.assertEqual(
-            str(cm.exception),
-            'len(data) is 4, need 5 <= len(data) <= 60'
-        )
-
-        # Test when len(data) is too big:
-        with self.assertRaises(ValueError) as cm:
-            db32enc(b'B' * 61)
-        self.assertEqual(
-            str(cm.exception),
-            'len(data) is 61, need 5 <= len(data) <= 60'
-        )
-
-        # Test when len(data) % 5 != 0:
-        with self.assertRaises(ValueError) as cm:
-            db32enc(b'B' * 41)
-        self.assertEqual(
-            str(cm.exception),
-            'len(data) is 41, need len(data) % 5 == 0'
-        )
-
-        # Test a few handy static values:
-        self.assertEqual(db32enc(b'\x00\x00\x00\x00\x00'), '33333333')
-        self.assertEqual(db32enc(b'\xff\xff\xff\xff\xff'), 'YYYYYYYY')
-        self.assertEqual(db32enc(b'\x00' * 60), '3' * 96)
-        self.assertEqual(db32enc(b'\xff' * 60), 'Y' * 96)
-
-        # Test all good symbols:
-        int_list = list(range(32))
-        self.assertEqual(
-            db32enc(make_bytes(int_list)),
-            '3456789ABCDEFGHIJKLMNOPQRSTUVWXY'
-        )
-        int_list.reverse()
-        self.assertEqual(
-            db32enc(make_bytes(int_list)),
-            'YXWVUTSRQPONMLKJIHGFEDCBA9876543'
-        )
-
-        # Python >= 3.5 uses different buffer-related TypeError messages:
-        if sys.version_info >= (3, 5):
-            error = 'a bytes-like object is required, not {!r}'
-        else:
-            error = '{!r} does not support the buffer interface'
-
-        # Test with wrong type:
-        good = b'Bytes'
-        self.assertEqual(db32enc(good), 'BCVQBSEM')
-        for bad in [good.decode(), 17, 18.5]:
-            with self.assertRaises(TypeError) as cm:
-                db32enc(bad)
-            self.assertEqual(
-                str(cm.exception),
-                error.format(type(bad).__name__)
-            )
-
-    def test_db32enc_p(self):
-        """
-        Test the pure-Python implementation of db32enc().
-        """
-        self.check_db32enc(_dbase32py.db32enc)
-
-    def test_db32enc_c(self):
-        """
-        Test the C implementation of db32enc().
-        """
-        self.skip_if_no_c_ext()
-        self.check_db32enc(_dbase32.db32enc)
-
-        # Compare against the Python version of db32enc
-        for size in BIN_SIZES:
-            for i in range(5000):
-                data = os.urandom(size)
-                self.assertEqual(
-                    _dbase32.db32enc(data),
-                    _dbase32py.db32enc(data)
-                )
-
     def check_text_type(self, func):
         """
         Common TypeError tests for `db32dec()`, `check_db32()`, and `isdb32()`.
@@ -1197,6 +1106,74 @@ class TestFunctions_Py(TestCase):
                 )
                 self.assertEqual(sys.getrefcount(bad), 2)
 
+    def test_db32enc(self):
+        db32enc = self.getattr('db32enc')
+
+        # Test when len(data) is too small:
+        with self.assertRaises(ValueError) as cm:
+            db32enc(b'')
+        self.assertEqual(
+            str(cm.exception),
+            'len(data) is 0, need 5 <= len(data) <= 60'
+        )
+        with self.assertRaises(ValueError) as cm:
+            db32enc(b'four')
+        self.assertEqual(
+            str(cm.exception),
+            'len(data) is 4, need 5 <= len(data) <= 60'
+        )
+
+        # Test when len(data) is too big:
+        with self.assertRaises(ValueError) as cm:
+            db32enc(b'B' * 61)
+        self.assertEqual(
+            str(cm.exception),
+            'len(data) is 61, need 5 <= len(data) <= 60'
+        )
+
+        # Test when len(data) % 5 != 0:
+        with self.assertRaises(ValueError) as cm:
+            db32enc(b'B' * 41)
+        self.assertEqual(
+            str(cm.exception),
+            'len(data) is 41, need len(data) % 5 == 0'
+        )
+
+        # Test a few handy static values:
+        self.assertEqual(db32enc(b'\x00\x00\x00\x00\x00'), '33333333')
+        self.assertEqual(db32enc(b'\xff\xff\xff\xff\xff'), 'YYYYYYYY')
+        self.assertEqual(db32enc(b'\x00' * 60), '3' * 96)
+        self.assertEqual(db32enc(b'\xff' * 60), 'Y' * 96)
+
+        # Test all good symbols:
+        int_list = list(range(32))
+        self.assertEqual(
+            db32enc(make_bytes(int_list)),
+            '3456789ABCDEFGHIJKLMNOPQRSTUVWXY'
+        )
+        int_list.reverse()
+        self.assertEqual(
+            db32enc(make_bytes(int_list)),
+            'YXWVUTSRQPONMLKJIHGFEDCBA9876543'
+        )
+
+        # Python >= 3.5 uses different buffer-related TypeError messages:
+        if sys.version_info >= (3, 5):
+            error = 'a bytes-like object is required, not {!r}'
+        else:
+            error = '{!r} does not support the buffer interface'
+
+        # Test with wrong type:
+        good = b'Bytes'
+        self.assertEqual(db32enc(good), 'BCVQBSEM')
+        for bad in [good.decode(), 17, 18.5]:
+            with self.assertRaises(TypeError) as cm:
+                db32enc(bad)
+            self.assertEqual(
+                str(cm.exception),
+                error.format(type(bad).__name__)
+            )
+
     def test_db32_relpath(self):
         db32_relpath = self.getattr('db32_relpath')
         self.check_text_type(db32_relpath)
@@ -1206,4 +1183,16 @@ class TestFunctions_Py(TestCase):
 
 class TestFunctions_C(TestFunctions_Py):
     backend = _dbase32
+
+    def test_db32enc(self):
+        super().test_db32enc()
+
+        # Compare against the Python version of db32enc
+        for size in BIN_SIZES:
+            for i in range(5000):
+                data = os.urandom(size)
+                self.assertEqual(
+                    _dbase32.db32enc(data),
+                    _dbase32py.db32enc(data)
+                )
 
