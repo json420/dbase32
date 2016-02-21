@@ -739,8 +739,8 @@ db32_path(PyObject *self, PyObject *args)
         end_buf[3] = '/';
         memcpy(end_buf + 4, txt_buf + 2, txt_len - 2);
         ret = PyUnicode_Concat(parent, end);
-        Py_CLEAR(end);
     }
+    Py_CLEAR(end);
     return ret;
 }
 
