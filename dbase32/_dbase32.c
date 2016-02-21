@@ -466,7 +466,7 @@ isdb32(PyObject *self, PyObject *args)
  * C implementation of `dbase32.check_db32()`
  */
 static PyObject *
-dbase32_check_db32(PyObject *self, PyObject *args)
+check_db32(PyObject *self, PyObject *args)
 {
     size_t txt_len = 0;
     const uint8_t *txt_buf = NULL;
@@ -492,7 +492,7 @@ dbase32_check_db32(PyObject *self, PyObject *args)
         return NULL;
     }
 
-    /* _validate() returns 0 on success, 224 on invalid Dbase32 */
+    /* `_validate()` returns 0 on success, 224 on invalid Dbase32 */
     status = _validate(txt_buf, txt_len);
     if (status == 0) {
         Py_RETURN_NONE;
@@ -643,7 +643,7 @@ static struct PyMethodDef dbase32_functions[] = {
     {"db32enc", db32enc, METH_VARARGS, "db32enc(data)"},
     {"db32dec", db32dec, METH_VARARGS, "db32dec(text)"},
     {"isdb32", isdb32, METH_VARARGS, "isdb32(text)"},
-    {"check_db32", dbase32_check_db32, METH_VARARGS, "check_db32(text)"},
+    {"check_db32", check_db32, METH_VARARGS, "check_db32(text)"},
     {"random_id", (PyCFunction)dbase32_random_id, METH_VARARGS | METH_KEYWORDS,
         "random_id(numbytes=15)"},
     {"time_id", (PyCFunction)dbase32_time_id, METH_VARARGS | METH_KEYWORDS,
