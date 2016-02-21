@@ -359,31 +359,6 @@ class TestFunctions(TestCase):
         sort_by_txt = sorted(pairs, key=lambda t: t[1])
         self.assertEqual(sort_by_bin, sort_by_txt)
 
-    def test_roundtrip_p(self):
-        """
-        Test encode/decode round-trip with Python implementation.
-        """
-        for size in BIN_SIZES:
-            for i in range(1000):
-                data = os.urandom(size)
-                db32 = _dbase32py.db32enc(data)
-                self.assertEqual(_dbase32py.db32dec(db32), data)
-                self.assertEqual(_dbase32py.db32dec(db32.encode('utf-8')), data)
-
-    def test_roundtrip_c(self):
-        """
-        Test encode/decode round-trip with C implementation.
-        """
-        self.skip_if_no_c_ext()
-
-        # The C implementation is wicked fast, so let's test a *lot* of values:
-        for size in BIN_SIZES:
-            for i in range(50 * 1000):
-                data = os.urandom(size)
-                db32 = _dbase32.db32enc(data)
-                self.assertEqual(_dbase32.db32dec(db32), data)
-                self.assertEqual(_dbase32.db32dec(db32.encode('utf-8')), data)
-
 
 class BackendTestCase(TestCase):
     """
@@ -719,6 +694,20 @@ class TestFunctions_Py(BackendTestCase):
         # For override in TestFunctions_C:
         return db32dec
 
+    def test_db32enc_db32dec_roundtrip(self):
+        """
+        Test encode/decode round-trip between `db32enc()` and `db32dec()`.
+        """
+        db32enc = self.getattr('db32enc')
+        db32dec = self.getattr('db32dec')
+
+        for size in BIN_SIZES:
+            for i in range(5000):
+                data = os.urandom(size)
+                text = db32enc(data)
+                self.assertEqual(db32dec(text), data)
+                self.assertEqual(db32dec(text.encode()), data)
+
     def test_isdb32(self):
         isdb32 = self.getattr('isdb32')
 
@@ -971,7 +960,7 @@ class TestFunctions_C(TestFunctions_Py):
         py_db32enc = _dbase32py.db32enc
         self.assertIsNot(db32enc, py_db32enc)
 
-        # Compare against the Python version of db32enc
+        # Compare against the Python version of db32enc:
         for size in BIN_SIZES:
             for i in range(5000):
                 data = os.urandom(size)
