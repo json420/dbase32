@@ -21,6 +21,7 @@
  */
 
 #include <Python.h>
+#include <stdbool.h>
 
 #define DB32ALPHABET "3456789ABCDEFGHIJKLMNOPQRSTUVWXY"
 #define MAX_BIN_LEN 60
@@ -129,7 +130,7 @@ static const uint8_t DB32_REVERSE[256] __attribute__ ((aligned (64))) = {
 
 
 /*
- * For correctness, we declare the three internal dbase32 C functions with
+ * For correctness, we declare the four internal dbase32 C functions with
  * "__attribute__ ((warn_unused_result))":
  */
 static uint8_t _encode(const uint8_t *, const size_t, uint8_t *, const size_t)
@@ -139,6 +140,9 @@ static uint8_t _decode(const uint8_t *, const size_t, uint8_t *, const size_t)
     __attribute__ ((warn_unused_result));
 
 static uint8_t _validate(const uint8_t *, const size_t)
+    __attribute__ ((warn_unused_result));
+
+static bool _check_txt_len(const size_t)
     __attribute__ ((warn_unused_result));
 
 
@@ -325,6 +329,36 @@ _validate(const uint8_t *txt_buf, const size_t txt_len)
 
 
 /*
+ * _check_txt_len(): validate length of a Dbase32 ID.
+ *
+ * Used by `db32dec()`, `check_db32()`, and `db32_relpath()`.
+ *
+ * If *txt_len* fits the requirements for a well-formed Dbase32-encoded ID, this
+ * function returns `true`.
+ *
+ * Otherwise this function sets an appropriate Python exception and returns
+ * `false`.
+ */
+static bool
+_check_txt_len(const size_t txt_len)
+{
+    if (txt_len < 8 || txt_len > MAX_TXT_LEN) {
+        PyErr_Format(PyExc_ValueError,
+            "len(text) is %u, need 8 <= len(text) <= %u", txt_len, MAX_TXT_LEN
+        );
+        return false;
+    }
+    if (txt_len % 8 != 0) {
+        PyErr_Format(PyExc_ValueError,
+            "len(text) is %u, need len(text) % 8 == 0", txt_len
+        );
+        return false;
+    }
+    return true;
+}
+
+
+/*
  * C implementation of `dbase32.db32enc()`
  */
 static PyObject *
@@ -390,17 +424,8 @@ db32dec(PyObject *self, PyObject *args)
         return NULL;
     }
 
-    /* Only decode well-formed IDs */
-    if (txt_len < 8 || txt_len > MAX_TXT_LEN) {
-        PyErr_Format(PyExc_ValueError,
-            "len(text) is %u, need 8 <= len(text) <= %u", txt_len, MAX_TXT_LEN
-        );
-        return NULL;
-    }
-    if (txt_len % 8 != 0) {
-        PyErr_Format(PyExc_ValueError,
-            "len(text) is %u, need len(text) % 8 == 0", txt_len
-        );
+    /* Ensure that txt_len is valid for well-formed IDs */
+    if (! _check_txt_len(txt_len)) {
         return NULL;
     }
 
@@ -479,16 +504,7 @@ check_db32(PyObject *self, PyObject *args)
     }
 
     /* Ensure that txt_len is valid for well-formed IDs */
-    if (txt_len < 8 || txt_len > MAX_TXT_LEN) {
-        PyErr_Format(PyExc_ValueError,
-            "len(text) is %u, need 8 <= len(text) <= %u", txt_len, MAX_TXT_LEN
-        );
-        return NULL;
-    }
-    if (txt_len % 8 != 0) {
-        PyErr_Format(PyExc_ValueError,
-            "len(text) is %u, need len(text) % 8 == 0", txt_len
-        );
+    if (! _check_txt_len(txt_len)) {
         return NULL;
     }
 
@@ -657,16 +673,7 @@ db32_relpath(PyObject *self, PyObject *args)
     }
 
     /* Ensure that txt_len is valid for well-formed IDs */
-    if (txt_len < 8 || txt_len > MAX_TXT_LEN) {
-        PyErr_Format(PyExc_ValueError,
-            "len(text) is %u, need 8 <= len(text) <= %u", txt_len, MAX_TXT_LEN
-        );
-        return NULL;
-    }
-    if (txt_len % 8 != 0) {
-        PyErr_Format(PyExc_ValueError,
-            "len(text) is %u, need len(text) % 8 == 0", txt_len
-        );
+    if (! _check_txt_len(txt_len)) {
         return NULL;
     }
 
