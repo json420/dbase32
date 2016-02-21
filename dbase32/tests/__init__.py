@@ -960,3 +960,250 @@ class TestFunctions(TestCase):
                 self.assertEqual(_dbase32.db32dec(db32), data)
                 self.assertEqual(_dbase32.db32dec(db32.encode('utf-8')), data)
 
+
+class TestFunctions_Py(TestCase):
+    backend = _dbase32py
+
+    def setUp(self):
+        backend = self.backend
+        cls = self.__class__
+        name = cls.__name__
+        bases = cls.__bases__
+        self.assertEqual(len(bases), 1)
+        if name.endswith('_Py'):
+            self.assertIs(backend, _dbase32py)
+            self.assertIs(bases[0], TestCase)
+        elif name.endswith('_C'):
+            self.assertIs(backend, _dbase32)
+            self.assertIs(bases[0], TestFunctions_Py)
+        else:
+            raise Exception(
+                'bad BackendTestCase subclass name: {!r}'.format(name)
+            )
+        if backend is None:
+            self.skipTest('cannot import `dbase32._dbase32` C extension')
+
+    def getattr(self, name):
+        backend = self.backend
+        self.assertIn(backend, (_dbase32py, _dbase32))
+        self.assertIsNotNone(backend)
+        if not hasattr(backend, name):
+            raise Exception(
+                '{!r} has no attribute {!r}'.format(backend.__name__, name)
+            )
+        # FIXME: check imported alias in dbase32 (when needed)
+        return getattr(backend, name)
+
+    def check_text_type(self, func):
+        """
+        Common TypeError tests for `db32dec()`, `check_db32()`, and `isdb32()`.
+        """
+
+        # Python >= 3.5 uses different buffer-related TypeError messages:
+        if sys.version_info >= (3, 5):
+            error1 = 'a bytes-like object is required, not {!r}'
+            error2 = 'must be read-only bytes-like object, not bytearray'
+        else:
+            error1 = '{!r} does not support the buffer interface'
+            error2 = 'must be read-only pinned buffer, not bytearray'
+
+        # Check that appropriate TypeError is raised:
+        with self.assertRaises(TypeError) as cm:
+            func(17)
+        self.assertEqual(str(cm.exception), error1.format('int'))
+        with self.assertRaises(TypeError) as cm:
+            func(18.5)
+        self.assertEqual(str(cm.exception), error1.format('float'))
+        with self.assertRaises(TypeError) as cm:
+            func(bytearray(b'3399AAYY'))
+        self.assertEqual(str(cm.exception), error2)
+
+        # Sanity check to make sure both str and bytes can be decoded/validated:
+        func('3399AAYY')
+        func(b'3399AAYY')
+
+    def check_text_value(self, func):
+        """
+        Common ValueError tests for `db32dec()` and `check_db32()`.
+        """
+        # Test when len(text) is too small:
+        with self.assertRaises(ValueError) as cm:
+            func('')
+        self.assertEqual(
+            str(cm.exception),
+            'len(text) is 0, need 8 <= len(text) <= 96'
+        )
+        with self.assertRaises(ValueError) as cm:
+            func('-seven-')
+        self.assertEqual(
+            str(cm.exception),
+            'len(text) is 7, need 8 <= len(text) <= 96'
+        )
+
+        # Test when len(text) is too big:
+        with self.assertRaises(ValueError) as cm:
+            func('A' * 97)
+        self.assertEqual(
+            str(cm.exception),
+            'len(text) is 97, need 8 <= len(text) <= 96'
+        )
+
+        # Test when len(text) % 8 != 0:
+        with self.assertRaises(ValueError) as cm:
+            func('A' * 65)
+        self.assertEqual(
+            str(cm.exception),
+            'len(text) is 65, need len(text) % 8 == 0'
+        )
+
+        # Test with invalid base32 characters:
+        with self.assertRaises(ValueError) as cm:
+            func('CDEFCDE2')
+        self.assertEqual(str(cm.exception), "invalid Dbase32: 'CDEFCDE2'")
+        with self.assertRaises(ValueError) as cm:
+            func('CDEFCDE=')
+        self.assertEqual(str(cm.exception), "invalid Dbase32: 'CDEFCDE='")
+        with self.assertRaises(ValueError) as cm:
+            func('CDEFCDEZ')
+        self.assertEqual(str(cm.exception), "invalid Dbase32: 'CDEFCDEZ'")
+
+        # Test that it stops at the first invalid letter:
+        with self.assertRaises(ValueError) as cm:
+            func('2ZZZZZZZ')
+        self.assertEqual(str(cm.exception), "invalid Dbase32: '2ZZZZZZZ'")
+        with self.assertRaises(ValueError) as cm:
+            func('AAAAAA=Z')
+        self.assertEqual(str(cm.exception), "invalid Dbase32: 'AAAAAA=Z'")
+        with self.assertRaises(ValueError) as cm:
+            func('CDEZ=2=2')
+        self.assertEqual(str(cm.exception), "invalid Dbase32: 'CDEZ=2=2'")
+
+        # Test invalid letter at each possible position in the string
+        for size in TXT_SIZES:
+            for i in range(size):
+                # Test when there is a single invalid letter:
+                txt = make_string(i, size, 'A', '/')
+                with self.assertRaises(ValueError) as cm:
+                    func(txt)
+                self.assertEqual(str(cm.exception),
+                    'invalid Dbase32: {!r}'.format(txt)
+                )
+                txt = make_string(i, size, 'A', '.')
+                with self.assertRaises(ValueError) as cm:
+                    func(txt)
+                self.assertEqual(str(cm.exception),
+                    'invalid Dbase32: {!r}'.format(txt)
+                )
+
+                # Test that it stops at the *first* invalid letter:
+                txt = make_string(i, size, 'A', '/', '.')
+                with self.assertRaises(ValueError) as cm:
+                    func(txt)
+                self.assertEqual(str(cm.exception),
+                    'invalid Dbase32: {!r}'.format(txt)
+                )
+                txt = make_string(i, size, 'A', '.', '/')
+                with self.assertRaises(ValueError) as cm:
+                    func(txt)
+                self.assertEqual(str(cm.exception),
+                    'invalid Dbase32: {!r}'.format(txt)
+                )
+
+        # Test a slew of no-no letters:
+        for L in BAD_LETTERS:
+            text = ('A' * 7) + L
+            self.assertEqual(sys.getrefcount(text), 2)
+            with self.assertRaises(ValueError) as cm:
+                func(text)
+            self.assertEqual(str(cm.exception),
+                'invalid Dbase32: {!r}'.format(text)
+            )
+            self.assertEqual(sys.getrefcount(text), 2)
+            data = text.encode()
+            self.assertEqual(sys.getrefcount(data), 2)
+            with self.assertRaises(ValueError) as cm:
+                func(data)
+            self.assertEqual(str(cm.exception),
+                'invalid Dbase32: {!r}'.format(data)
+            )
+            self.assertEqual(sys.getrefcount(data), 2)
+
+        # Test with multi-byte UTF-8 characters:
+        bad_s = '™' * 8
+        bad_b = bad_s.encode('utf-8')
+        self.assertEqual(len(bad_s), 8)
+        self.assertEqual(len(bad_b), 24)
+        for value in [bad_s, bad_b]:
+            refcount = sys.getrefcount(value)
+            with self.assertRaises(ValueError) as cm:
+                func(value)
+            self.assertEqual(str(cm.exception),
+                'invalid Dbase32: {!r}'.format(value)
+            )
+            self.assertEqual(sys.getrefcount(value), refcount)
+        bad_s = 'AABBCCD™'
+        bad_b = bad_s.encode('utf-8')
+        self.assertEqual(len(bad_s), 8)
+        self.assertEqual(len(bad_b), 10)
+        for value in [bad_s, bad_b]:
+            refcount = sys.getrefcount(value)
+            with self.assertRaises(ValueError) as cm:
+                func(value)
+            self.assertEqual(
+                str(cm.exception),
+                'len(text) is 10, need len(text) % 8 == 0'
+            )
+            self.assertEqual(sys.getrefcount(value), refcount)
+        bad_s = 'AABBC™'
+        bad_b = bad_s.encode('utf-8')
+        self.assertEqual(len(bad_s), 6)
+        self.assertEqual(len(bad_b), 8)
+        for value in [bad_s, bad_b]:
+            refcount = sys.getrefcount(value)
+            with self.assertRaises(ValueError) as cm:
+                func(value)
+            self.assertEqual(str(cm.exception),
+                'invalid Dbase32: {!r}'.format(value)
+            )
+            self.assertEqual(sys.getrefcount(value), refcount)
+
+        # Random bytes with invalid length:
+        for size in TXT_SIZES:
+            for offset in (-1, 1):
+                badsize = size + offset
+                bad = os.urandom(badsize)
+                self.assertEqual(sys.getrefcount(bad), 2)
+                with self.assertRaises(ValueError) as cm:
+                    func(bad)
+                if 8 <= badsize <= 96:
+                    self.assertEqual(str(cm.exception),
+                        'len(text) is {}, need len(text) % 8 == 0'.format(badsize)
+                    )
+                else:
+                    self.assertEqual(str(cm.exception),
+                        'len(text) is {}, need 8 <= len(text) <= 96'.format(badsize)
+                    )
+                self.assertEqual(sys.getrefcount(bad), 2)
+
+        # Random bytes with invalid characeters:
+        for size in TXT_SIZES:
+            for i in range(100):
+                bad = os.urandom(size)
+                self.assertEqual(sys.getrefcount(bad), 2)
+                with self.assertRaises(ValueError) as cm:
+                    func(bad)
+                self.assertEqual(str(cm.exception),
+                    'invalid Dbase32: {!r}'.format(bad)
+                )
+                self.assertEqual(sys.getrefcount(bad), 2)
+
+    def test_db32_relpath(self):
+        db32_relpath = self.getattr('db32_relpath')
+        self.check_text_type(db32_relpath)
+        self.check_text_value(db32_relpath)  
+        self.assertEqual(db32_relpath('BBAAAAAA'), 'BB/AAAAAA')
+
+
+class TestFunctions_C(TestFunctions_Py):
+    backend = _dbase32
+
