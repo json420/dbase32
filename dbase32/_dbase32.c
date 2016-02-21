@@ -763,7 +763,7 @@ static struct PyMethodDef dbase32_functions[] = {
     {"time_id", (PyCFunction)time_id, METH_VARARGS | METH_KEYWORDS,
         "time_id(timestamp=-1)"},
     {"db32_relpath", db32_relpath, METH_VARARGS, "db32_relpath(text)"},
-    {"db32_path", db32_path, METH_VARARGS, "db32_path(text)"},
+    {"db32_path", db32_path, METH_VARARGS, "db32_path(parentdir, text)"},
     {NULL, NULL, 0, NULL}
 };
 

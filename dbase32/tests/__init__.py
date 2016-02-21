@@ -981,11 +981,15 @@ class TestFunctions_Py(BackendTestCase):
     def test_db32_path(self):
         db32_path = self.getattr('db32_path')
         db32_relpath = self.getattr('db32_relpath')
-        parent = '/'.join(['/tmp', dbase32.random_id(), dbase32.random_id()])
+
+        # Use fastest random_id() implementation regardless of backend:
+        fastest = (_dbase32 if C_EXT_AVAIL else _dbase32py)
+        random_id = fastest.random_id
+        parentdir = '/'.join(['/tmp', random_id(), random_id()])
 
         # Common tests for text args:
-        self.check_text_type(db32_path, parent)
-        self.check_text_value(db32_path, parent)
+        self.check_text_type(db32_path, parentdir)
+        self.check_text_value(db32_path, parentdir)
 
         # Sanity check with a few static values:
         self.assertEqual(db32_path('/PP', 'AABBBBBB'), '/PP/AA/BBBBBB')
@@ -994,19 +998,15 @@ class TestFunctions_Py(BackendTestCase):
             '/PP/AA/BBBBBBCCCCCCCC'
         )
 
-        # Use fastest random_id() implementation regardless of backend:
-        fastest = (_dbase32 if C_EXT_AVAIL else _dbase32py)
-        random_id = fastest.random_id
-
         # Test with random values:
         for size in BIN_SIZES:
-            length = len(parent) + (size * 8 // 5) + 2
+            length = len(parentdir) + (size * 8 // 5) + 2
             for i in range(1000):
                 text = random_id(size)
                 rp = db32_relpath(text)
-                expected = '/'.join([parent, rp])
+                expected = '/'.join([parentdir, rp])
                 for arg in (text, text.encode()):  # Test both str and bytes
-                    p = db32_path(parent, text)
+                    p = db32_path(parentdir, text)
                     self.assertIs(type(p), str)
                     self.assertEqual(len(p), length)
                     self.assertEqual(p, expected)
