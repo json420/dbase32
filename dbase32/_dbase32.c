@@ -368,7 +368,9 @@ _check_txt_len(const size_t txt_len)
  *
  * When `_decode()` or `_validate()` do not return 0, their caller should call
  * this function, which will either set a Python exception or terminate the
- * process as appropriate.
+ * process as appropriate.  The exception to this rule is `isdb32()`, which will
+ * return Python `False` rather than raising a Python exception when an ID is
+ * not valid.
  */
 static void
 _handle_invalid_dbase32(const uint8_t status, PyObject *text)
