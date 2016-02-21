@@ -192,7 +192,6 @@ _encode(const uint8_t *bin_buf, const size_t bin_len,
         bin_buf += 5;
         txt_buf += 8;
     }
-
     return 0;
 }
 
