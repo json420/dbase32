@@ -48,7 +48,7 @@ from dbase32 import (
     random_id,
     time_id,
     db32_relpath,
-    db32_path,
+    db32_abspath,
 )
 
 text = {!r}
@@ -102,7 +102,7 @@ def run_benchmark(numbytes=30):
 
     yield 'Validated Path Constructions/second:'
     yield run('db32_relpath(text)')
-    yield run('db32_path(parentdir, text)')
+    yield run('db32_abspath(parentdir, text)')
 
     yield 'Random IDs/second compared to os.urandom():'
     yield run('urandom(15)', 200)

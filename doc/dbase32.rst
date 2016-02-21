@@ -270,7 +270,7 @@ Functions
 
 
 
-Path functions
+Path Functions
 --------------
 
 Dbase32 1.6 introduced two **experimental** functions that test whether some
@@ -284,7 +284,7 @@ by the `Dmedia FileStore`_, where the first two characters of a valid Dbase32 ID
 are used to construct a sub-directory name, and the remaining characters are
 used to construct a filename within that sub-directory.
 
-The :func:`db32_path()` function constructs an absolute path where the Dbase32
+The :func:`db32_abspath()` function constructs an absolute path where the Dbase32
 ID is used to append a sub-directory name plus a filename to a provided parent
 directory name.  For example, you could build such an absolute path from a valid
 Dbase32 ID like this:
@@ -296,10 +296,10 @@ Dbase32 ID like this:
 >>> '/'.join([parentdir, _id[0:2], _id[2:]])
 '/my/parent/directory/FC/NPVRELI7J9FUUI'
 
-Which is exactly what the :func:`db32_path()` function does:
+Which is exactly what the :func:`db32_abspath()` function does:
 
->>> from dbase32 import db32_path
->>> db32_path(parentdir, _id)
+>>> from dbase32 import db32_abspath
+>>> db32_abspath(parentdir, _id)
 '/my/parent/directory/FC/NPVRELI7J9FUUI'
 
 On the other hand, the :func:`db32_relpath()` function constructs an
@@ -334,7 +334,7 @@ URLs.  Till the details are sorted out in terms of how best to do this in the
 API, they've been hard-coded to use ``'/'``.
 
 
-.. function:: db32_path(parentdir, text)
+.. function:: db32_abspath(parentdir, text)
 
     Construct an absolute path with a 2-character directory name plus filename.
 
@@ -345,14 +345,14 @@ API, they've been hard-coded to use ``'/'``.
 
     For example:
 
-    >>> from dbase32 import db32_path
-    >>> db32_path('/my/parent/directory', 'HELLOALL')
+    >>> from dbase32 import db32_abspath
+    >>> db32_abspath('/my/parent/directory', 'HELLOALL')
     '/my/parent/directory/HE/LLOALL'
 
     Similar to :func:`check_db32()`, a ``ValueError`` will be raised if *text*
     does not contain a valid Dbase32 ID:
 
-    >>> db32_path('/my/parent/directory', '../very/naughty/')
+    >>> db32_abspath('/my/parent/directory', '../very/naughty/')
     Traceback (most recent call last):
       ...
     ValueError: invalid Dbase32: '../very/naughty/'
@@ -360,12 +360,12 @@ API, they've been hard-coded to use ``'/'``.
     The *text* argument can be a ``str`` or ``bytes`` instance, but the return
     value is always a ``str`` instance:
 
-    >>> db32_path('/my/parent/directory', b'BYTESFOO')
+    >>> db32_abspath('/my/parent/directory', b'BYTESFOO')
     '/my/parent/directory/BY/TESFOO'
 
     However, the *parentdir* argument must always be a ``str`` instance.
 
-    Note that currently :func:`db32_path()` does no validation of the
+    Note that currently :func:`db32_abspath()` does no validation of the
     *parentdir* (although it may in the future).  Typically you'll construct
     many file-system paths from a single parent directory, so you likely want
     to initially validate the *parentdir* to ensure that::
