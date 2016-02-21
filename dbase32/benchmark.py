@@ -36,8 +36,8 @@ import dbase32
 SETUP = """
 import os
 from os import urandom
-
 from base64 import b64encode, b64decode
+
 from dbase32 import (
     db32dec,
     db32enc,
@@ -46,6 +46,7 @@ from dbase32 import (
     random_id,
     time_id,
     db32_relpath,
+    db32_path,
 )
 
 text = {!r}
@@ -58,6 +59,8 @@ assert db32dec(text) == data
 
 assert isdb32(text) is True
 assert isdb32(not_db32) is False
+
+parentdir = '/tmp/' + random_id()
 """
 
 
@@ -96,6 +99,7 @@ def run_benchmark(numbytes=30):
 
     yield 'Validated Path Constructions/second:'
     yield run('db32_relpath(text)')
+    yield run('db32_path(parentdir, text)')
 
     yield 'Random IDs/second compared to os.urandom():'
     yield run('urandom(15)', 200)
