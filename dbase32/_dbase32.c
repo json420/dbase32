@@ -371,18 +371,13 @@ _check_txt_len(const size_t txt_len)
  * process as appropriate.
  */
 static void
-_handle_invalid_dbase32(const uint8_t status, PyObject *args)
+_handle_invalid_dbase32(const uint8_t status, PyObject *text)
 {
-    PyObject *borrowed = NULL;
-
-    if (status != 224 || args == NULL || Py_TYPE(args) != &PyTuple_Type) {
+    if (status != 224 || text == NULL) {
         Py_FatalError("dbase32 internal error in _handle_invalid_dbase32()");
     }
     else {
-        borrowed = PyTuple_GetItem(args, 0);
-        if (borrowed != NULL) {
-            PyErr_Format(PyExc_ValueError, "invalid Dbase32: %R", borrowed);
-        }
+        PyErr_Format(PyExc_ValueError, "invalid Dbase32: %R", text);
     }
 }
 
@@ -469,7 +464,7 @@ db32dec(PyObject *self, PyObject *args)
     status = _decode(txt_buf, txt_len, bin_buf, bin_len);
     if (status != 0) {
         Py_CLEAR(ret);
-        _handle_invalid_dbase32(status, args);
+        _handle_invalid_dbase32(status, PyTuple_GetItem(args, 0));
     }
     return ret;
 }
@@ -534,7 +529,7 @@ check_db32(PyObject *self, PyObject *args)
     /* `_validate()` returns 0 on success, 224 on invalid Dbase32 */
     status = _validate(txt_buf, txt_len);
     if (status != 0) {
-        _handle_invalid_dbase32(status, args);
+        _handle_invalid_dbase32(status, PyTuple_GetItem(args, 0));
         return NULL;
     }
     Py_RETURN_NONE;
@@ -693,7 +688,7 @@ db32_relpath(PyObject *self, PyObject *args)
     /* `_validate()` returns 0 on success, 224 on invalid Dbase32 */
     status = _validate(txt_buf, txt_len);
     if (status != 0) {
-        _handle_invalid_dbase32(status, args);
+        _handle_invalid_dbase32(status, PyTuple_GetItem(args, 0));
         return NULL;
     }
 
