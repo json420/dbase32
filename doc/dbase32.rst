@@ -5,7 +5,7 @@
     :synopsis: base32-encoding with a sorted-order alphabet (for databases)
 
 
-The :mod:`dbase32` API consists of just six functions:
+The core :mod:`dbase32` API consists of just six functions:
 
     * For encoding and decoding, there is :func:`db32enc()` and :func:`db32dec()`
 
@@ -270,6 +270,150 @@ Functions
 
 
 
+Path functions
+--------------
+
+Dbase32 1.6 introduced two **experimental** functions that test whether some
+untrusted input is a valid Dbase32 ID and, if valid, construct a file-system
+path from it. (Or if this unstrusted input is not a valid Dbase32 ID, these
+functions raise a ``ValueError``.)
+
+These experimental functions are currently quite inflexible and might not be
+broadly useful.  They're squarely aimed at the directory and file layout used
+by the `Dmedia FileStore`_, where the first two characters of a valid Dbase32 ID
+are used to construct a sub-directory name, and the remaining characters are
+used to construct a filename within that sub-directory.
+
+The :func:`db32_path()` function constructs an absolute path where the Dbase32
+ID is used to append a sub-directory name plus a filename to a provided parent
+directory name.  For example, you could build such an absolute path from a valid
+Dbase32 ID like this:
+
+>>> from dbase32 import check_db32
+>>> parentdir = '/my/parent/directory'
+>>> _id = 'FCNPVRELI7J9FUUI'
+>>> check_db32(_id)
+>>> '/'.join([parentdir, _id[0:2], _id[2:]])
+'/my/parent/directory/FC/NPVRELI7J9FUUI'
+
+Which is exactly what the :func:`db32_path()` function does:
+
+>>> from dbase32 import db32_path
+>>> db32_path(parentdir, _id)
+'/my/parent/directory/FC/NPVRELI7J9FUUI'
+
+On the other hand, the :func:`db32_relpath()` function constructs an
+unqualified, relative path that, among other things, can be useful when opening
+files relative to an open directory descriptor.  For example, you could build
+such a relative path from a valid Dbase32 ID like this:
+
+>>> check_db32(_id)
+>>> '/'.join([_id[0:2], _id[2:]])
+'FC/NPVRELI7J9FUUI'
+
+Which is exactly what the :func:`db32_relpath()` function does:
+
+>>> from dbase32 import db32_relpath
+>>> db32_relpath(_id)
+'FC/NPVRELI7J9FUUI'
+
+The goal of these functions is to provide a simple, high-performance way of
+constructing file-system paths from Dbase32 IDs, all while offering robust
+protection against directory traversal attacks and similar security issues.
+
+At present these fuctions are an **experimental** part of the Dbase32 API, so
+bear in mind that they still might undergo backward-incompatible changes, be
+renamed, or even be removed from the Dbase32 API altogether.
+
+Also note that these functions are currently not portable, cannot be used to
+construct file-systems paths under Windows.  They're currently hard-coded to use
+``'/'`` as the separator rather than using ``os.sep``.  The reason for this is
+that there's an interesting use-case for always using ``'/'`` as the separator
+regardless of the value of ``os.sep`` on your particular platform: constructing
+URLs.  Till the details are sorted out in terms of how best to do this in the
+API, they've been hard-coded to use ``'/'``.
+
+
+.. function:: db32_path(parentdir, text)
+
+    Construct an absolute path with a 2-character directory name plus filename.
+
+    .. warning::
+
+        This function an *experimental* part of the Dbase32 API!  It might still
+        change in backward-incompatible ways or be removed entirely!
+
+    For example:
+
+    >>> from dbase32 import db32_path
+    >>> db32_path('/my/parent/directory', 'HELLOALL')
+    '/my/parent/directory/HE/LLOALL'
+
+    Similar to :func:`check_db32()`, a ``ValueError`` will be raised if *text*
+    does not contain a valid Dbase32 ID:
+
+    >>> db32_path('/my/parent/directory', '../very/naughty/')
+    Traceback (most recent call last):
+      ...
+    ValueError: invalid Dbase32: '../very/naughty/'
+
+    The *text* argument can be a ``str`` or ``bytes`` instance, but the return
+    value is always a ``str`` instance:
+
+    >>> db32_path('/my/parent/directory', b'BYTESFOO')
+    '/my/parent/directory/BY/TESFOO'
+
+    However, the *parentdir* argument must always be a ``str`` instance.
+
+    Note that currently :func:`db32_path()` does no validation of the
+    *parentdir* (although it may in the future).  Typically you'll construct
+    many file-system paths from a single parent directory, so you likely want
+    to initially validate the *parentdir* to ensure that::
+
+        assert os.path.abspath(parentdir) == parentdir
+
+    In particular, this function assumes that the *parentdir* does not end with
+    a ``'/'`` (which the above assertion would enforce).
+
+    .. versionadded:: 1.6
+
+
+.. function:: db32_relpath(text)
+
+    Construct a relative path with a 2-character directory name plus filename.
+
+    .. warning::
+
+        This function an *experimental* part of the Dbase32 API!  It might still
+        change in backward-incompatible ways or be removed entirely!
+
+    For example:
+
+    >>> from dbase32 import db32_relpath
+    >>> db32_relpath('HELLOALL')
+    'HE/LLOALL'
+
+    Similar to :func:`check_db32()`, a ``ValueError`` will be raised if *text*
+    does not contain a valid Dbase32 ID:
+
+    >>> db32_relpath('../very/naughty/')
+    Traceback (most recent call last):
+      ...
+    ValueError: invalid Dbase32: '../very/naughty/'
+
+    The *text* argument can be a ``str`` or ``bytes`` instance, but the return
+    value is always a ``str`` instance:
+
+    >>> db32_relpath(b'BYTESFOO')
+    'BY/TESFOO'
+
+    Among other things, such a relative path can be used to open files relative
+    to an open directory descriptor.
+
+    .. versionadded:: 1.6
+
+
+
 Constants
 ---------
 
@@ -376,6 +520,7 @@ The :mod:`dbase32` module defines several handy constants:
 .. _`RFC-3548 Base32`: https://tools.ietf.org/html/rfc4648
 .. _`Novacut`: https://launchpad.net/novacut
 .. _`Dmedia`: https://launchpad.net/dmedia
+.. _`Dmedia FileStore`: https://launchpad.net/filestore
 
 .. _`C implementation`: http://bazaar.launchpad.net/~dmedia/dbase32/trunk/view/head:/dbase32/_dbase32.c
 
