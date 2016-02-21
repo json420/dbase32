@@ -34,6 +34,8 @@ import dbase32
 
 
 SETUP = """
+gc.enable()
+
 import os
 from os import urandom
 from base64 import b64encode, b64decode
@@ -50,6 +52,8 @@ from dbase32 import (
 )
 
 text = {!r}
+parentdir = {!r}
+
 data = db32dec(text)
 text_b64 = b64encode(data)
 not_db32 = text[:-1] + 'Z'
@@ -59,14 +63,13 @@ assert db32dec(text) == data
 
 assert isdb32(text) is True
 assert isdb32(not_db32) is False
-
-parentdir = '/tmp/' + random_id()
 """
 
 
 def run_benchmark(numbytes=30):
     text = dbase32.random_id(numbytes)
-    setup = SETUP.format(text)
+    parentdir = '/tmp/' + dbase32.random_id()
+    setup = SETUP.format(text, parentdir)
 
     def run(statement, k=1000):
         count = k * 1000
