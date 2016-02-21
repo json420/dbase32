@@ -38,7 +38,15 @@ import os
 from os import urandom
 
 from base64 import b64encode, b64decode
-from dbase32 import db32dec, db32enc, isdb32, check_db32, random_id, time_id
+from dbase32 import (
+    db32dec,
+    db32enc,
+    isdb32,
+    check_db32,
+    random_id,
+    time_id,
+    db32_relpath,
+)
 
 text = {!r}
 data = db32dec(text)
@@ -85,6 +93,9 @@ def run_benchmark(numbytes=30):
     yield 'Validations/second:'
     yield run('isdb32(text)')
     yield run('check_db32(text)')
+
+    yield 'Validated Path Constructions/second:'
+    yield run('db32_relpath(text)')
 
     yield 'Random IDs/second compared to os.urandom():'
     yield run('urandom(15)', 200)
