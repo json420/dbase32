@@ -415,18 +415,15 @@ db32enc(PyObject *self, PyObject *args)
         return NULL;
     }
 
-    /* Allocate destination buffer */
+    /* Allocate destination buffer and encode */
     txt_len = bin_len * 8 / 5;
     ret = PyUnicode_New((ssize_t)txt_len, DB32_END);
-    if (ret == NULL) {
-        return NULL;
-    }
-    txt_buf = (uint8_t *)PyUnicode_1BYTE_DATA(ret);
-
-    /* `_encode()` returns 0 on success */
-    if (_encode(bin_buf, bin_len, txt_buf, txt_len) != 0) {
-        Py_FatalError("dbase32 internal error in db32enc()");
-        Py_CLEAR(ret);  /* Should not be reached */
+    if (ret != NULL) {
+        txt_buf = (uint8_t *)PyUnicode_1BYTE_DATA(ret);
+        if (_encode(bin_buf, bin_len, txt_buf, txt_len) != 0) {
+            Py_FatalError("dbase32 internal error in db32enc()");
+            Py_CLEAR(ret);  /* Should not be reached */
+        }
     }
     return ret;
 }
