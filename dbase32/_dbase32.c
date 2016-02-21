@@ -279,7 +279,7 @@ _decode(const uint8_t *txt_buf, const size_t txt_len,
 /*
  * _validate(): internal Dbase32 validation function.
  *
- * Used by `isdb32()`, `check_db32()`, and `db32_relpath()`.
+ * Used by `isdb32()`, `check_db32()`, `db32_relpath()`, and `db32_path()`.
  *
  * Returns 0 when valid, 224 when invalid.
  *
@@ -331,7 +331,7 @@ _validate(const uint8_t *txt_buf, const size_t txt_len)
 /*
  * _check_txt_len(): validate the length of a Dbase32 ID.
  *
- * Used by `db32dec()`, `check_db32()`, and `db32_relpath()`.
+ * Used by `db32dec()`, `check_db32()`, `db32_relpath()`, and `db32_path()`.
  *
  * If *txt_len* fits the requirements for a well-formed Dbase32-encoded ID, this
  * function returns `true`.
@@ -360,7 +360,7 @@ _check_txt_len(const size_t txt_len)
 /*
  * _handle_invalid_dbase32(): handle a decoding or validation error.
  *
- * Used by `db32dec()`, `check_db32()`, and `db32_relpath()`.
+ * Used by `db32dec()`, `check_db32()`, `db32_relpath()`, and `db32_path()`.
  *
  * Both `_decode()` and `_validate()` return 0 on success or 224 when the text
  * in question contains invalid Dbase32 characters.  Any other status should be
