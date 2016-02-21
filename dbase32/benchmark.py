@@ -34,13 +34,26 @@ import dbase32
 
 
 SETUP = """
+gc.enable()
+
 import os
 from os import urandom
-
 from base64 import b64encode, b64decode
-from dbase32 import db32dec, db32enc, isdb32, check_db32, random_id, time_id
+
+from dbase32 import (
+    db32dec,
+    db32enc,
+    isdb32,
+    check_db32,
+    random_id,
+    time_id,
+    db32_relpath,
+    db32_path,
+)
 
 text = {!r}
+parentdir = {!r}
+
 data = db32dec(text)
 text_b64 = b64encode(data)
 not_db32 = text[:-1] + 'Z'
@@ -55,7 +68,8 @@ assert isdb32(not_db32) is False
 
 def run_benchmark(numbytes=30):
     text = dbase32.random_id(numbytes)
-    setup = SETUP.format(text)
+    parentdir = '/tmp/' + dbase32.random_id()
+    setup = SETUP.format(text, parentdir)
 
     def run(statement, k=1000):
         count = k * 1000
@@ -85,6 +99,10 @@ def run_benchmark(numbytes=30):
     yield 'Validations/second:'
     yield run('isdb32(text)')
     yield run('check_db32(text)')
+
+    yield 'Validated Path Constructions/second:'
+    yield run('db32_relpath(text)')
+    yield run('db32_path(parentdir, text)')
 
     yield 'Random IDs/second compared to os.urandom():'
     yield run('urandom(15)', 200)
