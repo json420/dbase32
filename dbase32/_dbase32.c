@@ -329,7 +329,7 @@ _validate(const uint8_t *txt_buf, const size_t txt_len)
 
 
 /*
- * _check_txt_len(): validate length of a Dbase32 ID.
+ * _check_txt_len(): validate the length of a Dbase32 ID.
  *
  * Used by `db32dec()`, `check_db32()`, and `db32_relpath()`.
  *
@@ -388,7 +388,7 @@ _handle_invalid_dbase32(const uint8_t status, PyObject *args)
 
 
 /*
- * C implementation of `dbase32.db32enc()`
+ * C implementation of `dbase32.db32enc()`.
  */
 static PyObject *
 db32enc(PyObject *self, PyObject *args)
@@ -435,7 +435,7 @@ db32enc(PyObject *self, PyObject *args)
 
 
 /*
- * C implementation of `dbase32.db32dec()`
+ * C implementation of `dbase32.db32dec()`.
  */
 static PyObject *
 db32dec(PyObject *self, PyObject *args)
@@ -476,7 +476,7 @@ db32dec(PyObject *self, PyObject *args)
 
 
 /*
- * C implementation of `dbase32.isdb32()`
+ * C implementation of `dbase32.isdb32()`.
  */
 static PyObject *
 isdb32(PyObject *self, PyObject *args)
@@ -509,7 +509,7 @@ isdb32(PyObject *self, PyObject *args)
 
 
 /*
- * C implementation of `dbase32.check_db32()`
+ * C implementation of `dbase32.check_db32()`.
  */
 static PyObject *
 check_db32(PyObject *self, PyObject *args)
@@ -539,7 +539,7 @@ check_db32(PyObject *self, PyObject *args)
 
 
 /*
- * C implementation of `dbase32.random_id()`
+ * C implementation of `dbase32.random_id()`.
  */
 static PyObject *
 random_id(PyObject *self, PyObject *args, PyObject *kw)
@@ -605,7 +605,7 @@ random_id(PyObject *self, PyObject *args, PyObject *kw)
 
 
 /*
- * C implementation of `dbase32.time_id()`
+ * C implementation of `dbase32.time_id()`.
  */
 static PyObject *
 time_id(PyObject *self, PyObject *args, PyObject *kw)
@@ -666,7 +666,7 @@ time_id(PyObject *self, PyObject *args, PyObject *kw)
 
 
 /*
- * C implementation of `dbase32.db32_relpath()`
+ * C implementation of `dbase32.db32_relpath()`.
  */
 static PyObject *
 db32_relpath(PyObject *self, PyObject *args)
@@ -694,6 +694,7 @@ db32_relpath(PyObject *self, PyObject *args)
         return NULL;
     }
 
+    /* Build the relpath */
     ret = PyUnicode_New((ssize_t)(txt_len + 1), DB32_END);
     if (ret != NULL ) {
         ret_buf = PyUnicode_1BYTE_DATA(ret);
