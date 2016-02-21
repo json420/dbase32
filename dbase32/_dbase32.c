@@ -332,7 +332,7 @@ _validate(const uint8_t *txt_buf, const size_t txt_len)
  *
  * Used by `db32dec()`, `check_db32()`, `db32_relpath()`, and `db32_path()`.
  *
- * If *txt_len* fits the requirements for a well-formed Dbase32-encoded ID, this
+ * If `txt_len` fits the requirements for a well-formed Dbase32-encoded ID, this
  * function returns `true`.
  *
  * Otherwise this function sets a Python exception and returns `false`.
