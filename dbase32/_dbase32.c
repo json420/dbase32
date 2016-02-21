@@ -194,13 +194,13 @@ _encode(const uint8_t *bin_buf, const size_t bin_len,
 
 
 /*
- * ROTATE(): macro for lookup in the rotated `DB32_REVERSE` table.
+ * _ROTATE(): macro for lookup in the rotated `DB32_REVERSE` table.
  *
  * Used by `_decode()` and `_validate()`.
  *
  * Note this macro assumes a `txt_buf` local function variable.
  */
-#define ROTATE(i) \
+#define _ROTATE(i) \
     DB32_REVERSE[(uint8_t)(txt_buf[i] - 42)]
 
 
@@ -243,14 +243,14 @@ _decode(const uint8_t *txt_buf, const size_t txt_len,
     count = txt_len / 8;
     for (r = block = 0; block < count; block++) {
         /* Pack 40 bits into the taxi (5 bits at a time) */
-        r = ROTATE(0) | (r & 224);    taxi = r;
-        r = ROTATE(1) | (r & 224);    taxi = r | (taxi << 5);
-        r = ROTATE(2) | (r & 224);    taxi = r | (taxi << 5);
-        r = ROTATE(3) | (r & 224);    taxi = r | (taxi << 5);
-        r = ROTATE(4) | (r & 224);    taxi = r | (taxi << 5);
-        r = ROTATE(5) | (r & 224);    taxi = r | (taxi << 5);
-        r = ROTATE(6) | (r & 224);    taxi = r | (taxi << 5);
-        r = ROTATE(7) | (r & 224);    taxi = r | (taxi << 5);
+        r = _ROTATE(0) | (r & 224);    taxi = r;
+        r = _ROTATE(1) | (r & 224);    taxi = r | (taxi << 5);
+        r = _ROTATE(2) | (r & 224);    taxi = r | (taxi << 5);
+        r = _ROTATE(3) | (r & 224);    taxi = r | (taxi << 5);
+        r = _ROTATE(4) | (r & 224);    taxi = r | (taxi << 5);
+        r = _ROTATE(5) | (r & 224);    taxi = r | (taxi << 5);
+        r = _ROTATE(6) | (r & 224);    taxi = r | (taxi << 5);
+        r = _ROTATE(7) | (r & 224);    taxi = r | (taxi << 5);
 
         /* Unpack 40 bits from the taxi (8 bits at a time) */
         bin_buf[0] = (taxi >> 32) & 255;
@@ -305,14 +305,14 @@ _validate(const uint8_t *txt_buf, const size_t txt_len)
      */
     count = txt_len / 8;
     for (r = block = 0; block < count; block++) {
-        r |= ROTATE(0);
-        r |= ROTATE(1);
-        r |= ROTATE(2);
-        r |= ROTATE(3);
-        r |= ROTATE(4);
-        r |= ROTATE(5);
-        r |= ROTATE(6);
-        r |= ROTATE(7);
+        r |= _ROTATE(0);
+        r |= _ROTATE(1);
+        r |= _ROTATE(2);
+        r |= _ROTATE(3);
+        r |= _ROTATE(4);
+        r |= _ROTATE(5);
+        r |= _ROTATE(6);
+        r |= _ROTATE(7);
         txt_buf += 8;  /* Move the pointer */
     }
 
