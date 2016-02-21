@@ -581,7 +581,7 @@ random_id(PyObject *self, PyObject *args, PyObject *kw)
  * C implementation of `dbase32.time_id()`
  */
 static PyObject *
-dbase32_time_id(PyObject *self, PyObject *args, PyObject *kw)
+time_id(PyObject *self, PyObject *args, PyObject *kw)
 {
     static char *keys[] = {"timestamp", NULL};
     double timestamp = -1;
@@ -626,7 +626,7 @@ dbase32_time_id(PyObject *self, PyObject *args, PyObject *kw)
     }
     txt_buf = (uint8_t *)PyUnicode_1BYTE_DATA(ret);
 
-    /* _encode() returns 0 on success */
+    /* `_encode()` returns 0 on success */
     status = _encode(bin_buf, 15, txt_buf, 24);
     free(bin_buf);
     if (status != 0) {
@@ -646,7 +646,7 @@ static struct PyMethodDef dbase32_functions[] = {
     {"check_db32", check_db32, METH_VARARGS, "check_db32(text)"},
     {"random_id", (PyCFunction)random_id, METH_VARARGS | METH_KEYWORDS,
         "random_id(numbytes=15)"},
-    {"time_id", (PyCFunction)dbase32_time_id, METH_VARARGS | METH_KEYWORDS,
+    {"time_id", (PyCFunction)time_id, METH_VARARGS | METH_KEYWORDS,
         "time_id(timestamp=-1)"},
     {NULL, NULL, 0, NULL}
 };
