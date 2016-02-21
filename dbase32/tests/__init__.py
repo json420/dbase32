@@ -1007,6 +1007,3 @@ class TestFunctions_C(TestFunctions_Py):
                 self.assertEqual(db32dec(text_s), data)
                 self.assertEqual(db32dec(text_b), data)
 
-    def test_db32_relpath(self):
-        self.skipTest('FIXME: add db32_relpath() C implementation')
-

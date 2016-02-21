@@ -638,6 +638,67 @@ time_id(PyObject *self, PyObject *args, PyObject *kw)
 }
 
 
+/*
+ * C implementation of `dbase32.db32_relpath()`
+ */
+static PyObject *
+db32_relpath(PyObject *self, PyObject *args)
+{
+    size_t txt_len = 0;
+    const uint8_t *txt_buf = NULL;
+    uint8_t status = 1;
+    PyObject *borrowed = NULL;  /* Borrowed reference only used in error */
+    PyObject *ret = NULL;
+    uint8_t *ret_buf = NULL;
+
+    /* Parse args */
+    if (!PyArg_ParseTuple(args, "s#:db32_relpath", &txt_buf, &txt_len)) {
+        return NULL;
+    }
+
+    /* Ensure that txt_len is valid for well-formed IDs */
+    if (txt_len < 8 || txt_len > MAX_TXT_LEN) {
+        PyErr_Format(PyExc_ValueError,
+            "len(text) is %u, need 8 <= len(text) <= %u", txt_len, MAX_TXT_LEN
+        );
+        return NULL;
+    }
+    if (txt_len % 8 != 0) {
+        PyErr_Format(PyExc_ValueError,
+            "len(text) is %u, need len(text) % 8 == 0", txt_len
+        );
+        return NULL;
+    }
+
+    /* `_validate()` returns 0 on success, 224 on invalid Dbase32 */
+    status = _validate(txt_buf, txt_len);
+    if (status == 224) {
+        borrowed = PyTuple_GetItem(args, 0);
+        if (borrowed != NULL) {
+            PyErr_Format(PyExc_ValueError, "invalid Dbase32: %R", borrowed);
+        }
+        return NULL;
+    }
+    else if (status != 0) {
+        /* Any status other than 0 or 224 means an internal error occurred */
+        Py_FatalError("internal error in `_dbase32.check_db32()`");
+        return NULL;
+    }
+
+    ret = PyUnicode_New((ssize_t)(txt_len + 1), DB32_END);
+    if (ret == NULL ) {
+        return NULL;
+    }
+    ret_buf = PyUnicode_1BYTE_DATA(ret);
+    ret_buf[0] = txt_buf[0];
+    ret_buf[1] = txt_buf[1];
+    ret_buf[2] = '/';
+    memcpy(ret_buf + 3, txt_buf + 2, txt_len - 2);
+
+    return ret;
+}
+
+
 /* module init */
 static struct PyMethodDef dbase32_functions[] = {
     {"db32enc", db32enc, METH_VARARGS, "db32enc(data)"},
@@ -648,6 +709,7 @@ static struct PyMethodDef dbase32_functions[] = {
         "random_id(numbytes=15)"},
     {"time_id", (PyCFunction)time_id, METH_VARARGS | METH_KEYWORDS,
         "time_id(timestamp=-1)"},
+    {"db32_relpath", db32_relpath, METH_VARARGS, "db32_relpath(text)"},
     {NULL, NULL, 0, NULL}
 };
 
