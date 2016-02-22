@@ -270,8 +270,15 @@ Functions
 
 
 
+.. _path-functions:
+
 Path Functions
 --------------
+
+.. warning::
+
+    These functions are an *experimental* part of the Dbase32 API!  They might
+    still change in backward-incompatible ways, be renamed, or be removed entirely!
 
 Dbase32 1.6 introduced two **experimental** functions that test whether some
 untrusted input is a valid Dbase32 ID and, if valid, construct a file-system
