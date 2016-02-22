@@ -292,12 +292,12 @@ class TestConstants(TestCase):
         else:
             self.assertIs(dbase32.db32_relpath, _dbase32py.db32_relpath)
 
-    def test_db32_path_alias(self):
+    def test_db32_abspath_alias(self):
         if C_EXT_AVAIL:
-            self.assertIs(dbase32.db32_path, _dbase32.db32_path)
-            self.assertIsNot(dbase32.db32_path, _dbase32py.db32_path)
+            self.assertIs(dbase32.db32_abspath, _dbase32.db32_abspath)
+            self.assertIsNot(dbase32.db32_abspath, _dbase32py.db32_abspath)
         else:
-            self.assertIs(dbase32.db32_path, _dbase32py.db32_path)
+            self.assertIs(dbase32.db32_abspath, _dbase32py.db32_abspath)
 
     def test_log_id_alias(self):
         self.assertIs(dbase32.log_id, dbase32.time_id)
@@ -978,8 +978,8 @@ class TestFunctions_Py(BackendTestCase):
                     self.assertEqual(rp[2], '/')
                     self.assertEqual(rp, '/'.join([text[:2], text[2:]]))
 
-    def test_db32_path(self):
-        db32_path = self.getattr('db32_path')
+    def test_db32_abspath(self):
+        db32_abspath = self.getattr('db32_abspath')
         db32_relpath = self.getattr('db32_relpath')
 
         # Use fastest random_id() implementation regardless of backend:
@@ -988,13 +988,13 @@ class TestFunctions_Py(BackendTestCase):
         parentdir = '/'.join(['/tmp', random_id(), random_id()])
 
         # Common tests for text args:
-        self.check_text_type(db32_path, parentdir)
-        self.check_text_value(db32_path, parentdir)
+        self.check_text_type(db32_abspath, parentdir)
+        self.check_text_value(db32_abspath, parentdir)
 
         # Sanity check with a few static values:
-        self.assertEqual(db32_path('/PP', 'AABBBBBB'), '/PP/AA/BBBBBB')
+        self.assertEqual(db32_abspath('/PP', 'AABBBBBB'), '/PP/AA/BBBBBB')
         self.assertEqual(
-            db32_path('/PP', 'AABBBBBBCCCCCCCC'),
+            db32_abspath('/PP', 'AABBBBBBCCCCCCCC'),
             '/PP/AA/BBBBBBCCCCCCCC'
         )
 
@@ -1006,7 +1006,7 @@ class TestFunctions_Py(BackendTestCase):
                 rp = db32_relpath(text)
                 expected = '/'.join([parentdir, rp])
                 for arg in (text, text.encode()):  # Test both str and bytes
-                    p = db32_path(parentdir, text)
+                    p = db32_abspath(parentdir, text)
                     self.assertIs(type(p), str)
                     self.assertEqual(len(p), length)
                     self.assertEqual(p, expected)

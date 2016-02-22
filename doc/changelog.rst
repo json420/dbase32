@@ -2,6 +2,74 @@ Changelog
 =========
 
 
+1.6 (unreleased)
+----------------
+
+`Download Dbase32 1.6`_
+
+Changes:
+
+    *   Two experimental functions were added that construct a file-system path
+        from a Dbase32 ID (after validating the ID):
+
+            1.  :func:`dbase32.db32_abspath()` - constructs an absolute path
+
+            2.  :func:`dbase32.db32_relpath()` - constructs a relative path
+
+        See the :ref:`path-functions` documentation for details.
+
+        Be warned that these functions are not yet part of the stable API, so
+        they might yet undergo backward-incompatible changes, be renamed, or
+        even be removed from the Dbase32 API altogether.  The goal is to have
+        the details of these functions finalized for the Dbase32 1.7 release.
+
+    *   The unit tests for the core API have been significantly refactored, in
+        particular to follow patterns that have worked well in `Degu`_ so that
+        one is less likely to add by mistake a unit test that only runs against
+        one of the backend implementations (pure-Python or C) without also
+        running against the other implementation.
+
+    *   Likewise, the C backend implementation in `dbase32._dbase32.c`_ has been
+        significantly refactored, in particular to split some common patterns
+        out into new internal C functions.  This was mostly done because now the
+        internal C API has two more consumers (the above two path functions).
+
+    *   Most of the functions in the C implementation have been renamed for
+        brevity and to make it clearer which functions are internal-only API,
+        which functions are public implementations exposed to Python.
+
+        For example, the internal ``dbase32_validate()`` function has been
+        renamed to ``_validate()``, and the public ``dbase32_isdb32()`` function
+        has been renamed to ``isdb32()``.
+
+    *   Taking inspiration from `libsodium`_, the internal C API functions whose
+        return value should be checked by their caller are now declared with::
+
+            __attribute__ ((warn_unused_result))
+
+        This applies to the existing ``_encode()``, ``_decode()``, and
+        ``_validate()`` functions, plus the new ``_check_txt_len()`` function.
+
+        As ``setup.py`` builds the Dbase32 C extension with ``-Werror``, the
+        build will fail should any of these functions be used without using its
+        return value.
+
+    *   The :func:`dbase32.random_id()` and :func:`dbase32.time_id()` functions
+        in the C implementation now allocate their temporary buffer with
+        ``calloc()`` instead of ``malloc()``.
+
+        In this case, using ``calloc()`` has almost no measurable performance
+        overhead, yet it makes the implementation safer in the face of errors
+        that could otherwise expose private data if these memory regions were
+        not full overwritten by the responsible function.
+
+    *   ``debian/rules`` no longer benchmarks the pure-Python implementation
+        during the build as this is quite slow.  However, during the build the
+        benchmark is still run C implementation to help ensure the benchmark
+        itself remains in good working order.
+
+
+
 1.5 (August 2015)
 -----------------
 
@@ -226,6 +294,7 @@ Changes:
 
 
 
+.. _`Download Dbase32 1.6`: https://launchpad.net/dbase32/+milestone/1.6
 .. _`Download Dbase32 1.5`: https://launchpad.net/dbase32/+milestone/1.5
 .. _`Download Dbase32 1.4`: https://launchpad.net/dbase32/+milestone/1.4
 .. _`Download Dbase32 1.3`: https://launchpad.net/dbase32/+milestone/1.3
@@ -239,4 +308,6 @@ Changes:
 .. _`Pyflakes`: https://launchpad.net/pyflakes
 .. _`Sphinx`: http://sphinx-doc.org/
 .. _`dbase32._dbase32.c`: http://bazaar.launchpad.net/~dmedia/dbase32/trunk/view/head:/dbase32/_dbase32.c
+.. _`Degu`: https://launchpad.net/degu
+.. _`libsodium`: https://download.libsodium.org/doc/
 

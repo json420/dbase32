@@ -272,6 +272,6 @@ def db32_relpath(text):
     return '/'.join([text[0:2], text[2:]])
 
 
-def db32_path(parentdir, text):
+def db32_abspath(parentdir, text):
     return '/'.join([parentdir, db32_relpath(text)])
 

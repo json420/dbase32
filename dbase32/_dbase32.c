@@ -278,7 +278,7 @@ _decode(const uint8_t *txt_buf, const size_t txt_len,
 /*
  * _validate(): internal Dbase32 validation function.
  *
- * Used by `isdb32()`, `check_db32()`, `db32_relpath()`, and `db32_path()`.
+ * Used by `isdb32()`, `check_db32()`, `db32_relpath()`, and `db32_abspath()`.
  *
  * Returns 0 when valid, 224 when invalid.
  *
@@ -330,7 +330,7 @@ _validate(const uint8_t *txt_buf, const size_t txt_len)
 /*
  * _check_txt_len(): validate the length of a Dbase32 ID.
  *
- * Used by `db32dec()`, `check_db32()`, `db32_relpath()`, and `db32_path()`.
+ * Used by `db32dec()`, `check_db32()`, `db32_relpath()`, and `db32_abspath()`.
  *
  * If `txt_len` fits the requirements for a well-formed Dbase32-encoded ID, this
  * function returns `true`.
@@ -359,7 +359,7 @@ _check_txt_len(const size_t txt_len)
 /*
  * _handle_invalid_dbase32(): handle a decoding or validation error.
  *
- * Used by `db32dec()`, `check_db32()`, `db32_relpath()`, and `db32_path()`.
+ * Used by `db32dec()`, `check_db32()`, `db32_relpath()`, and `db32_abspath()`.
  *
  * Both `_decode()` and `_validate()` return 0 on success or 224 when the text
  * in question contains invalid Dbase32 characters.  Any other status should be
@@ -699,10 +699,10 @@ db32_relpath(PyObject *self, PyObject *args)
 
 
 /*
- * C implementation of `dbase32.db32_path()`.
+ * C implementation of `dbase32.db32_abspath()`.
  */
 static PyObject *
-db32_path(PyObject *self, PyObject *args)
+db32_abspath(PyObject *self, PyObject *args)
 {
     PyObject *parent = NULL;
     size_t txt_len = 0;
@@ -713,7 +713,7 @@ db32_path(PyObject *self, PyObject *args)
     PyObject *ret = NULL;
 
     /* Parse args */
-    if (!PyArg_ParseTuple(args, "Us#:db32_path", &parent, &txt_buf, &txt_len)) {
+    if (!PyArg_ParseTuple(args, "Us#:db32_abspath", &parent, &txt_buf, &txt_len)) {
         return NULL;
     }
 
@@ -756,7 +756,7 @@ static struct PyMethodDef dbase32_functions[] = {
     {"time_id", (PyCFunction)time_id, METH_VARARGS | METH_KEYWORDS,
         "time_id(timestamp=-1)"},
     {"db32_relpath", db32_relpath, METH_VARARGS, "db32_relpath(text)"},
-    {"db32_path", db32_path, METH_VARARGS, "db32_path(parentdir, text)"},
+    {"db32_abspath", db32_abspath, METH_VARARGS, "db32_abspath(parentdir, text)"},
     {NULL, NULL, 0, NULL}
 };
 
