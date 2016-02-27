@@ -4,7 +4,7 @@ Upstream-Contact: Jason Gerard DeRose <jderose@novacut.com>
 Source: https://launchpad.net/dbase32/+download
 
 Files: *
-Copyright: Copyright (C) 2013-2014 Novacut Inc
+Copyright: Copyright (C) 2013-2016 Novacut Inc
 License: LGPL-3+
  `dbase32` is free software: you can redistribute it and/or modify it under
  the terms of the GNU Lesser General Public License as published by the Free
