@@ -65,7 +65,7 @@ except ImportError:
     using_c_extension = False
 
 
-__version__ = '1.6.0'
+__version__ = '1.6.1'
 __all__ = (
     'DB32ALPHABET',
     'MAX_BIN_LEN',

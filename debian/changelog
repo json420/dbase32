@@ -1,5 +1,5 @@
-dbase32 (1.6.0) xenial; urgency=low
+dbase32 (1.6.1) xenial; urgency=low
 
-  * Upstream pre-release
+  * Upstream release
 
- -- Jason Gerard DeRose <jderose@novacut.com>  Sat, 27 Feb 2016 16:21:21 -0700
+ -- Jason Gerard DeRose <jderose@novacut.com>  Sat, 27 Feb 2016 16:31:28 -0700

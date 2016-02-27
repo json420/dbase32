@@ -2,8 +2,8 @@ Changelog
 =========
 
 
-1.6 (unreleased)
-----------------
+1.6 (February 2016)
+-------------------
 
 `Download Dbase32 1.6`_
 
