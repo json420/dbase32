@@ -276,11 +276,16 @@ def db32_abspath(parentdir, text):
     return '/'.join([parentdir, db32_relpath(text)])
 
 
-def db32_join(parentdir, _id, nest=False):
+def db32_join(parentdir, _id):
     check_db32(_id)
     if type(_id) is bytes:
         _id = _id.decode()
-    if nest is True:
-        return '/'.join([parentdir, _id[0:2], _id[2:]])
     return '/'.join([parentdir, _id])
+
+
+def db32_join2(parentdir, _id):
+    check_db32(_id)
+    if type(_id) is bytes:
+        _id = _id.decode()
+    return '/'.join([parentdir, _id[0:2], _id[2:]])
 
