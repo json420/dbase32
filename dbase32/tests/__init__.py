@@ -55,6 +55,59 @@ BAD_LETTERS = '\'"`~!#$%^&*()[]{}|+-_.,\/ 012:;<=>?@Zabcdefghijklmnopqrstuvwxyz'
 
 NON_ASCII = frozenset(bytes(range(128, 256)))
 assert NON_ASCII.intersection(_dbase32py._ASCII) == frozenset()
+NON_DB32 = _dbase32py._ASCII - _dbase32py.DB32_SET
+assert len(NON_DB32) == 96
+
+
+def random_non_ascii(size):
+    assert size in TXT_SIZES
+    return bytes(random.sample(NON_ASCII, size)).decode('latin-1')
+
+
+def iter_random_non_ascii():
+    for size in TXT_SIZES:
+        r = random_non_ascii(size)
+        yield r
+        yield r + '™'
+    yield '™'
+
+
+def random_non_db32(size):
+    assert size in TXT_SIZES
+    return bytes(random.sample(NON_DB32, size)).decode()
+
+
+def iter_random_non_db32():
+    for size in TXT_SIZES:
+        yield random_non_db32(size)
+
+
+def random_db32(size):
+    assert size not in TXT_SIZES
+    r = ''.join(random.choice(dbase32.DB32ALPHABET) for i in range(size))
+    assert len(r) == size
+    assert set(r).issubset(dbase32.DB32ALPHABET)
+    return r
+
+
+def make_join_end(_id):
+    return _id
+
+
+def make_join_end2(_id):
+    return '/'.join([_id[0:2], _id[2:]])
+
+
+def iter_random_db32():
+    yield ''
+    yield random_db32(1)
+    yield random_db32(2)
+    yield random_db32(3)
+    for size in TXT_SIZES:
+        yield random_db32(size - 2)
+        yield random_db32(size - 1)
+        yield random_db32(size + 1)
+        yield random_db32(size + 2)
 
 
 def string_iter(index, count, a, b, c):
@@ -92,6 +145,11 @@ def bytes_iter(ints):
 
 def make_bytes(ints):
     return bytes(bytes_iter(ints))
+
+
+def get_refcounts(args):
+    assert type(args) is tuple
+    return tuple(sys.getrefcount(a) for a in args)
 
 
 class TestConstants(TestCase):
@@ -1058,12 +1116,21 @@ class TestFunctions_Py(BackendTestCase):
                     self.assertEqual(len(p), length)
                     self.assertEqual(p, expected)
 
+    def check_refcounts(self, old_counts, args):
+        new_counts = get_refcounts(args)
+        self.assertEqual(new_counts, old_counts)
+
     def check_join(self, name):
         """
         Common tests for `db32_join()` and `db32_join2()`.
         """
         self.assertIn(name, ['db32_join', 'db32_join2'])
         func = self.getattr(name)
+        make_end = (make_join_end if name == 'db32_join' else make_join_end2)
+
+        # Use fastest random_id() implementation regardless of backend:
+        fastest = (_dbase32 if C_EXT_AVAIL else _dbase32py)
+        random_id = fastest.random_id
 
         # Requires at least 1 argument:
         with self.assertRaises(TypeError) as cm:
@@ -1071,6 +1138,78 @@ class TestFunctions_Py(BackendTestCase):
         self.assertEqual(str(cm.exception),
             '{}() requires at least one argument'.format(name)
         )
+
+        # Bad _id type:
+        for bad in (random_id().encode(), 17, 18.5):
+            for parents in range(5):
+                args = tuple(random_id() + '™' for i in range(parents)) + (bad,)
+                counts = get_refcounts(args)
+                with self.assertRaises(TypeError) as cm:
+                    func(*args)
+                self.assertEqual(str(cm.exception),
+                    '_id: need a {!r}; got a {!r}: {!r}'.format(
+                        str, type(bad), bad
+                    )
+                )
+                self.check_refcounts(counts, args)
+
+        # _id is non-ascii:
+        for bad in iter_random_non_ascii():
+            for parents in range(5):
+                args = tuple(random_id() + '™' for i in range(parents)) + (bad,)
+                counts = get_refcounts(args)
+                with self.assertRaises(ValueError) as cm:
+                    func(*args)
+                self.assertEqual(str(cm.exception),
+                    '_id is not ASCII: {!r}'.format(bad)
+                )
+                self.check_refcounts(counts, args)
+
+        # _id is ASCII and in Dbase32 set, but has incorrect length:
+        for bad in iter_random_db32():
+            for parents in range(5):
+                args = tuple(random_id() + '™' for i in range(parents)) + (bad,)
+                counts = get_refcounts(args)
+                with self.assertRaises(ValueError) as cm:
+                    func(*args)
+                if 8 < len(bad) < dbase32.MAX_TXT_LEN:
+                    self.assertEqual(str(cm.exception),
+                        'len(text) is {}, need len(text) % 8 == 0'.format(
+                            len(bad)
+                        )
+                    )
+                else:
+                    self.assertEqual(str(cm.exception),
+                        'len(text) is {}, need 8 <= len(text) <= {}'.format(
+                            len(bad), dbase32.MAX_TXT_LEN
+                        )
+                    )
+                self.check_refcounts(counts, args)
+
+        # _id is ASCII and correct length, but is not in Dbase32 set:
+        for bad in iter_random_non_db32():
+            for parents in range(5):
+                args = tuple(random_id() + '™' for i in range(parents)) + (bad,)
+                counts = get_refcounts(args)
+                with self.assertRaises(ValueError) as cm:
+                    func(*args)
+                self.assertEqual(str(cm.exception),
+                    'invalid Dbase32: {!r}'.format(bad)
+                )
+                self.check_refcounts(counts, args)
+
+        # All good:
+        for size in BIN_SIZES:
+            _id = random_id(size)
+            for parents in range(5):
+                args = tuple(random_id() + '™' for i in range(parents)) + (_id,)
+                counts = get_refcounts(args)
+                self.assertEqual(func(*args),
+                    '/'.join(
+                        args[:-1] + (make_end(_id),)
+                    )
+                )
+                self.check_refcounts(counts, args)
 
         return func
 
@@ -1089,23 +1228,6 @@ class TestFunctions_Py(BackendTestCase):
         self.assertEqual(len(pd1.encode()), plen)
         self.assertGreater(len(pd2.encode()), plen)
         self.assertNotEqual(len(pd1.encode()), len(pd2.encode()))
-
-        # _id is a bad type:
-        parts = (
-            tuple(),
-            (pd1,),
-            (pd1, pd2,),
-        )
-        for bad in (random_id().encode(), 17, 18.5):
-            for p in parts:
-                args = p + (bad,)
-                with self.assertRaises(TypeError) as cm:
-                    db32_join(*args)
-                self.assertEqual(str(cm.exception),
-                    '_id: need a {!r}; got a {!r}: {!r}'.format(
-                        str, type(bad), bad
-                    )
-                )
 
         # _id is non-ascii:
         with self.assertRaises(ValueError) as cm:

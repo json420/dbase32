@@ -90,7 +90,7 @@ DB32_REVERSE = (
     255,255,255,255,255,255,255,255,255,255,255,255,255,255,
 )
 
-DB32_SET = frozenset(DB32_FORWARD.encode('utf-8'))
+DB32_SET = frozenset(DB32_FORWARD.encode())
 _ASCII = frozenset(bytes(range(128)))
 
 
