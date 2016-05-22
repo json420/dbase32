@@ -46,6 +46,8 @@ try:
         time_id,
         db32_relpath,
         db32_abspath,
+        db32_join,
+        db32_join2,
     )
     using_c_extension = True
 except ImportError:
@@ -61,6 +63,8 @@ except ImportError:
         time_id,
         db32_relpath,
         db32_abspath,
+        db32_join,
+        db32_join2,
     )
     using_c_extension = False
 
@@ -78,6 +82,8 @@ __all__ = (
     'time_id',
     'db32_relpath',
     'db32_abspath',
+    'db32_join',
+    'db32_join2',
 )
 
 RANDOM_BITS = 120

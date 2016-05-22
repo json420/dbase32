@@ -745,6 +745,97 @@ db32_abspath(PyObject *self, PyObject *args)
 }
 
 
+/*
+ * C implementation of `dbase32.db32_join()`.
+ */
+static PyObject *
+db32_join(PyObject *self, PyObject *args)
+{
+    PyObject *parent = NULL;
+    size_t txt_len = 0;
+    const uint8_t *txt_buf = NULL;
+    uint8_t status = 1;
+    PyObject *end = NULL;
+    uint8_t *end_buf = NULL;
+    PyObject *ret = NULL;
+
+    /* Parse args */
+    if (!PyArg_ParseTuple(args, "Us#:db32_join", &parent, &txt_buf, &txt_len)) {
+        return NULL;
+    }
+
+    /* Validate length of ID */
+    if (! _check_txt_len(txt_len)) {
+        return NULL;
+    }
+
+    /* Validate content of ID */
+    status = _validate(txt_buf, txt_len);
+    if (status != 0) {
+        _handle_invalid_dbase32(status, PyTuple_GetItem(args, 1));
+        return NULL;
+    }
+
+    /* Build the path */
+    end = PyUnicode_New((ssize_t)(txt_len + 1), DB32_END);
+    if (end != NULL ) {
+        end_buf = PyUnicode_1BYTE_DATA(end);
+        end_buf[0] = '/';
+        memcpy(end_buf + 1, txt_buf, txt_len);
+        ret = PyUnicode_Concat(parent, end);
+    }
+    Py_CLEAR(end);
+    return ret;
+}
+
+
+/*
+ * C implementation of `dbase32.db32_join2()`.
+ */
+static PyObject *
+db32_join2(PyObject *self, PyObject *args)
+{
+    PyObject *parent = NULL;
+    size_t txt_len = 0;
+    const uint8_t *txt_buf = NULL;
+    uint8_t status = 1;
+    PyObject *end = NULL;
+    uint8_t *end_buf = NULL;
+    PyObject *ret = NULL;
+
+    /* Parse args */
+    if (!PyArg_ParseTuple(args, "Us#:db32_join2", &parent, &txt_buf, &txt_len)) {
+        return NULL;
+    }
+
+    /* Validate length of ID */
+    if (! _check_txt_len(txt_len)) {
+        return NULL;
+    }
+
+    /* Validate content of ID */
+    status = _validate(txt_buf, txt_len);
+    if (status != 0) {
+        _handle_invalid_dbase32(status, PyTuple_GetItem(args, 1));
+        return NULL;
+    }
+
+    /* Build the path */
+    end = PyUnicode_New((ssize_t)(txt_len + 2), DB32_END);
+    if (end != NULL ) {
+        end_buf = PyUnicode_1BYTE_DATA(end);
+        end_buf[0] = '/';
+        end_buf[1] = txt_buf[0];
+        end_buf[2] = txt_buf[1];
+        end_buf[3] = '/';
+        memcpy(end_buf + 4, txt_buf + 2, txt_len - 2);
+        ret = PyUnicode_Concat(parent, end);
+    }
+    Py_CLEAR(end);
+    return ret;
+}
+
+
 /* module init */
 static struct PyMethodDef dbase32_functions[] = {
     {"db32enc", db32enc, METH_VARARGS, "db32enc(data)"},
@@ -757,6 +848,8 @@ static struct PyMethodDef dbase32_functions[] = {
         "time_id(timestamp=-1)"},
     {"db32_relpath", db32_relpath, METH_VARARGS, "db32_relpath(text)"},
     {"db32_abspath", db32_abspath, METH_VARARGS, "db32_abspath(parentdir, text)"},
+    {"db32_join", db32_join, METH_VARARGS, "db32_join(parentdir, _id)"},
+    {"db32_join2", db32_join2, METH_VARARGS, "db32_join2(parentdir, _id)"},
     {NULL, NULL, 0, NULL}
 };
 

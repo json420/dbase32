@@ -285,6 +285,12 @@ class TestConstants(TestCase):
         else:
             self.assertIs(dbase32.time_id, _dbase32py.time_id)
 
+    def test_log_id_alias(self):
+        """
+        Test deprecated `log_id` alias to `time_id`.
+        """
+        self.assertIs(dbase32.log_id, dbase32.time_id)
+
     def test_db32_relpath_alias(self):
         if C_EXT_AVAIL:
             self.assertIs(dbase32.db32_relpath, _dbase32.db32_relpath)
@@ -299,8 +305,19 @@ class TestConstants(TestCase):
         else:
             self.assertIs(dbase32.db32_abspath, _dbase32py.db32_abspath)
 
-    def test_log_id_alias(self):
-        self.assertIs(dbase32.log_id, dbase32.time_id)
+    def test_db32_join_alias(self):
+        if C_EXT_AVAIL:
+            self.assertIs(dbase32.db32_join, _dbase32.db32_join)
+            self.assertIsNot(dbase32.db32_join, _dbase32py.db32_join)
+        else:
+            self.assertIs(dbase32.db32_join, _dbase32py.db32_join)
+
+    def test_db32_join2_alias(self):
+        if C_EXT_AVAIL:
+            self.assertIs(dbase32.db32_join2, _dbase32.db32_join2)
+            self.assertIsNot(dbase32.db32_join2, _dbase32py.db32_join2)
+        else:
+            self.assertIs(dbase32.db32_join2, _dbase32py.db32_join2)
 
 
 class TestMisc(TestCase):
@@ -1014,6 +1031,108 @@ class TestFunctions_Py(BackendTestCase):
                     self.assertIs(type(p), str)
                     self.assertEqual(len(p), length)
                     self.assertEqual(p, expected)
+
+    def test_db32_join(self):
+        db32_join = self.getattr('db32_join')
+
+        # Use fastest random_id() implementation regardless of backend:
+        fastest = (_dbase32 if C_EXT_AVAIL else _dbase32py)
+        random_id = fastest.random_id
+
+        # Random parent directories, one that's non-ASCII:
+        pd1 = '/'.join(['/tmp', random_id(), random_id()])
+        pd2 = '/'.join(['foo™', random_id(), random_id()])
+        plen = len(pd1)
+        self.assertEqual(len(pd1), len(pd2))
+        self.assertEqual(len(pd1.encode()), plen)
+        self.assertGreater(len(pd2.encode()), plen)
+        self.assertNotEqual(len(pd1.encode()), len(pd2.encode()))
+
+        # Common tests for text args:
+        for parentdir in (pd1, pd2):
+            self.check_text_type(db32_join, parentdir)
+            self.check_text_value(db32_join, parentdir)
+
+        # Sanity checks with static values:
+        self.assertEqual(
+            db32_join('/PP', 'AABBBBBB'),
+            '/PP/AABBBBBB'
+        )
+        self.assertEqual(
+            db32_join('/PP', 'AABBBBBBCCCCCCCC'),
+            '/PP/AABBBBBBCCCCCCCC'
+        )
+        self.assertEqual(
+            db32_join('/™', 'AABBBBBB'),
+            '/™/AABBBBBB'
+        )
+        self.assertEqual(
+            db32_join('/™', 'AABBBBBBCCCCCCCC'),
+            '/™/AABBBBBBCCCCCCCC'
+        )
+
+        for size in BIN_SIZES:
+            length = plen + (size * 8 // 5) + 1
+            for parentdir in (pd1, pd2):
+                for i in range(500):
+                    _id = random_id(size)
+                    expected = '/'.join([parentdir, _id])
+                    for arg in (_id, _id.encode()):  # Test both str and bytes
+                        p = db32_join(parentdir, arg)
+                        self.assertIs(type(p), str)
+                        self.assertEqual(len(p), length)
+                        self.assertEqual(p, expected)
+
+    def test_db32_join2(self):
+        db32_join2 = self.getattr('db32_join2')
+
+        # Use fastest random_id() implementation regardless of backend:
+        fastest = (_dbase32 if C_EXT_AVAIL else _dbase32py)
+        random_id = fastest.random_id
+
+        # Random parent directories, one that's non-ASCII:
+        pd1 = '/'.join(['/tmp', random_id(), random_id()])
+        pd2 = '/'.join(['foo™', random_id(), random_id()])
+        plen = len(pd1)
+        self.assertEqual(len(pd1), len(pd2))
+        self.assertEqual(len(pd1.encode()), plen)
+        self.assertGreater(len(pd2.encode()), plen)
+        self.assertNotEqual(len(pd1.encode()), len(pd2.encode()))
+
+        # Common tests for text args:
+        for parentdir in (pd1, pd2):
+            self.check_text_type(db32_join2, parentdir)
+            self.check_text_value(db32_join2, parentdir)
+
+        # Sanity checks with static values:
+        self.assertEqual(
+            db32_join2('/PP', 'AABBBBBB'),
+            '/PP/AA/BBBBBB'
+        )
+        self.assertEqual(
+            db32_join2('/PP', 'AABBBBBBCCCCCCCC'),
+            '/PP/AA/BBBBBBCCCCCCCC'
+        )
+        self.assertEqual(
+            db32_join2('/™', 'AABBBBBB'),
+            '/™/AA/BBBBBB'
+        )
+        self.assertEqual(
+            db32_join2('/™', 'AABBBBBBCCCCCCCC'),
+            '/™/AA/BBBBBBCCCCCCCC'
+        )
+
+        for size in BIN_SIZES:
+            length = plen + (size * 8 // 5) + 2
+            for parentdir in (pd1, pd2):
+                for i in range(500):
+                    _id = random_id(size)
+                    expected = '/'.join([parentdir, _id[:2], _id[2:]])
+                    for arg in (_id, _id.encode()):  # Test both str and bytes
+                        p = db32_join2(parentdir, arg)
+                        self.assertIs(type(p), str)
+                        self.assertEqual(len(p), length)
+                        self.assertEqual(p, expected)
 
 
 class TestFunctions_C(TestFunctions_Py):
