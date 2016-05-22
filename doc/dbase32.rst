@@ -420,6 +420,64 @@ API, they've been hard-coded to use ``'/'``.
     .. versionadded:: 1.6
 
 
+.. function:: db32_join([parent, ...,] final)
+
+    Join path components where the final component is validated as a Dbase32 ID.
+
+    For example:
+
+    >>> from dbase32 import db32_join
+    >>> db32_join('foo', 'XFMIN6NRI84O3IX8DAV5MBTR')
+    'foo/XFMIN6NRI84O3IX8DAV5MBTR'
+
+    Similar to :func:`check_db32()`, a ``ValueError`` will be raised if *final*
+    is not a valid Dbase32 ID:
+
+    >>> db32_join('foo', '../very/naughty/')
+    Traceback (most recent call last):
+      ...
+    ValueError: invalid Dbase32: '../very/naughty/'
+
+    Note that unlike :func:`check_db32()`, the *final* argument must always be
+    a ``str``.
+
+    .. versionadded:: 1.7
+
+
+.. function:: db32_join_2([parent, ...,] final)
+
+    Join path components using validated Dbase32 ID for 1024 sub-directories.
+
+    This function builds two path components from *final*, which you could do
+    like this::
+
+        '/'.join([final[0:2], final[2:]])
+
+    For example:
+
+    >>> from dbase32 import db32_join_2
+    >>> db32_join_2('XFMIN6NRI84O3IX8DAV5MBTR')
+    'XF/MIN6NRI84O3IX8DAV5MBTR'
+
+    Like :func:`db32_join()`, this function joins together any leading *parent*
+    components:
+
+    >>> db32_join_2('/foo', 'bar', 'XFMIN6NRI84O3IX8DAV5MBTR')
+    '/foo/bar/XF/MIN6NRI84O3IX8DAV5MBTR'
+
+    Similar to :func:`check_db32()`, a ``ValueError`` will be raised if *final*
+    is not a valid Dbase32 ID:
+
+    >>> db32_join_2('/foo', 'bar', '../very/naughty/')
+    Traceback (most recent call last):
+      ...
+    ValueError: invalid Dbase32: '../very/naughty/'
+
+    Note that unlike :func:`check_db32()`, the *final* argument must always be
+    a ``str``.
+
+    .. versionadded:: 1.7
+
 
 Constants
 ---------

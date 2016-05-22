@@ -129,6 +129,10 @@ static const uint8_t DB32_REVERSE[256] __attribute__ ((aligned (64))) = {
 };
 
 
+/* Used by db32_join(), db32_join_2() */
+static PyObject *_str_slash = NULL;  //  '/'
+
+
 /*
  * For correctness, we declare the four internal dbase32 C functions that need
  * their return values checked using "__attribute__ ((warn_unused_result))":
@@ -143,6 +147,9 @@ static uint8_t _validate(const uint8_t *, const size_t)
     __attribute__ ((warn_unused_result));
 
 static bool _check_txt_len(const size_t)
+    __attribute__ ((warn_unused_result));
+
+static PyObject * _check_join(const char *, PyObject *)
     __attribute__ ((warn_unused_result));
 
 
@@ -746,92 +753,146 @@ db32_abspath(PyObject *self, PyObject *args)
 
 
 /*
+ * _check_join(): internal helper for join functions.
+ *
+ * Used by `db32_join()` and `db32_join_2()`.
+ */
+static PyObject *
+_check_join(const char *name, PyObject *args)
+{
+    PyObject *id = NULL;
+    const uint8_t *id_buf = NULL;
+    size_t id_len = 0;
+    uint8_t status = 1;
+
+    if (name == NULL || args == NULL || Py_TYPE(args) != &PyTuple_Type) {
+        Py_FatalError("_check_join(): bad internal call");
+    }
+    if (PyTuple_GET_SIZE(args) < 1) {
+        PyErr_Format(PyExc_TypeError,
+            "%s() requires at least one argument", name
+        );
+        return NULL;
+    }
+
+    /* Make sure `id` is an ASCII str */
+    id = PyTuple_GetItem(args, PyTuple_GET_SIZE(args) - 1);
+    if (id == NULL) {
+        return NULL;
+    }
+    if (Py_TYPE(id) != &PyUnicode_Type) {
+        PyErr_Format(PyExc_TypeError,
+            "_id: need a %R; got a %R: %R",
+            (PyObject *)&PyUnicode_Type, Py_TYPE(id), id
+        );
+        return NULL;
+    }
+    if (PyUnicode_READY(id) != 0) {
+        return NULL;
+    }
+    if (PyUnicode_MAX_CHAR_VALUE(id) != 127) {
+        PyErr_Format(PyExc_ValueError, "_id is not ASCII: %R", id);
+        return NULL;
+    }
+
+    /* Make sure `id` is valid Dbase32 */
+    id_buf = PyUnicode_1BYTE_DATA(id);
+    id_len = (size_t)PyUnicode_GET_LENGTH(id);
+    if (! _check_txt_len(id_len)) {
+        return NULL;
+    }
+    status = _validate(id_buf, id_len);
+    if (status != 0) {
+        _handle_invalid_dbase32(status, id);
+        return NULL;
+    }
+
+    return id;
+}
+
+
+/*
  * C implementation of `dbase32.db32_join()`.
  */
 static PyObject *
 db32_join(PyObject *self, PyObject *args)
 {
-    PyObject *parent = NULL;
-    size_t txt_len = 0;
-    const uint8_t *txt_buf = NULL;
-    uint8_t status = 1;
-    PyObject *end = NULL;
-    uint8_t *end_buf = NULL;
-    PyObject *ret = NULL;
-
-    /* Parse args */
-    if (!PyArg_ParseTuple(args, "Us#:db32_join", &parent, &txt_buf, &txt_len)) {
+    PyObject *id = _check_join("db32_join", args);
+    if (id == NULL) {
         return NULL;
     }
-
-    /* Validate length of ID */
-    if (! _check_txt_len(txt_len)) {
-        return NULL;
+    if (PyTuple_GET_SIZE(args) == 1) {
+        Py_INCREF(id);
+        return id;
     }
-
-    /* Validate content of ID */
-    status = _validate(txt_buf, txt_len);
-    if (status != 0) {
-        _handle_invalid_dbase32(status, PyTuple_GetItem(args, 1));
-        return NULL;
-    }
-
-    /* Build the path */
-    end = PyUnicode_New((ssize_t)(txt_len + 1), DB32_END);
-    if (end != NULL ) {
-        end_buf = PyUnicode_1BYTE_DATA(end);
-        end_buf[0] = '/';
-        memcpy(end_buf + 1, txt_buf, txt_len);
-        ret = PyUnicode_Concat(parent, end);
-    }
-    Py_CLEAR(end);
-    return ret;
+    return PyUnicode_Join(_str_slash, args);
 }
 
 
 /*
- * C implementation of `dbase32.db32_join2()`.
+ * C implementation of `dbase32.db32_join_2()`.
  */
 static PyObject *
-db32_join2(PyObject *self, PyObject *args)
+db32_join_2(PyObject *self, PyObject *args)
 {
-    PyObject *parent = NULL;
-    size_t txt_len = 0;
-    const uint8_t *txt_buf = NULL;
-    uint8_t status = 1;
+    PyObject *id = NULL;
+    const uint8_t *id_buf = NULL;
+    size_t id_len = 0;
     PyObject *end = NULL;
     uint8_t *end_buf = NULL;
+    PyObject *tmp = NULL;
+    PyObject *item = NULL;
     PyObject *ret = NULL;
+    ssize_t i;
 
-    /* Parse args */
-    if (!PyArg_ParseTuple(args, "Us#:db32_join2", &parent, &txt_buf, &txt_len)) {
-        return NULL;
+    id = _check_join("db32_join_2", args);
+    if (id == NULL) {
+        goto cleanup;
+    }
+    id_buf = PyUnicode_1BYTE_DATA(id);
+    id_len = (size_t)PyUnicode_GET_LENGTH(id);
+
+    /* Build the path end */
+    end = PyUnicode_New((ssize_t)(id_len + 1), DB32_END);
+    if (end == NULL ) {
+        goto cleanup;
+    }
+    end_buf = PyUnicode_1BYTE_DATA(end);
+    end_buf[0] = id_buf[0];
+    end_buf[1] = id_buf[1];
+    end_buf[2] = '/';
+    memcpy(end_buf + 3, id_buf + 2, id_len - 2);
+
+    /* Performance optimization for when only one argument was given */
+    if (PyTuple_GET_SIZE(args) == 1) {
+        return end;
     }
 
-    /* Validate length of ID */
-    if (! _check_txt_len(txt_len)) {
-        return NULL;
+    /* Create temporary tuple used to build up path compontents */
+    tmp = PyTuple_New(PyTuple_GET_SIZE(args));
+    if (tmp == NULL) {
+        goto cleanup;
     }
 
-    /* Validate content of ID */
-    status = _validate(txt_buf, txt_len);
-    if (status != 0) {
-        _handle_invalid_dbase32(status, PyTuple_GetItem(args, 1));
-        return NULL;
+    /* Add parent path components to temporary tuple */
+    for (i=0; i < PyTuple_GET_SIZE(args) - 1; i++) {
+        item = PyTuple_GetItem(args, i);
+        if (item == NULL || PyTuple_SetItem(tmp, i, item) != 0) {
+            goto cleanup;
+        }
+        Py_INCREF(item);  /* PyTuple_SetItem() stole reference we borrowed */
     }
 
-    /* Build the path */
-    end = PyUnicode_New((ssize_t)(txt_len + 2), DB32_END);
-    if (end != NULL ) {
-        end_buf = PyUnicode_1BYTE_DATA(end);
-        end_buf[0] = '/';
-        end_buf[1] = txt_buf[0];
-        end_buf[2] = txt_buf[1];
-        end_buf[3] = '/';
-        memcpy(end_buf + 4, txt_buf + 2, txt_len - 2);
-        ret = PyUnicode_Concat(parent, end);
+    /* Add end to temporary tuple, then join path */
+    if (PyTuple_SetItem(tmp, i, end) != 0) {
+        goto cleanup;
     }
+    end = NULL;  /* PyTuple_SetItem() stole reference we owned */
+    ret = PyUnicode_Join(_str_slash, tmp);
+
+cleanup:
     Py_CLEAR(end);
+    Py_CLEAR(tmp);
     return ret;
 }
 
@@ -849,7 +910,7 @@ static struct PyMethodDef dbase32_functions[] = {
     {"db32_relpath", db32_relpath, METH_VARARGS, "db32_relpath(text)"},
     {"db32_abspath", db32_abspath, METH_VARARGS, "db32_abspath(parentdir, text)"},
     {"db32_join", db32_join, METH_VARARGS, "db32_join(parentdir, _id)"},
-    {"db32_join2", db32_join2, METH_VARARGS, "db32_join2(parentdir, _id)"},
+    {"db32_join_2", db32_join_2, METH_VARARGS, "db32_join_2(parentdir, _id)"},
     {NULL, NULL, 0, NULL}
 };
 
@@ -866,6 +927,10 @@ PyInit__dbase32(void)
 {
     PyObject *m = PyModule_Create(&dbase32);
     if (m == NULL) {
+        return NULL;
+    }
+    _str_slash = PyUnicode_FromString("/");
+    if (_str_slash == NULL) {
         return NULL;
     }
     PyModule_AddIntMacro(m, MAX_BIN_LEN);

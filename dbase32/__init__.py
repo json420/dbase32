@@ -47,7 +47,7 @@ try:
         db32_relpath,
         db32_abspath,
         db32_join,
-        db32_join2,
+        db32_join_2,
     )
     using_c_extension = True
 except ImportError:
@@ -64,7 +64,7 @@ except ImportError:
         db32_relpath,
         db32_abspath,
         db32_join,
-        db32_join2,
+        db32_join_2,
     )
     using_c_extension = False
 
@@ -83,7 +83,7 @@ __all__ = (
     'db32_relpath',
     'db32_abspath',
     'db32_join',
-    'db32_join2',
+    'db32_join_2',
 )
 
 RANDOM_BITS = 120
@@ -93,4 +93,7 @@ RANDOM_B32LEN = 24
 # For backward-compatability with Dbase32 <= 0.10; at some point in the
 # future we may want to drop this:
 log_id = time_id
+
+# FIXME: temporary alias for filestore till it's updated:
+db32_join2 = db32_join_2
 
