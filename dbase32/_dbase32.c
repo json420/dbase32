@@ -846,22 +846,43 @@ db32_join2(PyObject *self, PyObject *args)
 
     id = _check_join("db32_join2", args);
     if (id == NULL) {
-        return NULL;
+        goto cleanup;
     }
     id_buf = PyUnicode_1BYTE_DATA(id);
     id_len = (size_t)PyUnicode_GET_LENGTH(id);
 
+    /* Performance optimization for when two arguments were given */
+    /* FIXME: Not sure this is actually worth it */
+    if (PyTuple_GET_SIZE(args) == 2) {
+        end = PyUnicode_New((ssize_t)(id_len + 2), DB32_END);
+        if (end != NULL ) {
+            end_buf = PyUnicode_1BYTE_DATA(end);
+            end_buf[0] = '/';
+            end_buf[1] = id_buf[0];
+            end_buf[2] = id_buf[1];
+            end_buf[3] = '/';
+            memcpy(end_buf + 4, id_buf + 2, id_len - 2);
+
+            item = PyTuple_GetItem(args, 0);
+            if (item != NULL) {
+                ret = PyUnicode_Concat(item, end);
+            }
+        }
+        goto cleanup;
+    }
+
     /* Build the path end */
     end = PyUnicode_New((ssize_t)(id_len + 1), DB32_END);
     if (end == NULL ) {
-        return NULL;
+        goto cleanup;
     }
     end_buf = PyUnicode_1BYTE_DATA(end);
-    memcpy(end_buf, id_buf, 2);
+    end_buf[0] = id_buf[0];
+    end_buf[1] = id_buf[1];
     end_buf[2] = '/';
     memcpy(end_buf + 3, id_buf + 2, id_len - 2);
 
-    /* Performance optimization for when only one argument was given */
+    /* Performance optimization for when one argument was given */
     if (PyTuple_GET_SIZE(args) == 1) {
         return end;
     }
@@ -869,7 +890,7 @@ db32_join2(PyObject *self, PyObject *args)
     /* Create temporary tuple used to build up path compontents */
     tmp = PyTuple_New(PyTuple_GET_SIZE(args));
     if (tmp == NULL) {
-        return NULL;
+        goto cleanup;
     }
 
     /* Add parent path components to temporary tuple */
