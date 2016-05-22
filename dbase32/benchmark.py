@@ -105,9 +105,12 @@ def run_benchmark(numbytes=30):
     yield 'Validated Path Constructions/second:'
     yield run('db32_relpath(text)')
     yield run('db32_abspath(parentdir, text)')
+    yield run('db32_join(text)')
     yield run('db32_join(parentdir, text)')
     yield run("db32_join(parentdir, 'foo', text)")
+    yield run('db32_join2(text)')
     yield run('db32_join2(parentdir, text)')
+    yield run("db32_join2(parentdir, 'foo', text)")
 
     yield 'Random IDs/second compared to os.urandom():'
     yield run('urandom(15)', 200)

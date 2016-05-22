@@ -277,9 +277,7 @@ def db32_abspath(parentdir, text):
     return '/'.join([parentdir, db32_relpath(text)])
 
 
-def db32_join(*parts):
-    if not parts:
-        raise TypeError('db32_join() requires at least one argument')
+def _check_join(*parts): 
     _id = parts[-1]
     if type(_id) is not str:
         raise TypeError(
@@ -288,12 +286,19 @@ def db32_join(*parts):
     if not _ASCII.issuperset(_id.encode()):
         raise ValueError('_id is not ASCII: {!r}'.format(_id))
     check_db32(_id)
+    return _id
+
+
+def db32_join(*parts):
+    if not parts:
+        raise TypeError('db32_join() requires at least one argument')
+    _check_join(*parts)
     return '/'.join(parts)
 
 
-def db32_join2(parentdir, _id):
-    check_db32(_id)
-    if type(_id) is bytes:
-        _id = _id.decode()
-    return '/'.join([parentdir, _id[0:2], _id[2:]])
+def db32_join2(*parts):
+    if not parts:
+        raise TypeError('db32_join2() requires at least one argument')
+    _id = _check_join(*parts)
+    return '/'.join(parts[:-1] + (_id[:2], _id[2:]))
 

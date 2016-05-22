@@ -1058,15 +1058,24 @@ class TestFunctions_Py(BackendTestCase):
                     self.assertEqual(len(p), length)
                     self.assertEqual(p, expected)
 
-    def test_db32_join(self):
-        db32_join = self.getattr('db32_join')
+    def check_join(self, name):
+        """
+        Common tests for `db32_join()` and `db32_join2()`.
+        """
+        self.assertIn(name, ['db32_join', 'db32_join2'])
+        func = self.getattr(name)
 
         # Requires at least 1 argument:
         with self.assertRaises(TypeError) as cm:
-            db32_join()
+            func()
         self.assertEqual(str(cm.exception),
-            'db32_join() requires at least one argument'
+            '{}() requires at least one argument'.format(name)
         )
+
+        return func
+
+    def test_db32_join(self):
+        db32_join = self.check_join('db32_join')
 
         # Use fastest random_id() implementation regardless of backend:
         fastest = (_dbase32 if C_EXT_AVAIL else _dbase32py)
@@ -1156,7 +1165,8 @@ class TestFunctions_Py(BackendTestCase):
                     self.assertEqual(p, expected)
 
     def test_db32_join2(self):
-        db32_join2 = self.getattr('db32_join2')
+        db32_join2 = self.check_join('db32_join2')
+        return
 
         # Use fastest random_id() implementation regardless of backend:
         fastest = (_dbase32 if C_EXT_AVAIL else _dbase32py)
