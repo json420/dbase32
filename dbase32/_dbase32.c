@@ -129,6 +129,10 @@ static const uint8_t DB32_REVERSE[256] __attribute__ ((aligned (64))) = {
 };
 
 
+/* Used by db32_join(), db32_join2() */
+static PyObject *_str_slash = NULL;  //  '/'
+
+
 /*
  * For correctness, we declare the four internal dbase32 C functions that need
  * their return values checked using "__attribute__ ((warn_unused_result))":
@@ -751,41 +755,53 @@ db32_abspath(PyObject *self, PyObject *args)
 static PyObject *
 db32_join(PyObject *self, PyObject *args)
 {
-    PyObject *parent = NULL;
-    size_t txt_len = 0;
-    const uint8_t *txt_buf = NULL;
+    PyObject *id = NULL;
+    const uint8_t *id_buf = NULL;
+    size_t id_len = 0;
     uint8_t status = 1;
-    PyObject *end = NULL;
-    uint8_t *end_buf = NULL;
-    PyObject *ret = NULL;
 
-    /* Parse args */
-    if (!PyArg_ParseTuple(args, "Us#:db32_join", &parent, &txt_buf, &txt_len)) {
+    if (PyTuple_GET_SIZE(args) < 1) {
+        PyErr_SetString(PyExc_TypeError,
+            "db32_join() requires at least one argument"
+        );
+        return NULL;
+    }
+    id = PyTuple_GetItem(args, PyTuple_GET_SIZE(args) - 1);
+    if (id == NULL) {
+        return NULL;
+    }
+    if (Py_TYPE(id) != &PyUnicode_Type) {
+        PyErr_Format(PyExc_TypeError,
+            "_id: need a %R; got a %R: %R",
+            (PyObject *)&PyUnicode_Type, Py_TYPE(id), id
+        );
+        return NULL;
+    }
+    if (PyUnicode_READY(id) != 0) {
+        return NULL;
+    }
+    if (PyUnicode_MAX_CHAR_VALUE(id) != 127) {
+        PyErr_Format(PyExc_ValueError, "_id is not ASCII: %R", id);
         return NULL;
     }
 
+    id_buf = PyUnicode_1BYTE_DATA(id);
+    id_len = (size_t)PyUnicode_GET_LENGTH(id);
+
     /* Validate length of ID */
-    if (! _check_txt_len(txt_len)) {
+    if (! _check_txt_len(id_len)) {
         return NULL;
     }
 
     /* Validate content of ID */
-    status = _validate(txt_buf, txt_len);
+    status = _validate(id_buf, id_len);
     if (status != 0) {
-        _handle_invalid_dbase32(status, PyTuple_GetItem(args, 1));
+        _handle_invalid_dbase32(status, id);
         return NULL;
     }
 
     /* Build the path */
-    end = PyUnicode_New((ssize_t)(txt_len + 1), DB32_END);
-    if (end != NULL ) {
-        end_buf = PyUnicode_1BYTE_DATA(end);
-        end_buf[0] = '/';
-        memcpy(end_buf + 1, txt_buf, txt_len);
-        ret = PyUnicode_Concat(parent, end);
-    }
-    Py_CLEAR(end);
-    return ret;
+    return PyUnicode_Join(_str_slash, args);
 }
 
 
@@ -866,6 +882,10 @@ PyInit__dbase32(void)
 {
     PyObject *m = PyModule_Create(&dbase32);
     if (m == NULL) {
+        return NULL;
+    }
+    _str_slash = PyUnicode_FromString("/");
+    if (_str_slash == NULL) {
         return NULL;
     }
     PyModule_AddIntMacro(m, MAX_BIN_LEN);

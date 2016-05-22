@@ -53,6 +53,9 @@ BIN_SIZES = (5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60)
 TXT_SIZES = (8, 16, 24, 32, 40, 48, 56, 64, 72, 80, 88, 96)
 BAD_LETTERS = '\'"`~!#$%^&*()[]{}|+-_.,\/ 012:;<=>?@Zabcdefghijklmnopqrstuvwxyz'
 
+NON_ASCII = frozenset(bytes(range(128, 256)))
+assert NON_ASCII.intersection(_dbase32py._ASCII) == frozenset()
+
 
 def string_iter(index, count, a, b, c):
     assert 0 <= index < count
@@ -425,7 +428,7 @@ class BackendTestCase(TestCase):
             )
         return getattr(backend, name)
 
-    def check_text_type(self, func, *args, nobytes=False):
+    def check_text_type(self, func, *args):
         """
         Common TypeError tests for `db32dec()`, `check_db32()`, and `isdb32()`.
         """
@@ -455,8 +458,7 @@ class BackendTestCase(TestCase):
 
         # Sanity check to make sure both str and bytes can be decoded/validated:
         func(*(args + ('3399AAYY',)))
-        if nobytes is False:
-            func(*(args + (b'3399AAYY',)))
+        func(*(args + (b'3399AAYY',)))
 
     def check_text_value(self, func, *args):
         """
@@ -1056,12 +1058,44 @@ class TestFunctions_Py(BackendTestCase):
         self.assertGreater(len(pd2.encode()), plen)
         self.assertNotEqual(len(pd1.encode()), len(pd2.encode()))
 
+        # _id is a bad type:
+        parts = (
+            tuple(),
+            (pd1,),
+            (pd1, pd2,),
+        )
+        for bad in (random_id().encode(), 17, 18.5):
+            for p in parts:
+                args = p + (bad,)
+                with self.assertRaises(TypeError) as cm:
+                    db32_join(*args)
+                self.assertEqual(str(cm.exception),
+                    '_id: need a {!r}; got a {!r}: {!r}'.format(
+                        str, type(bad), bad
+                    )
+                )
+
+        # _id is non-ascii:
+        with self.assertRaises(ValueError) as cm:
+            db32_join('™')
+        self.assertEqual(str(cm.exception),
+            "_id is not ASCII: '™'"
+        )
+        with self.assertRaises(ValueError) as cm:
+            db32_join(random_id(), '™')
+        self.assertEqual(str(cm.exception),
+            "_id is not ASCII: '™'"
+        )
+        with self.assertRaises(ValueError) as cm:
+            db32_join(random_id(), random_id(), '™')
+        self.assertEqual(str(cm.exception),
+            "_id is not ASCII: '™'"
+        )
+
         # Common tests for text args:
-        self.check_text_type(db32_join, nobytes=True)
-        self.check_text_value(db32_join)
-        for parentdir in (pd1, pd2):
-            self.check_text_type(db32_join, parentdir, nobytes=True)
-            self.check_text_value(db32_join, parentdir)
+#        self.check_text_value(db32_join)
+#        for parentdir in (pd1, pd2):
+#            self.check_text_value(db32_join, parentdir)
 
         # Sanity checks with static values:
         self.assertEqual(

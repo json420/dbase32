@@ -106,6 +106,7 @@ def run_benchmark(numbytes=30):
     yield run('db32_relpath(text)')
     yield run('db32_abspath(parentdir, text)')
     yield run('db32_join(parentdir, text)')
+    yield run("db32_join(parentdir, 'foo', text)")
     yield run('db32_join2(parentdir, text)')
 
     yield 'Random IDs/second compared to os.urandom():'
