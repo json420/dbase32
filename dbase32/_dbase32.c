@@ -129,7 +129,7 @@ static const uint8_t DB32_REVERSE[256] __attribute__ ((aligned (64))) = {
 };
 
 
-/* Used by db32_join(), db32_join2() */
+/* Used by db32_join(), db32_join_2() */
 static PyObject *_str_slash = NULL;  //  '/'
 
 
@@ -755,7 +755,7 @@ db32_abspath(PyObject *self, PyObject *args)
 /*
  * _check_join(): internal helper for join functions.
  *
- * Used by `db32_join()` and `db32_join2()`.
+ * Used by `db32_join()` and `db32_join_2()`.
  */
 static PyObject *
 _check_join(const char *name, PyObject *args)
@@ -830,10 +830,10 @@ db32_join(PyObject *self, PyObject *args)
 
 
 /*
- * C implementation of `dbase32.db32_join2()`.
+ * C implementation of `dbase32.db32_join_2()`.
  */
 static PyObject *
-db32_join2(PyObject *self, PyObject *args)
+db32_join_2(PyObject *self, PyObject *args)
 {
     PyObject *id = NULL;
     const uint8_t *id_buf = NULL;
@@ -845,7 +845,7 @@ db32_join2(PyObject *self, PyObject *args)
     PyObject *ret = NULL;
     ssize_t i;
 
-    id = _check_join("db32_join2", args);
+    id = _check_join("db32_join_2", args);
     if (id == NULL) {
         goto cleanup;
     }
@@ -910,7 +910,7 @@ static struct PyMethodDef dbase32_functions[] = {
     {"db32_relpath", db32_relpath, METH_VARARGS, "db32_relpath(text)"},
     {"db32_abspath", db32_abspath, METH_VARARGS, "db32_abspath(parentdir, text)"},
     {"db32_join", db32_join, METH_VARARGS, "db32_join(parentdir, _id)"},
-    {"db32_join2", db32_join2, METH_VARARGS, "db32_join2(parentdir, _id)"},
+    {"db32_join_2", db32_join_2, METH_VARARGS, "db32_join_2(parentdir, _id)"},
     {NULL, NULL, 0, NULL}
 };
 

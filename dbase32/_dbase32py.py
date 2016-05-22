@@ -296,9 +296,9 @@ def db32_join(*parts):
     return '/'.join(parts)
 
 
-def db32_join2(*parts):
+def db32_join_2(*parts):
     if not parts:
-        raise TypeError('db32_join2() requires at least one argument')
+        raise TypeError('db32_join_2() requires at least one argument')
     _id = _check_join(*parts)
     return '/'.join(parts[:-1] + (_id[:2], _id[2:]))
 

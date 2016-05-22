@@ -444,7 +444,7 @@ API, they've been hard-coded to use ``'/'``.
     .. versionadded:: 1.7
 
 
-.. function:: db32_join2([parent, ...,] final)
+.. function:: db32_join_2([parent, ...,] final)
 
     Join path components using validated Dbase32 ID for 1024 sub-directories.
 
@@ -455,20 +455,20 @@ API, they've been hard-coded to use ``'/'``.
 
     For example:
 
-    >>> from dbase32 import db32_join2
-    >>> db32_join2('XFMIN6NRI84O3IX8DAV5MBTR')
+    >>> from dbase32 import db32_join_2
+    >>> db32_join_2('XFMIN6NRI84O3IX8DAV5MBTR')
     'XF/MIN6NRI84O3IX8DAV5MBTR'
 
     Like :func:`db32_join()`, this function joins together any leading *parent*
     components:
 
-    >>> db32_join2('/foo', 'bar', 'XFMIN6NRI84O3IX8DAV5MBTR')
+    >>> db32_join_2('/foo', 'bar', 'XFMIN6NRI84O3IX8DAV5MBTR')
     '/foo/bar/XF/MIN6NRI84O3IX8DAV5MBTR'
 
     Similar to :func:`check_db32()`, a ``ValueError`` will be raised if *final*
     is not a valid Dbase32 ID:
 
-    >>> db32_join2('/foo', 'bar', '../very/naughty/')
+    >>> db32_join_2('/foo', 'bar', '../very/naughty/')
     Traceback (most recent call last):
       ...
     ValueError: invalid Dbase32: '../very/naughty/'
