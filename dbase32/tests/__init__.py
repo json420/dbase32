@@ -460,7 +460,7 @@ class BackendTestCase(TestCase):
         func(*(args + ('3399AAYY',)))
         func(*(args + (b'3399AAYY',)))
 
-    def check_text_value(self, func, *args):
+    def check_text_value(self, func, *args, special=False):
         """
         Common ValueError tests for `db32dec()` and `check_db32()`.
         """
@@ -561,53 +561,76 @@ class BackendTestCase(TestCase):
                 'invalid Dbase32: {!r}'.format(text)
             )
             self.assertEqual(sys.getrefcount(text), 2)
-            data = text.encode()
-            self.assertEqual(sys.getrefcount(data), 2)
-            with self.assertRaises(ValueError) as cm:
-                func(*mk_args(data))
-            self.assertEqual(str(cm.exception),
-                'invalid Dbase32: {!r}'.format(data)
-            )
-            self.assertEqual(sys.getrefcount(data), 2)
+            if special is False:
+                data = text.encode()
+                self.assertEqual(sys.getrefcount(data), 2)
+                with self.assertRaises(ValueError) as cm:
+                    func(*mk_args(data))
+                self.assertEqual(str(cm.exception),
+                    'invalid Dbase32: {!r}'.format(data)
+                )
+                self.assertEqual(sys.getrefcount(data), 2)
 
         # Test with multi-byte UTF-8 characters:
         bad_s = '™' * 8
         bad_b = bad_s.encode('utf-8')
         self.assertEqual(len(bad_s), 8)
         self.assertEqual(len(bad_b), 24)
-        for value in [bad_s, bad_b]:
-            refcount = sys.getrefcount(value)
+        values = ([bad_s, bad_b] if special is False else [bad_s])
+        for v in values:
+            refcount = sys.getrefcount(v)
             with self.assertRaises(ValueError) as cm:
-                func(*mk_args(value))
-            self.assertEqual(str(cm.exception),
-                'invalid Dbase32: {!r}'.format(value)
-            )
-            self.assertEqual(sys.getrefcount(value), refcount)
+                func(*mk_args(v))
+            if special is False:
+                self.assertEqual(str(cm.exception),
+                    'invalid Dbase32: {!r}'.format(v)
+                )
+            else:
+                self.assertEqual(str(cm.exception),
+                    '_id is not ASCII: {!r}'.format(v)
+                )
+            self.assertEqual(sys.getrefcount(v), refcount)
         bad_s = 'AABBCCD™'
         bad_b = bad_s.encode('utf-8')
         self.assertEqual(len(bad_s), 8)
         self.assertEqual(len(bad_b), 10)
-        for value in [bad_s, bad_b]:
-            refcount = sys.getrefcount(value)
+        values = ([bad_s, bad_b] if special is False else [bad_s])
+        for v in values:
+            refcount = sys.getrefcount(v)
             with self.assertRaises(ValueError) as cm:
-                func(*mk_args(value))
-            self.assertEqual(
-                str(cm.exception),
-                'len(text) is 10, need len(text) % 8 == 0'
-            )
-            self.assertEqual(sys.getrefcount(value), refcount)
+                func(*mk_args(v))
+            if special is False:
+                self.assertEqual(
+                    str(cm.exception),
+                    'len(text) is 10, need len(text) % 8 == 0'
+                )
+            else:
+                self.assertEqual(str(cm.exception),
+                    '_id is not ASCII: {!r}'.format(v)
+                )
+            self.assertEqual(sys.getrefcount(v), refcount)
         bad_s = 'AABBC™'
         bad_b = bad_s.encode('utf-8')
         self.assertEqual(len(bad_s), 6)
         self.assertEqual(len(bad_b), 8)
-        for value in [bad_s, bad_b]:
-            refcount = sys.getrefcount(value)
+        values = ([bad_s, bad_b] if special is False else [bad_s])
+        for v in values:
+            refcount = sys.getrefcount(v)
             with self.assertRaises(ValueError) as cm:
-                func(*mk_args(value))
-            self.assertEqual(str(cm.exception),
-                'invalid Dbase32: {!r}'.format(value)
-            )
-            self.assertEqual(sys.getrefcount(value), refcount)
+                func(*mk_args(v))
+            if special is False:
+                self.assertEqual(str(cm.exception),
+                    'invalid Dbase32: {!r}'.format(v)
+                )
+            else:
+                self.assertEqual(str(cm.exception),
+                    '_id is not ASCII: {!r}'.format(v)
+                )
+            self.assertEqual(sys.getrefcount(v), refcount)
+
+        # The rest are bytes-only tests:
+        if special is not False:
+            return
 
         # Random bytes with invalid length:
         for size in TXT_SIZES:
@@ -1093,9 +1116,9 @@ class TestFunctions_Py(BackendTestCase):
         )
 
         # Common tests for text args:
-#        self.check_text_value(db32_join)
-#        for parentdir in (pd1, pd2):
-#            self.check_text_value(db32_join, parentdir)
+        self.check_text_value(db32_join, special=True)
+        for parentdir in (pd1, pd2):
+            self.check_text_value(db32_join, parentdir, special=True)
 
         # Sanity checks with static values:
         self.assertEqual(
