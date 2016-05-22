@@ -835,6 +835,10 @@ static PyObject *
 db32_join2(PyObject *self, PyObject *args)
 {
     PyObject *id = NULL;
+    const uint8_t *id_buf = NULL;
+    size_t id_len = 0;
+    PyObject *end = NULL;
+    uint8_t *end_buf = NULL;
     PyObject *tmp = NULL;
     PyObject *item = NULL;
     PyObject *ret = NULL;
@@ -844,9 +848,26 @@ db32_join2(PyObject *self, PyObject *args)
     if (id == NULL) {
         return NULL;
     }
+    id_buf = PyUnicode_1BYTE_DATA(id);
+    id_len = (size_t)PyUnicode_GET_LENGTH(id);
+
+    /* Build the path end */
+    end = PyUnicode_New((ssize_t)(id_len + 1), DB32_END);
+    if (end == NULL ) {
+        return NULL;
+    }
+    end_buf = PyUnicode_1BYTE_DATA(end);
+    memcpy(end_buf, id_buf, 2);
+    end_buf[2] = '/';
+    memcpy(end_buf + 3, id_buf + 2, id_len - 2);
+
+    /* Performance optimization for when only one argument was given */
+    if (PyTuple_GET_SIZE(args) == 1) {
+        return end;
+    }
 
     /* Create temporary tuple used to build up path compontents */
-    tmp = PyTuple_New(PyTuple_GET_SIZE(args) + 1);
+    tmp = PyTuple_New(PyTuple_GET_SIZE(args));
     if (tmp == NULL) {
         return NULL;
     }
@@ -860,31 +881,17 @@ db32_join2(PyObject *self, PyObject *args)
         Py_INCREF(item);
     }
 
-    /* Add _id[0:2] to temporary tuple */
-    item = PyUnicode_Substring(id, 0, 2);
-    if (item == NULL) {
+    /* Add end to temporary tuple */
+    if (PyTuple_SetItem(tmp, i, end) != 0) {
         goto cleanup;
     }
-    if (PyTuple_SetItem(tmp, i, item) != 0) {
-        Py_CLEAR(item);
-        goto cleanup;
-    }
-
-    /* Add _id[2:] to temporary tuple */
-    i++;
-    item = PyUnicode_Substring(id, 2, PyUnicode_GET_LENGTH(id));
-    if (item == NULL) {
-        goto cleanup;
-    }
-    if (PyTuple_SetItem(tmp, i, item) != 0) {
-        Py_CLEAR(item);
-        goto cleanup;
-    }
+    end = NULL;  /* SetItem stole reference */
 
     /* Join path */
     ret = PyUnicode_Join(_str_slash, tmp);
 
 cleanup:
+    Py_CLEAR(end);
     Py_CLEAR(tmp);
     return ret;
 }
