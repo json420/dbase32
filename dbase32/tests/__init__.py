@@ -1198,6 +1198,27 @@ class TestFunctions_Py(BackendTestCase):
                 )
                 self.check_refcounts(counts, args)
 
+        # Good _id, but bad type in parents:
+        bad_parents = (
+            (random_id().encode(),),
+            (random_id(), random_id().encode()),
+            (random_id(), random_id(), random_id().encode()),
+            (random_id(), random_id(), random_id(), random_id().encode()),
+        )
+        for size in BIN_SIZES:
+            _id = random_id(size)
+            for bad in bad_parents:
+                args = bad + (_id,)
+                counts = get_refcounts(args)
+                with self.assertRaises(TypeError) as cm:
+                    func(*args)
+                self.assertEqual(str(cm.exception),
+                    'sequence item {}: expected str instance, bytes found'.format(
+                        len(bad) - 1
+                    )
+                )
+                self.check_refcounts(counts, args)
+
         # All good:
         for size in BIN_SIZES:
             _id = random_id(size)
