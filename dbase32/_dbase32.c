@@ -810,6 +810,7 @@ _check_join(const char *name, PyObject *args)
     return id;
 }
 
+
 /*
  * C implementation of `dbase32.db32_join()`.
  */
