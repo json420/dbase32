@@ -276,11 +276,12 @@ def db32_abspath(parentdir, text):
     return '/'.join([parentdir, db32_relpath(text)])
 
 
-def db32_join(parentdir, _id):
+def db32_join(*parts):
+    if not parts:
+        raise TypeError('db32_join() requires at least one argument')
+    _id = parts[-1]
     check_db32(_id)
-    if type(_id) is bytes:
-        _id = _id.decode()
-    return '/'.join([parentdir, _id])
+    return '/'.join(parts)
 
 
 def db32_join2(parentdir, _id):
