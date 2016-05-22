@@ -851,26 +851,6 @@ db32_join2(PyObject *self, PyObject *args)
     id_buf = PyUnicode_1BYTE_DATA(id);
     id_len = (size_t)PyUnicode_GET_LENGTH(id);
 
-    /* Performance optimization for when two arguments were given */
-    /* FIXME: Not sure this is actually worth it */
-    if (PyTuple_GET_SIZE(args) == 2) {
-        end = PyUnicode_New((ssize_t)(id_len + 2), DB32_END);
-        if (end != NULL ) {
-            end_buf = PyUnicode_1BYTE_DATA(end);
-            end_buf[0] = '/';
-            end_buf[1] = id_buf[0];
-            end_buf[2] = id_buf[1];
-            end_buf[3] = '/';
-            memcpy(end_buf + 4, id_buf + 2, id_len - 2);
-
-            item = PyTuple_GetItem(args, 0);
-            if (item != NULL) {
-                ret = PyUnicode_Concat(item, end);
-            }
-        }
-        goto cleanup;
-    }
-
     /* Build the path end */
     end = PyUnicode_New((ssize_t)(id_len + 1), DB32_END);
     if (end == NULL ) {
@@ -882,7 +862,7 @@ db32_join2(PyObject *self, PyObject *args)
     end_buf[2] = '/';
     memcpy(end_buf + 3, id_buf + 2, id_len - 2);
 
-    /* Performance optimization for when one argument was given */
+    /* Performance optimization for when only one argument was given */
     if (PyTuple_GET_SIZE(args) == 1) {
         return end;
     }
@@ -899,16 +879,14 @@ db32_join2(PyObject *self, PyObject *args)
         if (item == NULL || PyTuple_SetItem(tmp, i, item) != 0) {
             goto cleanup;
         }
-        Py_INCREF(item);
+        Py_INCREF(item);  /* PyTuple_SetItem() stole reference we borrowed */
     }
 
-    /* Add end to temporary tuple */
+    /* Add end to temporary tuple, then join path */
     if (PyTuple_SetItem(tmp, i, end) != 0) {
         goto cleanup;
     }
-    end = NULL;  /* SetItem stole reference */
-
-    /* Join path */
+    end = NULL;  /* PyTuple_SetItem() stole reference we owned */
     ret = PyUnicode_Join(_str_slash, tmp);
 
 cleanup:
