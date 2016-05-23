@@ -1042,33 +1042,6 @@ class TestFunctions_Py(BackendTestCase):
         # Make sure final 80 bits are actually random:
         self.assertEqual(len(accum), 1000)
 
-    def test_db32_relpath(self):
-        db32_relpath = self.getattr('db32_relpath')
-
-        # Common tests for text args:
-        self.check_text_type(db32_relpath)
-        self.check_text_value(db32_relpath)
-
-        # Sanity check with a few static values:
-        self.assertEqual(db32_relpath('AABBBBBB'), 'AA/BBBBBB')
-        self.assertEqual(db32_relpath('AABBBBBBCCCCCCCC'), 'AA/BBBBBBCCCCCCCC')
-
-        # Use fastest random_id() implementation regardless of backend:
-        fastest = (_dbase32 if C_EXT_AVAIL else _dbase32py)
-        random_id = fastest.random_id
-
-        # Test with random values:
-        for size in BIN_SIZES:
-            length = (size * 8 // 5) + 1
-            for i in range(1000):
-                text = random_id(size)
-                for arg in (text, text.encode()):  # Test both str and bytes
-                    rp = db32_relpath(arg)
-                    self.assertIs(type(rp), str)
-                    self.assertEqual(len(rp), length)
-                    self.assertEqual(rp[2], '/')
-                    self.assertEqual(rp, '/'.join([text[:2], text[2:]]))
-
     def test_db32_abspath(self):
         db32_abspath = self.getattr('db32_abspath')
         db32_relpath = self.getattr('db32_relpath')
