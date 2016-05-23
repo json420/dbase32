@@ -266,17 +266,6 @@ def time_id(timestamp=-1):
     return db32enc(bytes(buf))
 
 
-def db32_relpath(text):
-    check_db32(text)
-    if type(text) is bytes:
-        text = text.decode()
-    return '/'.join([text[0:2], text[2:]])
-
-
-def db32_abspath(parentdir, text):
-    return '/'.join([parentdir, db32_relpath(text)])
-
-
 def _check_join(*parts): 
     _id = parts[-1]
     if type(_id) is not str:
