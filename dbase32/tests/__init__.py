@@ -352,20 +352,6 @@ class TestConstants(TestCase):
         """
         self.assertIs(dbase32.log_id, dbase32.time_id)
 
-    def test_db32_relpath_alias(self):
-        if C_EXT_AVAIL:
-            self.assertIs(dbase32.db32_relpath, _dbase32.db32_relpath)
-            self.assertIsNot(dbase32.db32_relpath, _dbase32py.db32_relpath)
-        else:
-            self.assertIs(dbase32.db32_relpath, _dbase32py.db32_relpath)
-
-    def test_db32_abspath_alias(self):
-        if C_EXT_AVAIL:
-            self.assertIs(dbase32.db32_abspath, _dbase32.db32_abspath)
-            self.assertIsNot(dbase32.db32_abspath, _dbase32py.db32_abspath)
-        else:
-            self.assertIs(dbase32.db32_abspath, _dbase32py.db32_abspath)
-
     def test_db32_join_alias(self):
         if C_EXT_AVAIL:
             self.assertIs(dbase32.db32_join, _dbase32.db32_join)

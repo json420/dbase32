@@ -47,8 +47,6 @@ from dbase32 import (
     check_db32,
     random_id,
     time_id,
-    db32_relpath,
-    db32_abspath,
     db32_join,
     db32_join_2,
 )
@@ -103,8 +101,6 @@ def run_benchmark(numbytes=30):
     yield run('check_db32(text)')
 
     yield 'Validated Path Constructions/second:'
-    yield run('db32_relpath(text)')
-    yield run('db32_abspath(parentdir, text)')
     yield run('db32_join(text)')
     yield run('db32_join(parentdir, text)')
     yield run("db32_join(parentdir, 'foo', text)")

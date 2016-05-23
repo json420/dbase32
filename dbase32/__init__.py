@@ -44,8 +44,6 @@ try:
         check_db32,
         random_id,
         time_id,
-        db32_relpath,
-        db32_abspath,
         db32_join,
         db32_join_2,
     )
@@ -61,8 +59,6 @@ except ImportError:
         check_db32,
         random_id,
         time_id,
-        db32_relpath,
-        db32_abspath,
         db32_join,
         db32_join_2,
     )
@@ -80,8 +76,6 @@ __all__ = (
     'check_db32',
     'random_id',
     'time_id',
-    'db32_relpath',
-    'db32_abspath',
     'db32_join',
     'db32_join_2',
 )
