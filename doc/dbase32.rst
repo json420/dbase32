@@ -275,149 +275,55 @@ Functions
 Path Functions
 --------------
 
-.. warning::
-
-    These functions are an *experimental* part of the Dbase32 API!  They might
-    still change in backward-incompatible ways, be renamed, or be removed entirely!
-
-Dbase32 1.6 introduced two **experimental** functions that test whether some
-untrusted input is a valid Dbase32 ID and, if valid, construct a file-system
-path from it. (Or if this unstrusted input is not a valid Dbase32 ID, these
+Dbase32 1.7 introduced two functions to the stable API that test whether some
+untrusted input is a valid Dbase32 ID and, if valid, construct a file-system or
+URL path from it. (Or if this unstrusted input is not a valid Dbase32 ID, these
 functions raise a ``ValueError``.)
 
-These experimental functions are currently quite inflexible and might not be
-broadly useful.  They're squarely aimed at the directory and file layout used
-by the `Dmedia FileStore`_, where the first two characters of a valid Dbase32 ID
-are used to construct a sub-directory name, and the remaining characters are
-used to construct a filename within that sub-directory.
+These functions can be used to:
 
-The :func:`db32_abspath()` function constructs an absolute path where the Dbase32
-ID is used to append a sub-directory name plus a filename to a provided parent
-directory name.  For example, you could build such an absolute path from a valid
-Dbase32 ID like this:
+    1.  Build an absolute path for accessing files on the filesystem or for
+        building URLs
 
->>> from dbase32 import check_db32
->>> parentdir = '/my/parent/directory'
->>> _id = 'FCNPVRELI7J9FUUI'
->>> check_db32(_id)
->>> '/'.join([parentdir, _id[0:2], _id[2:]])
-'/my/parent/directory/FC/NPVRELI7J9FUUI'
+    2.  Build a relative path for accessing files on the filesystem relative to
+        an open directory descriptor
 
-Which is exactly what the :func:`db32_abspath()` function does:
+For example, :func:`db32_join()` can be used to build an absolute path like
+this:
 
->>> from dbase32 import db32_abspath
->>> db32_abspath(parentdir, _id)
-'/my/parent/directory/FC/NPVRELI7J9FUUI'
+>>> from dbase32 import db32_join
+>>> db32_join('/foo', 'bar', '39AY39AY')
+'/foo/bar/39AY39AY'
 
-On the other hand, the :func:`db32_relpath()` function constructs an
-unqualified, relative path that, among other things, can be useful when opening
-files relative to an open directory descriptor.  For example, you could build
-such a relative path from a valid Dbase32 ID like this:
+Or a relative path like this:
 
->>> check_db32(_id)
->>> '/'.join([_id[0:2], _id[2:]])
-'FC/NPVRELI7J9FUUI'
+>>> from dbase32 import db32_join
+>>> db32_join('/foo', 'bar', '39AY39AY')
+'/foo/bar/39AY39AY'
 
-Which is exactly what the :func:`db32_relpath()` function does:
+:func:`db32_join_2()` is similar except that it spits the Dbase32 ID into two
+path components joined by a slash, equivalent to::
 
->>> from dbase32 import db32_relpath
->>> db32_relpath(_id)
-'FC/NPVRELI7J9FUUI'
+    '/'.join([untrusted[0:2], untrusted[2:]])
 
-The goal of these functions is to provide a simple, high-performance way of
-constructing file-system paths from Dbase32 IDs, all while offering robust
-protection against directory traversal attacks and similar security issues.
+For example:
 
-At present these fuctions are an **experimental** part of the Dbase32 API, so
-bear in mind that they still might undergo backward-incompatible changes, be
-renamed, or even be removed from the Dbase32 API altogether.
+>>> from dbase32 import db32_join_2
+>>> db32_join_2('39AY39AY')
+'39/AY39AY'
 
-Also note that these functions are currently not portable, cannot be used to
-construct file-systems paths under Windows.  They're currently hard-coded to use
-``'/'`` as the separator rather than using ``os.sep``.  The reason for this is
-that there's an interesting use-case for always using ``'/'`` as the separator
-regardless of the value of ``os.sep`` on your particular platform: constructing
-URLs.  Till the details are sorted out in terms of how best to do this in the
-API, they've been hard-coded to use ``'/'``.
+:func:`db32_join_2()` can likewise be used to construct an absolute path:
 
+>>> db32_join_2('/foo', 'bar', '39AY39AY')
+'/foo/bar/39/AY39AY'
 
-.. function:: db32_abspath(parentdir, text)
+Or a relative path with additional parent path components:
 
-    Construct an absolute path with a 2-character directory name plus filename.
+>>> db32_join_2('foo', 'bar', '39AY39AY')
+'foo/bar/39/AY39AY'
 
-    .. warning::
-
-        This function an *experimental* part of the Dbase32 API!  It might still
-        change in backward-incompatible ways or be removed entirely!
-
-    For example:
-
-    >>> from dbase32 import db32_abspath
-    >>> db32_abspath('/my/parent/directory', 'HELLOALL')
-    '/my/parent/directory/HE/LLOALL'
-
-    Similar to :func:`check_db32()`, a ``ValueError`` will be raised if *text*
-    does not contain a valid Dbase32 ID:
-
-    >>> db32_abspath('/my/parent/directory', '../very/naughty/')
-    Traceback (most recent call last):
-      ...
-    ValueError: invalid Dbase32: '../very/naughty/'
-
-    The *text* argument can be a ``str`` or ``bytes`` instance, but the return
-    value is always a ``str`` instance:
-
-    >>> db32_abspath('/my/parent/directory', b'BYTESFOO')
-    '/my/parent/directory/BY/TESFOO'
-
-    However, the *parentdir* argument must always be a ``str`` instance.
-
-    Note that currently :func:`db32_abspath()` does no validation of the
-    *parentdir* (although it may in the future).  Typically you'll construct
-    many file-system paths from a single parent directory, so you likely want
-    to initially validate the *parentdir* to ensure that::
-
-        assert os.path.abspath(parentdir) == parentdir
-
-    In particular, this function assumes that the *parentdir* does not end with
-    a ``'/'`` (which the above assertion would enforce).
-
-    .. versionadded:: 1.6
-
-
-.. function:: db32_relpath(text)
-
-    Construct a relative path with a 2-character directory name plus filename.
-
-    .. warning::
-
-        This function an *experimental* part of the Dbase32 API!  It might still
-        change in backward-incompatible ways or be removed entirely!
-
-    For example:
-
-    >>> from dbase32 import db32_relpath
-    >>> db32_relpath('HELLOALL')
-    'HE/LLOALL'
-
-    Similar to :func:`check_db32()`, a ``ValueError`` will be raised if *text*
-    does not contain a valid Dbase32 ID:
-
-    >>> db32_relpath('../very/naughty/')
-    Traceback (most recent call last):
-      ...
-    ValueError: invalid Dbase32: '../very/naughty/'
-
-    The *text* argument can be a ``str`` or ``bytes`` instance, but the return
-    value is always a ``str`` instance:
-
-    >>> db32_relpath(b'BYTESFOO')
-    'BY/TESFOO'
-
-    Among other things, such a relative path can be used to open files relative
-    to an open directory descriptor.
-
-    .. versionadded:: 1.6
+:func:`db32_join_2()` might seem peculiar, but it exactly fits the needs of the
+directory and file layout used by the `Dmedia FileStore`_.
 
 
 .. function:: db32_join([parent, ...,] final)

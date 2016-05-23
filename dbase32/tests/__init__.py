@@ -1042,39 +1042,6 @@ class TestFunctions_Py(BackendTestCase):
         # Make sure final 80 bits are actually random:
         self.assertEqual(len(accum), 1000)
 
-    def test_db32_abspath(self):
-        db32_abspath = self.getattr('db32_abspath')
-        db32_relpath = self.getattr('db32_relpath')
-
-        # Use fastest random_id() implementation regardless of backend:
-        fastest = (_dbase32 if C_EXT_AVAIL else _dbase32py)
-        random_id = fastest.random_id
-        parentdir = '/'.join(['/tmp', random_id(), random_id()])
-
-        # Common tests for text args:
-        self.check_text_type(db32_abspath, parentdir)
-        self.check_text_value(db32_abspath, parentdir)
-
-        # Sanity check with a few static values:
-        self.assertEqual(db32_abspath('/PP', 'AABBBBBB'), '/PP/AA/BBBBBB')
-        self.assertEqual(
-            db32_abspath('/PP', 'AABBBBBBCCCCCCCC'),
-            '/PP/AA/BBBBBBCCCCCCCC'
-        )
-
-        # Test with random values:
-        for size in BIN_SIZES:
-            length = len(parentdir) + (size * 8 // 5) + 2
-            for i in range(1000):
-                text = random_id(size)
-                rp = db32_relpath(text)
-                expected = '/'.join([parentdir, rp])
-                for arg in (text, text.encode()):  # Test both str and bytes
-                    p = db32_abspath(parentdir, text)
-                    self.assertIs(type(p), str)
-                    self.assertEqual(len(p), length)
-                    self.assertEqual(p, expected)
-
     def check_refcounts(self, old_counts, args):
         new_counts = get_refcounts(args)
         self.assertEqual(new_counts, old_counts)
