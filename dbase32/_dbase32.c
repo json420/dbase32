@@ -285,7 +285,7 @@ _decode(const uint8_t *txt_buf, const size_t txt_len,
 /*
  * _validate(): internal Dbase32 validation function.
  *
- * Used by `isdb32()`, `check_db32()`, `db32_relpath()`, and `db32_abspath()`.
+ * Used by `isdb32()`, `check_db32()`, and `_check_join()`.
  *
  * Returns 0 when valid, 224 when invalid.
  *
@@ -337,7 +337,7 @@ _validate(const uint8_t *txt_buf, const size_t txt_len)
 /*
  * _check_txt_len(): validate the length of a Dbase32 ID.
  *
- * Used by `db32dec()`, `check_db32()`, `db32_relpath()`, and `db32_abspath()`.
+ * Used by `db32dec()`, `check_db32()`, and `_check_join()`.
  *
  * If `txt_len` fits the requirements for a well-formed Dbase32-encoded ID, this
  * function returns `true`.
@@ -366,7 +366,7 @@ _check_txt_len(const size_t txt_len)
 /*
  * _handle_invalid_dbase32(): handle a decoding or validation error.
  *
- * Used by `db32dec()`, `check_db32()`, `db32_relpath()`, and `db32_abspath()`.
+ * Used by `db32dec()`, `check_db32()`, and `_check_join()`.
  *
  * Both `_decode()` and `_validate()` return 0 on success or 224 when the text
  * in question contains invalid Dbase32 characters.  Any other status should be
@@ -664,95 +664,6 @@ time_id(PyObject *self, PyObject *args, PyObject *kw)
 
 
 /*
- * C implementation of `dbase32.db32_relpath()`.
- */
-static PyObject *
-db32_relpath(PyObject *self, PyObject *args)
-{
-    size_t txt_len = 0;
-    const uint8_t *txt_buf = NULL;
-    uint8_t status = 1;
-    PyObject *ret = NULL;
-    uint8_t *ret_buf = NULL;
-
-    /* Parse args */
-    if (!PyArg_ParseTuple(args, "s#:db32_relpath", &txt_buf, &txt_len)) {
-        return NULL;
-    }
-
-    /* Validate length of ID */
-    if (! _check_txt_len(txt_len)) {
-        return NULL;
-    }
-
-    /* Validate content of ID */
-    status = _validate(txt_buf, txt_len);
-    if (status != 0) {
-        _handle_invalid_dbase32(status, PyTuple_GetItem(args, 0));
-        return NULL;
-    }
-
-    /* Build the relative path */
-    ret = PyUnicode_New((ssize_t)(txt_len + 1), DB32_END);
-    if (ret != NULL ) {
-        ret_buf = PyUnicode_1BYTE_DATA(ret);
-        ret_buf[0] = txt_buf[0];
-        ret_buf[1] = txt_buf[1];
-        ret_buf[2] = '/';
-        memcpy(ret_buf + 3, txt_buf + 2, txt_len - 2);
-    }
-    return ret;
-}
-
-
-/*
- * C implementation of `dbase32.db32_abspath()`.
- */
-static PyObject *
-db32_abspath(PyObject *self, PyObject *args)
-{
-    PyObject *parent = NULL;
-    size_t txt_len = 0;
-    const uint8_t *txt_buf = NULL;
-    uint8_t status = 1;
-    PyObject *end = NULL;
-    uint8_t *end_buf = NULL;
-    PyObject *ret = NULL;
-
-    /* Parse args */
-    if (!PyArg_ParseTuple(args, "Us#:db32_abspath", &parent, &txt_buf, &txt_len)) {
-        return NULL;
-    }
-
-    /* Validate length of ID */
-    if (! _check_txt_len(txt_len)) {
-        return NULL;
-    }
-
-    /* Validate content of ID */
-    status = _validate(txt_buf, txt_len);
-    if (status != 0) {
-        _handle_invalid_dbase32(status, PyTuple_GetItem(args, 1));
-        return NULL;
-    }
-
-    /* Build the absolute path */
-    end = PyUnicode_New((ssize_t)(txt_len + 2), DB32_END);
-    if (end != NULL ) {
-        end_buf = PyUnicode_1BYTE_DATA(end);
-        end_buf[0] = '/';
-        end_buf[1] = txt_buf[0];
-        end_buf[2] = txt_buf[1];
-        end_buf[3] = '/';
-        memcpy(end_buf + 4, txt_buf + 2, txt_len - 2);
-        ret = PyUnicode_Concat(parent, end);
-    }
-    Py_CLEAR(end);
-    return ret;
-}
-
-
-/*
  * _check_join(): internal helper for join functions.
  *
  * Used by `db32_join()` and `db32_join_2()`.
@@ -806,7 +717,6 @@ _check_join(const char *name, PyObject *args)
         _handle_invalid_dbase32(status, id);
         return NULL;
     }
-
     return id;
 }
 
@@ -907,8 +817,6 @@ static struct PyMethodDef dbase32_functions[] = {
         "random_id(numbytes=15)"},
     {"time_id", (PyCFunction)time_id, METH_VARARGS | METH_KEYWORDS,
         "time_id(timestamp=-1)"},
-    {"db32_relpath", db32_relpath, METH_VARARGS, "db32_relpath(text)"},
-    {"db32_abspath", db32_abspath, METH_VARARGS, "db32_abspath(parentdir, text)"},
     {"db32_join", db32_join, METH_VARARGS, "db32_join(parentdir, _id)"},
     {"db32_join_2", db32_join_2, METH_VARARGS, "db32_join_2(parentdir, _id)"},
     {NULL, NULL, 0, NULL}

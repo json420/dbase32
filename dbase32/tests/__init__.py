@@ -352,20 +352,6 @@ class TestConstants(TestCase):
         """
         self.assertIs(dbase32.log_id, dbase32.time_id)
 
-    def test_db32_relpath_alias(self):
-        if C_EXT_AVAIL:
-            self.assertIs(dbase32.db32_relpath, _dbase32.db32_relpath)
-            self.assertIsNot(dbase32.db32_relpath, _dbase32py.db32_relpath)
-        else:
-            self.assertIs(dbase32.db32_relpath, _dbase32py.db32_relpath)
-
-    def test_db32_abspath_alias(self):
-        if C_EXT_AVAIL:
-            self.assertIs(dbase32.db32_abspath, _dbase32.db32_abspath)
-            self.assertIsNot(dbase32.db32_abspath, _dbase32py.db32_abspath)
-        else:
-            self.assertIs(dbase32.db32_abspath, _dbase32py.db32_abspath)
-
     def test_db32_join_alias(self):
         if C_EXT_AVAIL:
             self.assertIs(dbase32.db32_join, _dbase32.db32_join)
@@ -1055,66 +1041,6 @@ class TestFunctions_Py(BackendTestCase):
 
         # Make sure final 80 bits are actually random:
         self.assertEqual(len(accum), 1000)
-
-    def test_db32_relpath(self):
-        db32_relpath = self.getattr('db32_relpath')
-
-        # Common tests for text args:
-        self.check_text_type(db32_relpath)
-        self.check_text_value(db32_relpath)
-
-        # Sanity check with a few static values:
-        self.assertEqual(db32_relpath('AABBBBBB'), 'AA/BBBBBB')
-        self.assertEqual(db32_relpath('AABBBBBBCCCCCCCC'), 'AA/BBBBBBCCCCCCCC')
-
-        # Use fastest random_id() implementation regardless of backend:
-        fastest = (_dbase32 if C_EXT_AVAIL else _dbase32py)
-        random_id = fastest.random_id
-
-        # Test with random values:
-        for size in BIN_SIZES:
-            length = (size * 8 // 5) + 1
-            for i in range(1000):
-                text = random_id(size)
-                for arg in (text, text.encode()):  # Test both str and bytes
-                    rp = db32_relpath(arg)
-                    self.assertIs(type(rp), str)
-                    self.assertEqual(len(rp), length)
-                    self.assertEqual(rp[2], '/')
-                    self.assertEqual(rp, '/'.join([text[:2], text[2:]]))
-
-    def test_db32_abspath(self):
-        db32_abspath = self.getattr('db32_abspath')
-        db32_relpath = self.getattr('db32_relpath')
-
-        # Use fastest random_id() implementation regardless of backend:
-        fastest = (_dbase32 if C_EXT_AVAIL else _dbase32py)
-        random_id = fastest.random_id
-        parentdir = '/'.join(['/tmp', random_id(), random_id()])
-
-        # Common tests for text args:
-        self.check_text_type(db32_abspath, parentdir)
-        self.check_text_value(db32_abspath, parentdir)
-
-        # Sanity check with a few static values:
-        self.assertEqual(db32_abspath('/PP', 'AABBBBBB'), '/PP/AA/BBBBBB')
-        self.assertEqual(
-            db32_abspath('/PP', 'AABBBBBBCCCCCCCC'),
-            '/PP/AA/BBBBBBCCCCCCCC'
-        )
-
-        # Test with random values:
-        for size in BIN_SIZES:
-            length = len(parentdir) + (size * 8 // 5) + 2
-            for i in range(1000):
-                text = random_id(size)
-                rp = db32_relpath(text)
-                expected = '/'.join([parentdir, rp])
-                for arg in (text, text.encode()):  # Test both str and bytes
-                    p = db32_abspath(parentdir, text)
-                    self.assertIs(type(p), str)
-                    self.assertEqual(len(p), length)
-                    self.assertEqual(p, expected)
 
     def check_refcounts(self, old_counts, args):
         new_counts = get_refcounts(args)

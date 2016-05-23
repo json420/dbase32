@@ -2,6 +2,79 @@ Changelog
 =========
 
 
+1.7 (unreleased)
+----------------
+
+`Download Dbase32 1.7`_
+
+Changes:
+
+    *   The two experimental ``db32_abspath()`` and ``db32_relpath()`` functions
+        didn't make the cut, were replaced by two new functions, the first of
+        which can exactly replace the previous two, and the second of which
+        offers validated path construction semantics not previously available:
+
+            1.  :func:`dbase32.db32_join_2()`
+
+            2.  :func:`dbase32.db32_join()`
+
+    *   :func:`dbase32.db32_join_2()` ensures the final argument is a valid
+        Dbase32 ID, then builds a path using any provided parent components,
+        plus the first two characters of the Dbase32 ID, plus the remaining
+        characters of the Dbase32 ID.
+
+        With two arguments, :func:`dbase32.db32_join_2()` is an exact
+        replacement for the experimental ``db32_abspath()`` function::
+
+            db32_abspath(parent, _id) --> db32_join_2(parent, _id)
+
+        For example:
+
+        >>> from dbase32 import db32_join_2
+        >>> db32_join_2('/foo', '39AY39AY')
+        '/foo/39/AY39AY'
+
+        With one argument, :func:`dbase32.db32_join_2()` is an exact replacement
+        for the experimental ``db32_relpath()`` function::
+
+            db32_relpath(_id) --> db32_join_2(_id)
+
+        For example:
+
+        >>> db32_join_2('39AY39AY')
+        '39/AY39AY'
+
+        However, :func:`dbase32.db32_join_2()` works with an arbitrary number of
+        parent path components:
+
+        >>> db32_join_2('foo', 'bar', '39AY39AY')
+        'foo/bar/39/AY39AY'
+
+    *   :func:`dbase32.db32_join()` ensures the final argument is a valid
+        Dbase32 ID, then builds a path using any provided parent components
+        plus the Dbase32 ID.
+
+        For example, with one argument it behaves similar to
+        :func:`dbase32.check_db32()`, except instead of returning ``None``,
+        the ID is returned:
+
+        >>> from dbase32 import db32_join
+        >>> db32_join('39AY39AY')
+        '39AY39AY'
+
+        But :func:`dbase32.db32_join()` supports an arbitrary number of parent
+        path components, which can be used to build relative paths:
+
+        >>> db32_join('foo', '39AY39AY')
+        'foo/39AY39AY'
+
+        And absolute paths:
+
+        >>> db32_join('/foo', 'bar', '39AY39AY')
+        '/foo/bar/39AY39AY'
+
+
+
 1.6 (February 2016)
 -------------------
 
@@ -294,6 +367,7 @@ Changes:
 
 
 
+.. _`Download Dbase32 1.7`: https://launchpad.net/dbase32/+milestone/1.7
 .. _`Download Dbase32 1.6`: https://launchpad.net/dbase32/+milestone/1.6
 .. _`Download Dbase32 1.5`: https://launchpad.net/dbase32/+milestone/1.5
 .. _`Download Dbase32 1.4`: https://launchpad.net/dbase32/+milestone/1.4
