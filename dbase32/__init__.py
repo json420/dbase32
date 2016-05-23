@@ -94,6 +94,3 @@ RANDOM_B32LEN = 24
 # future we may want to drop this:
 log_id = time_id
 
-# FIXME: temporary alias for filestore till it's updated:
-db32_join2 = db32_join_2
-
