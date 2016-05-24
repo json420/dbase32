@@ -275,7 +275,7 @@ Functions
 Path Functions
 --------------
 
-Dbase32 1.7 introduced two functions to the stable API that test whether some
+Dbase32 :ref:`version-1.7` introduced two functions to the stable API that test whether some
 untrusted input is a valid Dbase32 ID and, if valid, construct a file-system or
 URL path from it. (Or if this unstrusted input is not a valid Dbase32 ID, these
 functions raise a ``ValueError``.)
@@ -325,10 +325,46 @@ Or a relative path with additional parent path components:
 :func:`db32_join_2()` might seem peculiar, but it exactly fits the needs of the
 directory and file layout used by the `Dmedia FileStore`_.
 
+On the surface, these functions are similar to `os.path.join()`_, but there are
+some key differences that should be noted:
 
-.. function:: db32_join([parent, ...,] final)
+    1.  The Dbase32 join functions are not portable: they always join with a
+        ``'/'`` (slash) regardless of the platform; in part this is because
+        Windows isn't currently a target of interest, but also because a key
+        use case for these functions is building validated URLs, where a ``'/'``
+        should always be used regardless of the filesystems conventions of the
+        platform
 
-    Join path components where the final component is validated as a Dbase32 ID.
+    2.  The Dbase32 join functions do no validation of the *parent* path
+        components and have no special logic based on the content of the
+        *parent* path components; these functions only validate the final
+        *untrusted* argument, ensuring it's a valid Dbase32 ID
+
+For example, ``os.path.join()`` gives you this:
+
+>>> from os import path
+>>> path.join('/foo/', '39AY39AY')
+'/foo/39AY39AY'
+
+Whereas :func:`db32.join()` gives you this:
+
+>>> db32_join('/foo/', '39AY39AY')
+'/foo//39AY39AY'
+
+Although it should be noted that ``os.path.join()`` has a some of curious
+behaviors that should raise your security eyebrow when it comes to handling
+untrusted input:
+
+>>> path.join('/home', 'user', '/etc', 'ssh')
+'/etc/ssh'
+
+The Dbase32 join functions assume that any provided *parent* components are
+either safe static values, or values that were already carefully validated.
+
+
+.. function:: db32_join([parent, ...,] untrusted)
+
+    Join path components, ensuring the final component is a valid Dbase32 ID.
 
     For example:
 
@@ -336,26 +372,30 @@ directory and file layout used by the `Dmedia FileStore`_.
     >>> db32_join('foo', 'XFMIN6NRI84O3IX8DAV5MBTR')
     'foo/XFMIN6NRI84O3IX8DAV5MBTR'
 
-    Similar to :func:`check_db32()`, a ``ValueError`` will be raised if *final*
-    is not a valid Dbase32 ID:
+    Similar to :func:`check_db32()`, a ``ValueError`` will be raised if
+    *untrusted* is not a valid Dbase32 ID:
 
     >>> db32_join('foo', '../very/naughty/')
     Traceback (most recent call last):
       ...
     ValueError: invalid Dbase32: '../very/naughty/'
 
-    Note that unlike :func:`check_db32()`, the *final* argument must always be
-    a ``str``.
+    Note that unlike :func:`check_db32()`, the *untrusted* argument must always
+    be a ``str``.
 
     .. versionadded:: 1.7
 
 
-.. function:: db32_join_2([parent, ...,] final)
+.. function:: db32_join_2([parent, ...,] untrusted)
 
-    Join path components using validated Dbase32 ID for 1024 sub-directories.
+    Join path components, spitting final Dbase32 argument into two components.
 
-    This function builds two path components from *final*, which you could do
-    like this::
+    This function ensures the final argument is a valid Dbase32 ID, then builds
+    a path using any provided parent components, plus the first two characters
+    of the Dbase32 ID, plus the remaining characters of the Dbase32.
+
+    The *untrusted* argument is itself spit into path components doing something
+    like this:
 
         '/'.join([final[0:2], final[2:]])
 
@@ -371,16 +411,16 @@ directory and file layout used by the `Dmedia FileStore`_.
     >>> db32_join_2('/foo', 'bar', 'XFMIN6NRI84O3IX8DAV5MBTR')
     '/foo/bar/XF/MIN6NRI84O3IX8DAV5MBTR'
 
-    Similar to :func:`check_db32()`, a ``ValueError`` will be raised if *final*
-    is not a valid Dbase32 ID:
+    Similar to :func:`check_db32()`, a ``ValueError`` will be raised if
+    *untrusted* is not a valid Dbase32 ID:
 
     >>> db32_join_2('/foo', 'bar', '../very/naughty/')
     Traceback (most recent call last):
       ...
     ValueError: invalid Dbase32: '../very/naughty/'
 
-    Note that unlike :func:`check_db32()`, the *final* argument must always be
-    a ``str``.
+    Note that unlike :func:`check_db32()`, the *untrusted* argument must always
+    be a ``str`` instance.
 
     .. versionadded:: 1.7
 
@@ -492,6 +532,6 @@ The :mod:`dbase32` module defines several handy constants:
 .. _`Novacut`: https://launchpad.net/novacut
 .. _`Dmedia`: https://launchpad.net/dmedia
 .. _`Dmedia FileStore`: https://launchpad.net/filestore
-
 .. _`C implementation`: http://bazaar.launchpad.net/~dmedia/dbase32/trunk/view/head:/dbase32/_dbase32.c
+.. _`os.path.join()`: https://docs.python.org/3/library/os.path.html#os.path.join
 
