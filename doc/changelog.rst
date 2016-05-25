@@ -3,8 +3,8 @@ Changelog
 
 .. _version-1.7:
 
-1.7 (unreleased)
-----------------
+1.7 (May 2016)
+--------------
 
 `Download Dbase32 1.7`_
 
@@ -18,6 +18,9 @@ Changes:
             1.  :func:`dbase32.db32_join_2()`
 
             2.  :func:`dbase32.db32_join()`
+
+        Unlike the previous experimental functions, these new functions are
+        officially part of the stable API.
 
     *   :func:`dbase32.db32_join_2()` ensures the final argument is a valid
         Dbase32 ID, then builds a path using any provided parent components,
