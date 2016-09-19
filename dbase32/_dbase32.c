@@ -134,7 +134,7 @@ static PyObject *_str_slash = NULL;  //  '/'
 
 
 /*
- * For correctness, we declare the four internal dbase32 C functions that need
+ * For correctness, we declare the five internal dbase32 C functions that need
  * their return values checked using "__attribute__ ((warn_unused_result))":
  */
 static uint8_t _encode(const uint8_t *, const size_t, uint8_t *, const size_t)
