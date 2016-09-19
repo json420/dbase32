@@ -78,7 +78,7 @@ constant-time:
     *   On architectures with a 32-byte (or larger) cache-line size,
         :func:`dbase32.db32enc()`, :func:`dbase32.random_id()`, and
         :func:`dbase32.time_id()` are all constant-time with respect to the
-        content of the data being encoding; this is because the entire
+        content of the data being encoded; this is because the entire
         ``DB32_FORWARD`` table fits within a single 32-byte cache-line, and
         because no error checking is needed aside from the initial length check
 
