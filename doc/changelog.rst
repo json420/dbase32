@@ -3,6 +3,13 @@ Changelog
 
 .. _version-1.7:
 
+1.8 (unreleased)
+----------------
+
+`Download Dbase32 1.8`_
+
+
+
 1.7 (May 2016)
 --------------
 
@@ -371,6 +378,7 @@ Changes:
 
 
 
+.. _`Download Dbase32 1.8`: https://launchpad.net/dbase32/+milestone/1.8
 .. _`Download Dbase32 1.7`: https://launchpad.net/dbase32/+milestone/1.7
 .. _`Download Dbase32 1.6`: https://launchpad.net/dbase32/+milestone/1.6
 .. _`Download Dbase32 1.5`: https://launchpad.net/dbase32/+milestone/1.5
