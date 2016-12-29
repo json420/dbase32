@@ -30,6 +30,9 @@ override_dh_auto_test:
 		$$python -c "import dbase32; assert dbase32.using_c_extension is True"; \
 		$$python setup.py test; \
 		$$python setup.py benchmark; \
+		"$$python"-dbg setup.py build_ext -i; \
+		"$$python"-dbg -c "import dbase32; assert dbase32.using_c_extension is True"; \
+		"$$python"-dbg -Werror setup.py test; \
 	done
 
 override_dh_compress:
