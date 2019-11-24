@@ -79,12 +79,10 @@ def run_benchmark(numbytes=30):
         return '{:>12,}: {}'.format(rate, statement)
 
     yield 'dbase32: {}'.format(dbase32.__version__)
-    yield 'Python: {}, {}, {} ({} {})'.format(
+    yield 'Python: {}, {}, {}'.format(
         platform.python_version(),
         platform.machine(),
         platform.system(),
-        platform.dist()[0],
-        platform.dist()[1],
     )
     yield 'data size: {} bytes'.format(numbytes)
 
