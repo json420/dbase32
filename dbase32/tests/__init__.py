@@ -53,9 +53,9 @@ BIN_SIZES = (5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60)
 TXT_SIZES = (8, 16, 24, 32, 40, 48, 56, 64, 72, 80, 88, 96)
 BAD_LETTERS = '\'"`~!#$%^&*()[]{}|+-_.,\/ 012:;<=>?@Zabcdefghijklmnopqrstuvwxyz'
 
-NON_ASCII = frozenset(bytes(range(128, 256)))
-assert NON_ASCII.intersection(_dbase32py._ASCII) == frozenset()
-NON_DB32 = _dbase32py._ASCII - _dbase32py.DB32_SET
+NON_ASCII = tuple(bytes(range(128, 256)))
+assert set(NON_ASCII).intersection(_dbase32py._ASCII) == frozenset()
+NON_DB32 = tuple(_dbase32py._ASCII - _dbase32py.DB32_SET)
 assert len(NON_DB32) == 96
 
 
